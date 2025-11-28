@@ -453,14 +453,14 @@ export async function getSalesStats(startDate: Date, endDate: Date) {
     // Vendas por dia
     const salesByDay = await database
       .select({
-        date: sql<string>`DATE(${sales.createdAt})`,
+        date: sql<string>`DATE(${sales.createdAt}) as sale_date`,
         count: sql<number>`COUNT(*)`,
         total: sql<number>`SUM(${sales.totalAmount})`,
       })
       .from(sales)
       .where(sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`)
-      .groupBy(sql`DATE(${sales.createdAt})`)
-      .orderBy(sql`DATE(${sales.createdAt})`);
+      .groupBy(sql`sale_date`)
+      .orderBy(sql`sale_date`);
 
     return {
       totalSales,

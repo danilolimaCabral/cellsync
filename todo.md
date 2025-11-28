@@ -245,3 +245,15 @@
 - [ ] Adicionar interface de configuração de regras de comissão
 - [ ] Implementar relatório de comissões por período
 - [ ] Criar testes para cálculo de comissões
+
+## Script de Seed de Dados
+- [x] Criar script de seed com dados de exemplo
+- [x] Popular usuários (admin, vendedores, técnicos)
+- [x] Popular produtos (celulares, acessórios, peças)
+- [x] Popular clientes com histórico
+- [ ] Popular vendas com comissões (script básico criado)
+- [ ] Popular OS com peças utilizadas (script básico criado)
+- [ ] Popular contas a pagar e receber (script básico criado)
+- [ ] Popular NF-e emitidas (script básico criado)
+- [x] Criar script rápido para criar usuário admin
+- [x] Documentar uso do script

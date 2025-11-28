@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, email, name, role, active FROM users LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT id, email, name, role, active FROM users LIMIT 10",
+  "rows": [
+    {
+      "id": "1",
+      "email": "test@okcells.com",
+      "name": "Usuário Teste",
+      "role": "vendedor",
+      "active": "1"
+    },
+    {
+      "id": "2",
+      "email": "admin@okcells.com",
+      "name": "Administrador",
+      "role": "admin",
+      "active": "1"
+    },
+    {
+      "id": "30001",
+      "email": "danilo.rcabral@gmail.com",
+      "name": "Danilo cabral",
+      "role": "vendedor",
+      "active": "1"
+    },
+    {
+      "id": "30002",
+      "email": "teste@okcells.com",
+      "name": "Usuário Teste OkCells",
+      "role": "vendedor",
+      "active": "1"
+    },
+    {
+      "id": "30003",
+      "email": "danilo.rcabral@grupofn.com.br",
+      "name": "Danilo cabral",
+      "role": "vendedor",
+      "active": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\trole\tactive\n1\ttest@okcells.com\tUsuário Teste\tvendedor\t1\n2\tadmin@okcells.com\tAdministrador\tadmin\t1\n30001\tdanilo.rcabral@gmail.com\tDanilo cabral\tvendedor\t1\n30002\tteste@okcells.com\tUsuário Teste OkCells\tvendedor\t1\n30003\tdanilo.rcabral@grupofn.com.br\tDanilo cabral\tvendedor\t1\n",
+  "stderr": "",
+  "execution_time_ms": 86
+}
