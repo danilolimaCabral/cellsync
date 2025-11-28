@@ -617,3 +617,98 @@ export async function getInventoryStats() {
     return { totalProducts: 0, lowStock: 0, outOfStock: 0, totalValue: 0 };
   }
 }
+
+
+// ============= HISTÓRICO DE VENDAS =============
+export async function getSalesHistory(filters: {
+  startDate?: Date;
+  endDate?: Date;
+  sellerId?: number;
+  customerId?: number;
+  status?: string;
+  paymentMethod?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const database = await getDb();
+  if (!database) return { sales: [], total: 0 };
+
+  try {
+    const { sales, users, customers } = await import("../drizzle/schema");
+    const { sql, and } = await import("drizzle-orm");
+    
+    const conditions: any[] = [];
+
+    if (filters.startDate) {
+      conditions.push(sql`${sales.createdAt} >= ${filters.startDate}`);
+    }
+    if (filters.endDate) {
+      conditions.push(sql`${sales.createdAt} <= ${filters.endDate}`);
+    }
+    if (filters.sellerId) {
+      conditions.push(eq(sales.sellerId, filters.sellerId));
+    }
+    if (filters.customerId) {
+      conditions.push(eq(sales.customerId, filters.customerId));
+    }
+    if (filters.status) {
+      conditions.push(eq(sales.status, filters.status as any));
+    }
+    if (filters.paymentMethod) {
+      conditions.push(eq(sales.paymentMethod, filters.paymentMethod));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Contar total
+    const countResult = await database
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(sales)
+      .where(whereClause);
+
+    const total = Number(countResult[0]?.count) || 0;
+
+    // Buscar vendas
+    let query = database
+      .select({
+        id: sales.id,
+        customerId: sales.customerId,
+        customerName: customers.name,
+        sellerId: sales.sellerId,
+        sellerName: users.name,
+        totalAmount: sales.totalAmount,
+        discountAmount: sales.discountAmount,
+        finalAmount: sales.finalAmount,
+        status: sales.status,
+        paymentMethod: sales.paymentMethod,
+        nfeNumber: sales.nfeNumber,
+        nfeIssued: sales.nfeIssued,
+        commission: sales.commission,
+        notes: sales.notes,
+        saleDate: sales.saleDate,
+        createdAt: sales.createdAt,
+      })
+      .from(sales)
+      .leftJoin(users, eq(sales.sellerId, users.id))
+      .leftJoin(customers, eq(sales.customerId, customers.id))
+      .where(whereClause)
+      .orderBy(sql`${sales.createdAt} DESC`);
+
+    if (filters.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+    if (filters.offset) {
+      query = query.offset(filters.offset) as any;
+    }
+
+    const result = await query;
+
+    return {
+      sales: result,
+      total,
+    };
+  } catch (error) {
+    console.error("Error getting sales history:", error);
+    return { sales: [], total: 0 };
+  }
+}

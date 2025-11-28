@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,7 +15,11 @@ import {
   Calendar,
   Download,
   AlertTriangle,
+  FileSpreadsheet,
+  FileText,
 } from "lucide-react";
+import { exportFinancialReport } from "@/lib/exportUtils";
+import { toast } from "sonner";
 import {
   LineChart,
   Line,
@@ -116,10 +121,48 @@ export default function Relatorios() {
               <SelectItem value="365">Último ano</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  if (financialKPIs) {
+                    const periodLabel = `${startDate.toLocaleDateString("pt-BR")}-${endDate.toLocaleDateString("pt-BR")}`;
+                    const success = exportFinancialReport(financialKPIs, periodLabel).toExcel();
+                    if (success) {
+                      toast.success("Relatório exportado para Excel com sucesso!");
+                    } else {
+                      toast.error("Erro ao exportar relatório");
+                    }
+                  }
+                }}
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Exportar para Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (financialKPIs) {
+                    const periodLabel = `${startDate.toLocaleDateString("pt-BR")}-${endDate.toLocaleDateString("pt-BR")}`;
+                    const success = exportFinancialReport(financialKPIs, periodLabel).toPDF();
+                    if (success) {
+                      toast.success("Relatório exportado para PDF com sucesso!");
+                    } else {
+                      toast.error("Erro ao exportar relatório");
+                    }
+                  }
+                }}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Exportar para PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

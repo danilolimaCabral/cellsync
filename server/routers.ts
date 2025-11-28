@@ -578,6 +578,24 @@ export const appRouter = router({
       }),
   }),
 
+  // ============= HISTÓRICO DE VENDAS =============
+  salesHistory: router({
+    list: protectedProcedure
+      .input(z.object({
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+        sellerId: z.number().optional(),
+        customerId: z.number().optional(),
+        status: z.string().optional(),
+        paymentMethod: z.string().optional(),
+        limit: z.number().optional(),
+        offset: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getSalesHistory(input);
+      }),
+  }),
+
   // ============= RELATÓRIOS E BI =============
   reports: router({
     salesStats: protectedProcedure

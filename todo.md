@@ -102,3 +102,14 @@
 - [ ] Adicionar funcionalidade de exportação para Excel
 - [ ] Implementar exportação para PDF
 - [x] Criar testes unitários para queries de relatórios
+
+## Funcionalidades Pendentes - Implementação Prioritária
+- [x] Adicionar exportação de relatórios para Excel
+- [x] Adicionar exportação de relatórios para PDF
+- [x] Criar histórico de vendas com filtros avançados
+- [ ] Implementar movimentações de estoque detalhadas
+- [ ] Adicionar gestão de peças utilizadas em OS
+- [ ] Criar módulo de Configurações do sistema
+- [ ] Implementar sistema de notificações automáticas
+- [ ] Adicionar controle automático de comissões por vendedor
+- [ ] Criar funcionalidade de Conciliação Bancária
