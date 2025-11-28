@@ -107,9 +107,19 @@
 - [x] Adicionar exportação de relatórios para Excel
 - [x] Adicionar exportação de relatórios para PDF
 - [x] Criar histórico de vendas com filtros avançados
-- [ ] Implementar movimentações de estoque detalhadas
+- [x] Implementar movimentações de estoque detalhadas
 - [ ] Adicionar gestão de peças utilizadas em OS
 - [ ] Criar módulo de Configurações do sistema
 - [ ] Implementar sistema de notificações automáticas
 - [ ] Adicionar controle automático de comissões por vendedor
 - [ ] Criar funcionalidade de Conciliação Bancária
+
+## Movimentações de Estoque - Nova Implementação
+- [x] Criar tabela de movimentações no banco de dados
+- [x] Implementar backend para registro de movimentações
+- [x] Criar tipos de movimentação (entrada, saída, ajuste, transferência)
+- [x] Desenvolver interface de registro de movimentações
+- [x] Criar página de histórico de movimentações com filtros
+- [x] Implementar rastreamento por IMEI
+- [x] Adicionar relatório de inventário com divergências
+- [x] Criar testes para movimentações de estoque

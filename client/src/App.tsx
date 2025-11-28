@@ -14,6 +14,7 @@ import OrdemServico from "./pages/OrdemServico";
 import Financeiro from "./pages/Financeiro";
 import Relatorios from "./pages/Relatorios";
 import HistoricoVendas from "./pages/HistoricoVendas";
+import Movimentacoes from "./pages/Movimentacoes";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -133,6 +134,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <HistoricoVendas />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/movimentacoes">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Movimentacoes />
               </DashboardLayout>
             )}
           />

@@ -649,6 +649,55 @@ export const appRouter = router({
         return await db.getInventoryStats();
       }),
   }),
+
+  // ============= MOVIMENTAÇÕES DE ESTOQUE =============
+  stockMovements: router({
+    create: protectedProcedure
+      .input(z.object({
+        productId: z.number(),
+        stockItemId: z.number().optional(),
+        type: z.enum(["entrada", "saida", "transferencia", "ajuste", "devolucao"]),
+        quantity: z.number().positive(),
+        fromLocation: z.string().optional(),
+        toLocation: z.string().optional(),
+        reason: z.string().optional(),
+        referenceType: z.string().optional(),
+        referenceId: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return await db.createStockMovement({
+          ...input,
+          userId: ctx.user.id,
+        });
+      }),
+
+    list: protectedProcedure
+      .input(z.object({
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+        productId: z.number().optional(),
+        type: z.string().optional(),
+        userId: z.number().optional(),
+        limit: z.number().optional(),
+        offset: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getStockMovements(input);
+      }),
+
+    byIMEI: protectedProcedure
+      .input(z.object({
+        imei: z.string(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getStockMovementsByIMEI(input.imei);
+      }),
+
+    inventoryReport: protectedProcedure
+      .query(async () => {
+        return await db.getInventoryReport();
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, User, users } from "../drizzle/schema";
 
@@ -710,5 +710,223 @@ export async function getSalesHistory(filters: {
   } catch (error) {
     console.error("Error getting sales history:", error);
     return { sales: [], total: 0 };
+  }
+}
+
+
+// ============= MOVIMENTAÇÕES DE ESTOQUE =============
+export async function createStockMovement(movement: {
+  productId: number;
+  stockItemId?: number;
+  type: "entrada" | "saida" | "transferencia" | "ajuste" | "devolucao";
+  quantity: number;
+  fromLocation?: string;
+  toLocation?: string;
+  userId: number;
+  reason?: string;
+  referenceType?: string;
+  referenceId?: number;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  try {
+    const { stockMovements, products } = await import("../drizzle/schema");
+    
+    // Registrar movimentação
+    const [result] = await database.insert(stockMovements).values(movement);
+
+    // Atualizar estoque do produto
+    if (movement.type === "entrada" || movement.type === "devolucao") {
+      await database
+        .update(products)
+        .set({
+          currentStock: sql`${products.currentStock} + ${movement.quantity}`,
+        })
+        .where(eq(products.id, movement.productId));
+    } else if (movement.type === "saida" || movement.type === "ajuste") {
+      await database
+        .update(products)
+        .set({
+          currentStock: sql`${products.currentStock} - ${movement.quantity}`,
+        })
+        .where(eq(products.id, movement.productId));
+    }
+
+    return { id: result.insertId, success: true };
+  } catch (error) {
+    console.error("Error creating stock movement:", error);
+    throw error;
+  }
+}
+
+export async function getStockMovements(filters: {
+  startDate?: Date;
+  endDate?: Date;
+  productId?: number;
+  type?: string;
+  userId?: number;
+  limit?: number;
+  offset?: number;
+}) {
+  const database = await getDb();
+  if (!database) return { movements: [], total: 0 };
+
+  try {
+    const { stockMovements, products, users, stockItems } = await import("../drizzle/schema");
+    const { sql, and } = await import("drizzle-orm");
+    
+    const conditions: any[] = [];
+
+    if (filters.startDate) {
+      conditions.push(sql`${stockMovements.createdAt} >= ${filters.startDate}`);
+    }
+    if (filters.endDate) {
+      conditions.push(sql`${stockMovements.createdAt} <= ${filters.endDate}`);
+    }
+    if (filters.productId) {
+      conditions.push(eq(stockMovements.productId, filters.productId));
+    }
+    if (filters.type) {
+      conditions.push(eq(stockMovements.type, filters.type as any));
+    }
+    if (filters.userId) {
+      conditions.push(eq(stockMovements.userId, filters.userId));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Contar total
+    const countResult = await database
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(stockMovements)
+      .where(whereClause);
+
+    const total = Number(countResult[0]?.count) || 0;
+
+    // Buscar movimentações
+    let query = database
+      .select({
+        id: stockMovements.id,
+        productId: stockMovements.productId,
+        productName: products.name,
+        stockItemId: stockMovements.stockItemId,
+        imei: stockItems.imei,
+        type: stockMovements.type,
+        quantity: stockMovements.quantity,
+        fromLocation: stockMovements.fromLocation,
+        toLocation: stockMovements.toLocation,
+        userId: stockMovements.userId,
+        userName: users.name,
+        reason: stockMovements.reason,
+        referenceType: stockMovements.referenceType,
+        referenceId: stockMovements.referenceId,
+        createdAt: stockMovements.createdAt,
+      })
+      .from(stockMovements)
+      .leftJoin(products, eq(stockMovements.productId, products.id))
+      .leftJoin(users, eq(stockMovements.userId, users.id))
+      .leftJoin(stockItems, eq(stockMovements.stockItemId, stockItems.id))
+      .where(whereClause)
+      .orderBy(sql`${stockMovements.createdAt} DESC`);
+
+    if (filters.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+    if (filters.offset) {
+      query = query.offset(filters.offset) as any;
+    }
+
+    const result = await query;
+
+    return {
+      movements: result,
+      total,
+    };
+  } catch (error) {
+    console.error("Error getting stock movements:", error);
+    return { movements: [], total: 0 };
+  }
+}
+
+export async function getInventoryReport() {
+  const database = await getDb();
+  if (!database) return [];
+
+  try {
+    const { products, stockMovements } = await import("../drizzle/schema");
+    const { sql } = await import("drizzle-orm");
+
+    // Buscar produtos com estoque calculado vs estoque registrado
+    const result = await database
+      .select({
+        productId: products.id,
+        productName: products.name,
+        sku: products.sku,
+        currentStock: products.currentStock,
+        minStock: products.minStock,
+        costPrice: products.costPrice,
+        salePrice: products.salePrice,
+        // Calcular estoque baseado em movimentações
+        calculatedStock: sql<number>`(
+          SELECT COALESCE(SUM(
+            CASE 
+              WHEN ${stockMovements.type} IN ('entrada', 'devolucao') THEN ${stockMovements.quantity}
+              WHEN ${stockMovements.type} IN ('saida', 'ajuste') THEN -${stockMovements.quantity}
+              ELSE 0
+            END
+          ), 0)
+          FROM ${stockMovements}
+          WHERE ${stockMovements.productId} = ${products.id}
+        )`,
+      })
+      .from(products);
+
+    return result.map((item) => ({
+      ...item,
+      divergence: item.currentStock - (item.calculatedStock || 0),
+      status:
+        item.currentStock <= 0
+          ? "sem_estoque"
+          : item.currentStock <= item.minStock
+          ? "baixo"
+          : "normal",
+    }));
+  } catch (error) {
+    console.error("Error getting inventory report:", error);
+    return [];
+  }
+}
+
+export async function getStockMovementsByIMEI(imei: string) {
+  const database = await getDb();
+  if (!database) return [];
+
+  try {
+    const { stockMovements, products, users, stockItems } = await import("../drizzle/schema");
+
+    const result = await database
+      .select({
+        id: stockMovements.id,
+        productName: products.name,
+        type: stockMovements.type,
+        quantity: stockMovements.quantity,
+        fromLocation: stockMovements.fromLocation,
+        toLocation: stockMovements.toLocation,
+        userName: users.name,
+        reason: stockMovements.reason,
+        createdAt: stockMovements.createdAt,
+      })
+      .from(stockMovements)
+      .leftJoin(products, eq(stockMovements.productId, products.id))
+      .leftJoin(users, eq(stockMovements.userId, users.id))
+      .leftJoin(stockItems, eq(stockMovements.stockItemId, stockItems.id))
+      .where(eq(stockItems.imei, imei))
+      .orderBy(sql`${stockMovements.createdAt} DESC`);
+
+    return result;
+  } catch (error) {
+    console.error("Error getting stock movements by IMEI:", error);
+    return [];
   }
 }
