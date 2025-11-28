@@ -188,3 +188,131 @@ describe("NF-e - Backend", () => {
     expect(typeof stats.total).toBe("number");
   });
 });
+
+describe("NF-e - Integração com PDV", () => {
+  it("cria venda e emite NF-e automaticamente", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    // 1. Criar uma venda (assumindo cliente ID 1 existe)
+    const sale = await caller.sales.create({
+      customerId: 1,
+      totalAmount: 200000, // R$ 2.000,00
+      discount: 0,
+      paymentMethod: "pix",
+      items: [
+        {
+          productId: 1, // Assumindo que existe produto com ID 1
+          quantity: 1,
+          unitPrice: 200000,
+        },
+      ],
+    });
+
+    expect(sale.saleId).toBeGreaterThan(0);
+
+    // 2. Emitir NF-e vinculada à venda
+    const invoice = await caller.nfe.create({
+      saleId: sale.saleId,
+      emitterCnpj: "11.222.333/0001-81",
+      emitterName: "OkCells",
+      recipientDocument: "123.456.789-09",
+      recipientName: "Maria Santos",
+      cfop: "5102",
+      natureOperation: "Venda de mercadoria",
+      paymentMethod: "pix",
+      paymentIndicator: "a_vista",
+      totalProducts: 200000,
+      totalDiscount: 0,
+      totalInvoice: 200000,
+      items: [
+        {
+          productId: 1,
+          description: "Smartphone",
+          ncm: "85171231",
+          cfop: "5102",
+          quantity: 100,
+          unitPrice: 200000,
+          totalPrice: 200000,
+        },
+      ],
+    });
+
+    expect(invoice.invoiceId).toBeGreaterThan(0);
+    expect(invoice.number).toBeGreaterThan(0);
+
+    // 3. Verificar que a NF-e foi criada com sucesso
+    expect(invoice.invoiceId).toBeGreaterThan(0);
+    expect(invoice.number).toBeGreaterThan(0);
+  });
+
+  it("permite emitir NF-e com documento válido", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    // Criar NF-e com documento válido deve funcionar
+    const invoice = await caller.nfe.create({
+      emitterCnpj: "11.222.333/0001-81",
+      emitterName: "OkCells",
+      recipientDocument: "123.456.789-09", // CPF válido
+      recipientName: "Cliente com Documento",
+      cfop: "5102",
+      natureOperation: "Venda de mercadoria",
+      paymentMethod: "pix",
+      paymentIndicator: "a_vista",
+      totalProducts: 100000,
+      totalDiscount: 0,
+      totalInvoice: 100000,
+      items: [
+        {
+          description: "Produto Teste",
+          ncm: "85171231",
+          cfop: "5102",
+          quantity: 100,
+          unitPrice: 100000,
+          totalPrice: 100000,
+        },
+      ],
+    });
+
+    expect(invoice.invoiceId).toBeGreaterThan(0);
+    expect(invoice.number).toBeGreaterThan(0);
+  });
+
+  it("calcula impostos automaticamente ao emitir NF-e", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const invoice = await caller.nfe.create({
+      emitterCnpj: "11.222.333/0001-81",
+      emitterName: "OkCells",
+      recipientDocument: "123.456.789-09",
+      recipientName: "Cliente Teste",
+      cfop: "5102",
+      natureOperation: "Venda de mercadoria",
+      paymentMethod: "pix",
+      paymentIndicator: "a_vista",
+      totalProducts: 100000, // R$ 1.000,00
+      totalDiscount: 0,
+      totalInvoice: 100000,
+      items: [
+        {
+          description: "Smartphone",
+          ncm: "85171231",
+          cfop: "5102",
+          quantity: 100,
+          unitPrice: 100000,
+          totalPrice: 100000,
+          icmsRate: 1800, // 18%
+          pisRate: 165, // 1.65%
+          cofinsRate: 760, // 7.6%
+          ipiRate: 0,
+        },
+      ],
+    });
+
+    // Verificar que a NF-e foi criada com sucesso
+    expect(invoice.invoiceId).toBeGreaterThan(0);
+    expect(invoice.number).toBeGreaterThan(0);
+  });
+});

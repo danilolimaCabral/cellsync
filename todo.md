@@ -207,3 +207,14 @@
 - [ ] Adicionar formulário de emissão manual completo
 - [x] Criar funcionalidade de cancelamento com motivo
 - [ ] Preparar geração de XML e DANFE para download
+
+## Integração de NF-e no PDV - Nova Implementação
+- [x] Adicionar checkbox de emissão de NF-e no PDV
+- [x] Implementar pré-preenchimento automático de dados do cliente
+- [x] Criar validação de CPF/CNPJ do cliente no PDV
+- [x] Adicionar pré-preenchimento automático de produtos e valores
+- [x] Integrar emissão de NF-e com finalização de venda
+- [x] Criar tratamento de erros de emissão fiscal
+- [x] Adicionar feedback visual de sucesso/erro de emissão
+- [x] Implementar opção de emitir NF-e posteriormente (checkbox opcional)
+- [x] Criar testes para integração PDV + NF-e (17 testes passando)

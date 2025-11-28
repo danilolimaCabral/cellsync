@@ -29,6 +29,8 @@ export default function Vendas() {
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastSaleId, setLastSaleId] = useState<number | null>(null);
+  const [emitirNFe, setEmitirNFe] = useState(false);
+  const [emitindoNFe, setEmitindoNFe] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Queries
@@ -37,14 +39,21 @@ export default function Vendas() {
 
   // Mutations
   const createSaleMutation = trpc.sales.create.useMutation({
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       toast.success("Venda realizada com sucesso!");
       setLastSaleId(result.saleId);
+      
+      // Emitir NF-e se solicitado
+      if (emitirNFe && selectedCustomerId) {
+        await emitirNFeParaVenda(result.saleId, selectedCustomerId);
+      }
+      
       setShowReceipt(true);
       setCart([]);
       setSelectedCustomerId(null);
       setDiscount(0);
       setPaymentMethod("dinheiro");
+      setEmitirNFe(false);
       searchInputRef.current?.focus();
     },
     onError: (error) => {
@@ -60,6 +69,17 @@ export default function Vendas() {
     },
     onError: (error) => {
       toast.error(`Erro ao cadastrar cliente: ${error.message}`);
+    },
+  });
+
+  const issueNFeMutation = trpc.nfe.create.useMutation({
+    onSuccess: () => {
+      toast.success("NF-e emitida com sucesso!");
+      setEmitindoNFe(false);
+    },
+    onError: (error) => {
+      toast.error(`Erro ao emitir NF-e: ${error.message}`);
+      setEmitindoNFe(false);
     },
   });
 
@@ -134,6 +154,61 @@ export default function Vendas() {
   // Cálculos
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const total = subtotal - discount;
+
+  // Emitir NF-e para venda
+  const emitirNFeParaVenda = async (saleId: number, customerId: number) => {
+    setEmitindoNFe(true);
+    try {
+      const customer = customers.find(c => c.id === customerId);
+      if (!customer) {
+        toast.error("Cliente não encontrado!");
+        return;
+      }
+
+      // Validar documento do cliente
+      if (!customer.cpf && !customer.cnpj) {
+        toast.error("Cliente sem CPF/CNPJ cadastrado! NF-e não emitida.");
+        return;
+      }
+
+      // Preparar itens da NF-e
+      const items = cart.map(item => ({
+        productId: item.productId,
+        description: item.name,
+        ncm: "61091000", // NCM genérico para celulares
+        cfop: "5102", // Venda de mercadoria adquirida
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        totalPrice: item.quantity * item.unitPrice,
+      }));
+
+      // Emitir NF-e
+      issueNFeMutation.mutate({
+        saleId,
+        emitterCnpj: "00000000000000", // TODO: Pegar do sistema
+        emitterName: "OkCells",
+        recipientDocument: customer.cpf || customer.cnpj || "",
+        recipientName: customer.name,
+        recipientAddress: customer.address || undefined,
+        recipientCity: customer.city || undefined,
+        recipientState: customer.state || undefined,
+        recipientZipCode: customer.zipCode || undefined,
+        recipientPhone: customer.phone || undefined,
+        recipientEmail: customer.email || undefined,
+        cfop: "5102",
+        natureOperation: "Venda de mercadoria",
+        paymentMethod: paymentMethod as any,
+        paymentIndicator: "a_vista" as const,
+        totalProducts: subtotal,
+        totalDiscount: discount,
+        totalInvoice: total,
+        items,
+      });
+    } catch (error: any) {
+      toast.error(`Erro ao emitir NF-e: ${error.message}`);
+      setEmitindoNFe(false);
+    }
+  };
 
   // Finalizar venda
   const finalizeSale = () => {
@@ -452,6 +527,21 @@ export default function Vendas() {
                   value={discount / 100}
                   onChange={(e) => setDiscount(Math.floor(Number(e.target.value) * 100))}
                 />
+              </div>
+
+              <div className="flex items-center space-x-2 pt-2 border-t">
+                <input
+                  type="checkbox"
+                  id="emitir-nfe"
+                  checked={emitirNFe}
+                  onChange={(e) => setEmitirNFe(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                  disabled={!selectedCustomerId}
+                />
+                <Label htmlFor="emitir-nfe" className="cursor-pointer">
+                  Emitir NF-e automaticamente
+                  {!selectedCustomerId && " (selecione um cliente)"}
+                </Label>
               </div>
             </CardContent>
           </Card>
