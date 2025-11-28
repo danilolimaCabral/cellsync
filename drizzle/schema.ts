@@ -322,3 +322,54 @@ export const auditLogs = mysqlTable("auditLogs", {
 
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
+
+// ============= COMISSÕES DE VENDEDORES =============
+export const commissionRules = mysqlTable("commissionRules", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // Vendedor
+  name: text("name").notNull(), // Nome da regra
+  type: mysqlEnum("type", ["percentual_fixo", "meta_progressiva", "bonus_produto"]).notNull(),
+  active: boolean("active").default(true).notNull(),
+  
+  // Para percentual fixo
+  percentage: int("percentage"), // Percentual em centésimos (ex: 500 = 5%)
+  
+  // Para meta progressiva
+  minSalesAmount: int("minSalesAmount"), // Valor mínimo de vendas em centavos
+  maxSalesAmount: int("maxSalesAmount"), // Valor máximo de vendas em centavos
+  
+  // Para bônus por produto
+  productId: int("productId"), // Produto específico
+  bonusAmount: int("bonusAmount"), // Valor fixo de bônus em centavos
+  bonusPercentage: int("bonusPercentage"), // Ou percentual adicional
+  
+  priority: int("priority").default(0).notNull(), // Ordem de aplicação das regras
+  startDate: timestamp("startDate"),
+  endDate: timestamp("endDate"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CommissionRule = typeof commissionRules.$inferSelect;
+export type InsertCommissionRule = typeof commissionRules.$inferInsert;
+
+export const commissions = mysqlTable("commissions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // Vendedor
+  saleId: int("saleId"), // Venda relacionada (opcional para comissões manuais)
+  amount: int("amount").notNull(), // Valor da comissão em centavos
+  baseAmount: int("baseAmount").notNull(), // Valor base para cálculo (valor da venda)
+  percentage: int("percentage"), // Percentual aplicado
+  ruleId: int("ruleId"), // Regra que gerou a comissão
+  status: mysqlEnum("status", ["pendente", "aprovada", "paga", "cancelada"]).default("pendente").notNull(),
+  approvedBy: int("approvedBy"), // Gerente que aprovou
+  approvedAt: timestamp("approvedAt"),
+  paidAt: timestamp("paidAt"),
+  paymentId: int("paymentId"), // Referência ao pagamento no financeiro
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Commission = typeof commissions.$inferSelect;
+export type InsertCommission = typeof commissions.$inferInsert;

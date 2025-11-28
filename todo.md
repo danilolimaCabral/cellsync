@@ -111,7 +111,12 @@
 - [x] Adicionar gestão de peças utilizadas em OS
 - [ ] Criar módulo de Configurações do sistema
 - [ ] Implementar sistema de notificações automáticas
-- [ ] Adicionar controle automático de comissões por vendedor
+- [x] Adicionar controle automático de comissões por vendedor
+- [x] Atualizar PDV com integrações completas (estoque, clientes, financeiro)
+- [x] Adicionar baixa automática de estoque no PDV
+- [ ] Implementar cadastro rápido de cliente no PDV
+- [ ] Adicionar impressão de comprovante no PDV
+- [ ] Criar interface completa do PDV
 - [ ] Criar funcionalidade de Conciliação Bancária
 
 ## Movimentações de Estoque - Nova Implementação
@@ -134,3 +139,17 @@
 - [x] Criar relatório de peças utilizadas por técnico
 - [x] Implementar histórico de peças por período
 - [x] Criar testes para gestão de peças em OS
+
+## Sistema de Comissões de Vendedores - Nova Implementação
+- [x] Criar tabelas para comissões e regras de comissão no schema
+- [x] Implementar backend para configuração de regras de comissão
+- [x] Criar cálculo automático de comissões por venda
+- [x] Implementar regras de percentual fixo sobre vendas
+- [x] Adicionar regras de metas progressivas (escalonadas)
+- [x] Criar regras de bônus por produto específico
+- [ ] Desenvolver interface de configuração de regras por vendedor
+- [ ] Criar relatório de comissões por período
+- [ ] Implementar detalhamento de comissões por venda
+- [x] Adicionar aprovação de comissões pelo gerente
+- [x] Integrar com módulo financeiro para pagamento
+- [ ] Criar testes para cálculo de comissões

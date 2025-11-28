@@ -747,6 +747,69 @@ export const appRouter = router({
         return await db.processServiceOrderCompletion(input.serviceOrderId, ctx.user.id);
       }),
   }),
+
+  // ============= COMISSÕES =============
+  commissions: router({
+    createRule: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        name: z.string(),
+        type: z.enum(["percentual_fixo", "meta_progressiva", "bonus_produto"]),
+        active: z.boolean().optional(),
+        percentage: z.number().optional(),
+        minSalesAmount: z.number().optional(),
+        maxSalesAmount: z.number().optional(),
+        productId: z.number().optional(),
+        bonusAmount: z.number().optional(),
+        bonusPercentage: z.number().optional(),
+        priority: z.number().optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createCommissionRule(input);
+      }),
+
+    getRulesByUser: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getCommissionRulesByUser(input.userId);
+      }),
+
+    getByUser: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getCommissionsByUser(input.userId, input.startDate, input.endDate);
+      }),
+
+    getPending: protectedProcedure
+      .query(async () => {
+        return await db.getPendingCommissions();
+      }),
+
+    approve: protectedProcedure
+      .input(z.object({
+        commissionId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return await db.approveCommission(input.commissionId, ctx.user.id);
+      }),
+
+    pay: protectedProcedure
+      .input(z.object({
+        commissionId: z.number(),
+        paymentId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.payCommission(input.commissionId, input.paymentId);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

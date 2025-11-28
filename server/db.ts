@@ -1,6 +1,11 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, and, or, gte, lte, isNull, desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, User, users } from "../drizzle/schema";
+import { 
+  InsertUser, User, users,
+  customers, sales,
+  commissionRules, commissions,
+  type InsertCommissionRule, type InsertCommission
+} from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -181,20 +186,19 @@ export async function createCustomer(data: {
 export async function createSale(data: {
   customerId: number;
   sellerId: number;
+  totalAmount: number;
+  discount: number;
+  paymentMethod: string;
   items: Array<{
     productId: number;
     quantity: number;
     unitPrice: number;
-    imei?: string;
   }>;
-  paymentMethod: string;
-  totalAmount: number;
-  discount: number;
 }) {
   const database = await getDb();
   if (!database) throw new Error("Database not available");
 
-  const { sales, saleItems } = await import("../drizzle/schema");
+  const { sales, saleItems, products, stockMovements, accountsReceivable } = await import("../drizzle/schema");
   
   // Criar venda
   const finalAmount = data.totalAmount - data.discount;
@@ -210,7 +214,7 @@ export async function createSale(data: {
 
   const saleId = Number(saleResult.insertId);
 
-  // Criar itens da venda
+  // Criar itens da venda e baixar estoque
   for (const item of data.items) {
     const totalPrice = item.unitPrice * item.quantity;
     await database.insert(saleItems).values({
@@ -220,6 +224,53 @@ export async function createSale(data: {
       unitPrice: item.unitPrice,
       discount: 0,
       totalPrice,
+    });
+
+    // Baixar estoque
+    await database
+      .update(products)
+      .set({
+        currentStock: sql`${products.currentStock} - ${item.quantity}`,
+      })
+      .where(eq(products.id, item.productId));
+
+    // Registrar movimentação de estoque
+    await database.insert(stockMovements).values({
+      productId: item.productId,
+      type: "saida",
+      quantity: item.quantity,
+      reason: "Venda",
+      referenceType: "sale",
+      referenceId: saleId,
+      userId: data.sellerId,
+    });
+  }
+
+  // Calcular e criar comissão
+  const commissionData = await calculateCommission(saleId, data.sellerId, finalAmount);
+  if (commissionData.totalCommission > 0) {
+    for (const rule of commissionData.appliedRules) {
+      await createCommission({
+        userId: data.sellerId,
+        saleId,
+        amount: rule.amount,
+        baseAmount: finalAmount,
+        percentage: rule.percentage,
+        ruleId: rule.ruleId,
+        status: "pendente",
+      });
+    }
+  }
+
+  // Criar conta a receber se não for pagamento à vista
+  if (data.paymentMethod !== "dinheiro" && data.paymentMethod !== "pix") {
+    await database.insert(accountsReceivable).values({
+      description: `Venda #${saleId}`,
+      customerId: data.customerId,
+      amount: finalAmount,
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
+      status: "pendente",
+      createdBy: data.sellerId,
     });
   }
 
@@ -1112,4 +1163,180 @@ export async function processServiceOrderCompletion(serviceOrderId: number, user
     console.error("Error processing service order completion:", error);
     throw error;
   }
+}
+
+
+// ============= COMISSÕES =============
+
+export async function createCommissionRule(rule: InsertCommissionRule) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(commissionRules).values(rule);
+  return { id: result[0].insertId, success: true };
+}
+
+export async function getCommissionRulesByUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(commissionRules)
+    .where(eq(commissionRules.userId, userId))
+    .orderBy(desc(commissionRules.priority));
+}
+
+export async function getActiveCommissionRules(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const now = new Date();
+  return await db
+    .select()
+    .from(commissionRules)
+    .where(
+      and(
+        eq(commissionRules.userId, userId),
+        eq(commissionRules.active, true),
+        or(
+          isNull(commissionRules.startDate),
+          lte(commissionRules.startDate, now)
+        ),
+        or(
+          isNull(commissionRules.endDate),
+          gte(commissionRules.endDate, now)
+        )
+      )
+    )
+    .orderBy(desc(commissionRules.priority));
+}
+
+export async function calculateCommission(saleId: number, userId: number, saleAmount: number) {
+  const rules = await getActiveCommissionRules(userId);
+  let totalCommission = 0;
+  const appliedRules: any[] = [];
+
+  for (const rule of rules) {
+    let commissionAmount = 0;
+
+    if (rule.type === "percentual_fixo" && rule.percentage) {
+      commissionAmount = Math.floor((saleAmount * rule.percentage) / 10000);
+    } else if (rule.type === "meta_progressiva") {
+      if (
+        (!rule.minSalesAmount || saleAmount >= rule.minSalesAmount) &&
+        (!rule.maxSalesAmount || saleAmount <= rule.maxSalesAmount) &&
+        rule.percentage
+      ) {
+        commissionAmount = Math.floor((saleAmount * rule.percentage) / 10000);
+      }
+    }
+
+    if (commissionAmount > 0) {
+      totalCommission += commissionAmount;
+      appliedRules.push({
+        ruleId: rule.id,
+        amount: commissionAmount,
+        percentage: rule.percentage,
+      });
+    }
+  }
+
+  return { totalCommission, appliedRules };
+}
+
+export async function createCommission(commission: InsertCommission) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(commissions).values(commission);
+  return { id: result[0].insertId, success: true };
+}
+
+export async function getCommissionsByUser(userId: number, startDate?: Date, endDate?: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [eq(commissions.userId, userId)];
+  
+  if (startDate && endDate) {
+    conditions.push(gte(commissions.createdAt, startDate));
+    conditions.push(lte(commissions.createdAt, endDate));
+  }
+
+  return await db
+    .select({
+      id: commissions.id,
+      saleId: commissions.saleId,
+      amount: commissions.amount,
+      baseAmount: commissions.baseAmount,
+      percentage: commissions.percentage,
+      status: commissions.status,
+      approvedAt: commissions.approvedAt,
+      paidAt: commissions.paidAt,
+      createdAt: commissions.createdAt,
+      saleDate: sales.createdAt,
+      customerName: customers.name,
+    })
+    .from(commissions)
+    .leftJoin(sales, eq(commissions.saleId, sales.id))
+    .leftJoin(customers, eq(sales.customerId, customers.id))
+    .where(and(...conditions))
+    .orderBy(desc(commissions.createdAt));
+}
+
+export async function getPendingCommissions() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select({
+      id: commissions.id,
+      userId: commissions.userId,
+      userName: users.name,
+      saleId: commissions.saleId,
+      amount: commissions.amount,
+      baseAmount: commissions.baseAmount,
+      percentage: commissions.percentage,
+      createdAt: commissions.createdAt,
+      customerName: customers.name,
+    })
+    .from(commissions)
+    .leftJoin(users, eq(commissions.userId, users.id))
+    .leftJoin(sales, eq(commissions.saleId, sales.id))
+    .leftJoin(customers, eq(sales.customerId, customers.id))
+    .where(eq(commissions.status, "pendente"))
+    .orderBy(desc(commissions.createdAt));
+}
+
+export async function approveCommission(commissionId: number, approvedBy: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .update(commissions)
+    .set({
+      status: "aprovada",
+      approvedBy,
+      approvedAt: new Date(),
+    })
+    .where(eq(commissions.id, commissionId));
+  
+  return { success: true };
+}
+
+export async function payCommission(commissionId: number, paymentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .update(commissions)
+    .set({
+      status: "paga",
+      paymentId,
+      paidAt: new Date(),
+    })
+    .where(eq(commissions.id, commissionId));
+  
+  return { success: true };
 }
