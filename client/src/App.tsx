@@ -11,6 +11,7 @@ import Vendas from "./pages/Vendas";
 import Estoque from "./pages/Estoque";
 import Clientes from "./pages/Clientes";
 import OrdemServico from "./pages/OrdemServico";
+import Financeiro from "./pages/Financeiro";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -94,6 +95,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <OrdemServico />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/financeiro">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Financeiro />
               </DashboardLayout>
             )}
           />

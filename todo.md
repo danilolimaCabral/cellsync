@@ -30,11 +30,11 @@
 - [ ] Histórico completo de reparos por cliente
 
 ## Financeiro Integrado
-- [ ] Fluxo de caixa em tempo real
-- [ ] Contas a pagar e receber
+- [x] Fluxo de caixa em tempo real
+- [x] Contas a pagar e receber
 - [ ] Conciliação bancária automática
 - [ ] Relatórios gerenciais personalizados
-- [ ] Controle de centros de custo
+- [x] Controle de centros de custo
 - [ ] Integração com bancos para pagamentos
 
 ## CRM Avançado
@@ -70,3 +70,15 @@
 - [x] Tema claro/escuro
 - [x] Dashboard principal com visão geral
 - [x] Navegação intuitiva entre módulos
+
+## Módulo Financeiro - Nova Implementação
+- [x] Criar estrutura de dados para transações financeiras
+- [x] Implementar backend para contas a pagar
+- [x] Implementar backend para contas a receber
+- [x] Criar interface de Contas a Pagar com filtros
+- [x] Criar interface de Contas a Receber com filtros
+- [x] Desenvolver dashboard de Fluxo de Caixa
+- [x] Adicionar gráficos de entrada/saída
+- [x] Implementar categorização (OPEX, Custo Fixo, Custo Variável)
+- [ ] Criar funcionalidade de Conciliação Bancária
+- [ ] Adicionar relatórios financeiros exportáveis

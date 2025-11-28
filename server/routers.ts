@@ -339,24 +339,10 @@ export const appRouter = router({
       }),
   }),
 
-  // ============= FINANCEIRO =============
-  financial: router({
-    cashFlow: protectedProcedure
-      .input(z.object({
-        startDate: z.date(),
-        endDate: z.date(),
-      }))
-      .query(async () => {
-        // TODO: Implementar query de fluxo de caixa
-        return {
-          totalIncome: 0,
-          totalExpenses: 0,
-          balance: 0,
-          transactions: [],
-        };
-      }),
-
-    accountsPayable: protectedProcedure
+  // ============= USOS FUTUROS =============
+  // Placeholder para futuras funcionalidades
+  placeholder: router({
+    test: protectedProcedure
       .input(z.object({
         status: z.enum(["pendente", "pago", "atrasado", "cancelado"]).optional(),
         startDate: z.date().optional(),
@@ -489,6 +475,107 @@ export const appRouter = router({
         // TODO: Implementar atualização de usuário
         return { success: true };
       }),
+  }),
+
+  // ============= FINANCEIRO =============
+  financial: router({
+    // Contas a Pagar
+    accountsPayable: router({
+      list: protectedProcedure
+        .input(z.object({
+          status: z.string().optional(),
+          startDate: z.date().optional(),
+          endDate: z.date().optional(),
+          limit: z.number().optional(),
+          offset: z.number().optional(),
+        }).optional())
+        .query(async ({ input }) => {
+          return await db.listAccountsPayable(input || {});
+        }),
+
+      create: protectedProcedure
+        .input(z.object({
+          description: z.string(),
+          category: z.string().optional(),
+          costCenter: z.string().optional(),
+          supplier: z.string().optional(),
+          amount: z.number(),
+          dueDate: z.date(),
+          notes: z.string().optional(),
+        }))
+        .mutation(async ({ input, ctx }) => {
+          return await db.createAccountPayable({
+            ...input,
+            createdBy: ctx.user.id,
+          });
+        }),
+
+      updateStatus: protectedProcedure
+        .input(z.object({
+          id: z.number(),
+          status: z.enum(["pendente", "pago", "atrasado", "cancelado"]),
+          paymentDate: z.date().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          await db.updateAccountPayableStatus(input.id, input.status, input.paymentDate);
+          return { success: true };
+        }),
+    }),
+
+    // Contas a Receber
+    accountsReceivable: router({
+      list: protectedProcedure
+        .input(z.object({
+          status: z.string().optional(),
+          startDate: z.date().optional(),
+          endDate: z.date().optional(),
+          limit: z.number().optional(),
+          offset: z.number().optional(),
+        }).optional())
+        .query(async ({ input }) => {
+          return await db.listAccountsReceivable(input || {});
+        }),
+
+      create: protectedProcedure
+        .input(z.object({
+          customerId: z.number().optional(),
+          description: z.string(),
+          amount: z.number(),
+          dueDate: z.date(),
+          referenceType: z.string().optional(),
+          referenceId: z.number().optional(),
+          notes: z.string().optional(),
+        }))
+        .mutation(async ({ input, ctx }) => {
+          return await db.createAccountReceivable({
+            ...input,
+            createdBy: ctx.user.id,
+          });
+        }),
+
+      updateStatus: protectedProcedure
+        .input(z.object({
+          id: z.number(),
+          status: z.enum(["pendente", "recebido", "atrasado", "cancelado"]),
+          paymentDate: z.date().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          await db.updateAccountReceivableStatus(input.id, input.status, input.paymentDate);
+          return { success: true };
+        }),
+    }),
+
+    // Fluxo de Caixa
+    cashFlow: router({
+      get: protectedProcedure
+        .input(z.object({
+          startDate: z.date(),
+          endDate: z.date(),
+        }))
+        .query(async ({ input }) => {
+          return await db.getCashFlow(input.startDate, input.endDate);
+        }),
+    }),
   }),
 });
 

@@ -225,3 +225,150 @@ export async function createSale(data: {
 
   return saleId;
 }
+
+// ============= FINANCEIRO - CONTAS A PAGAR =============
+export async function listAccountsPayable(filters: {
+  status?: string;
+  startDate?: Date;
+  endDate?: Date;
+  limit?: number;
+  offset?: number;
+}) {
+  const database = await getDb();
+  if (!database) return [];
+
+  try {
+    const { accountsPayable } = await import("../drizzle/schema");
+    const results = await database
+      .select()
+      .from(accountsPayable)
+      .limit(filters.limit || 50)
+      .offset(filters.offset || 0);
+    return results;
+  } catch (error) {
+    console.error("[Database] Failed to list accounts payable:", error);
+    return [];
+  }
+}
+
+export async function createAccountPayable(data: {
+  description: string;
+  category?: string;
+  costCenter?: string;
+  supplier?: string;
+  amount: number;
+  dueDate: Date;
+  notes?: string;
+  createdBy: number;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { accountsPayable } = await import("../drizzle/schema");
+  const result = await database.insert(accountsPayable).values(data);
+  return result;
+}
+
+export async function updateAccountPayableStatus(id: number, status: "pendente" | "pago" | "atrasado" | "cancelado", paymentDate?: Date) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { accountsPayable } = await import("../drizzle/schema");
+  await database
+    .update(accountsPayable)
+    .set({ status, paymentDate })
+    .where(eq(accountsPayable.id, id));
+}
+
+// ============= FINANCEIRO - CONTAS A RECEBER =============
+export async function listAccountsReceivable(filters: {
+  status?: string;
+  startDate?: Date;
+  endDate?: Date;
+  limit?: number;
+  offset?: number;
+}) {
+  const database = await getDb();
+  if (!database) return [];
+
+  try {
+    const { accountsReceivable } = await import("../drizzle/schema");
+    const results = await database
+      .select()
+      .from(accountsReceivable)
+      .limit(filters.limit || 50)
+      .offset(filters.offset || 0);
+    return results;
+  } catch (error) {
+    console.error("[Database] Failed to list accounts receivable:", error);
+    return [];
+  }
+}
+
+export async function createAccountReceivable(data: {
+  customerId?: number;
+  description: string;
+  amount: number;
+  dueDate: Date;
+  referenceType?: string;
+  referenceId?: number;
+  notes?: string;
+  createdBy: number;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { accountsReceivable } = await import("../drizzle/schema");
+  const result = await database.insert(accountsReceivable).values(data);
+  return result;
+}
+
+export async function updateAccountReceivableStatus(id: number, status: "pendente" | "recebido" | "atrasado" | "cancelado", paymentDate?: Date) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { accountsReceivable } = await import("../drizzle/schema");
+  await database
+    .update(accountsReceivable)
+    .set({ status, paymentDate })
+    .where(eq(accountsReceivable.id, id));
+}
+
+// ============= FINANCEIRO - FLUXO DE CAIXA =============
+export async function getCashFlow(startDate: Date, endDate: Date) {
+  const database = await getDb();
+  if (!database) return { totalIncome: 0, totalExpenses: 0, balance: 0, transactions: [] };
+
+  try {
+    const { accountsPayable, accountsReceivable } = await import("../drizzle/schema");
+    
+    // Buscar receitas
+    const income = await database
+      .select()
+      .from(accountsReceivable)
+      .where(eq(accountsReceivable.status, "recebido"));
+    
+    // Buscar despesas
+    const expenses = await database
+      .select()
+      .from(accountsPayable)
+      .where(eq(accountsPayable.status, "pago"));
+
+    const totalIncome = income.reduce((sum, item) => sum + item.amount, 0);
+    const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0);
+    const balance = totalIncome - totalExpenses;
+
+    return {
+      totalIncome,
+      totalExpenses,
+      balance,
+      transactions: [
+        ...income.map(i => ({ ...i, type: "receita" as const })),
+        ...expenses.map(e => ({ ...e, type: "despesa" as const })),
+      ],
+    };
+  } catch (error) {
+    console.error("[Database] Failed to get cash flow:", error);
+    return { totalIncome: 0, totalExpenses: 0, balance: 0, transactions: [] };
+  }
+}
