@@ -372,3 +372,248 @@ export async function getCashFlow(startDate: Date, endDate: Date) {
     return { totalIncome: 0, totalExpenses: 0, balance: 0, transactions: [] };
   }
 }
+
+
+// ============= RELATÓRIOS E BI =============
+export async function getSalesStats(startDate: Date, endDate: Date) {
+  const database = await getDb();
+  if (!database) return { totalSales: 0, totalRevenue: 0, averageTicket: 0, salesByPeriod: [] };
+
+  try {
+    const { sales } = await import("../drizzle/schema");
+    const { sql } = await import("drizzle-orm");
+    
+    // Total de vendas e receita
+    const result = await database
+      .select({
+        count: sql<number>`COUNT(*)`,
+        total: sql<number>`SUM(${sales.totalAmount})`,
+      })
+      .from(sales)
+      .where(sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`);
+
+    const stats = result[0] || { count: 0, total: 0 };
+    const totalSales = Number(stats.count) || 0;
+    const totalRevenue = Number(stats.total) || 0;
+    const averageTicket = totalSales > 0 ? Math.round(totalRevenue / totalSales) : 0;
+
+    // Vendas por dia
+    const salesByDay = await database
+      .select({
+        date: sql<string>`DATE(${sales.createdAt})`,
+        count: sql<number>`COUNT(*)`,
+        total: sql<number>`SUM(${sales.totalAmount})`,
+      })
+      .from(sales)
+      .where(sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`)
+      .groupBy(sql`DATE(${sales.createdAt})`)
+      .orderBy(sql`DATE(${sales.createdAt})`);
+
+    return {
+      totalSales,
+      totalRevenue,
+      averageTicket,
+      salesByPeriod: salesByDay.map((s: any) => ({
+        date: s.date,
+        count: Number(s.count),
+        total: Number(s.total),
+      })),
+    };
+  } catch (error) {
+    console.error("Error getting sales stats:", error);
+    return { totalSales: 0, totalRevenue: 0, averageTicket: 0, salesByPeriod: [] };
+  }
+}
+
+export async function getTopProducts(startDate: Date, endDate: Date, limit: number = 10) {
+  const database = await getDb();
+  if (!database) return [];
+
+  try {
+    const { saleItems, products, sales } = await import("../drizzle/schema");
+    const { sql } = await import("drizzle-orm");
+    
+    const result = await database
+      .select({
+        productId: saleItems.productId,
+        productName: products.name,
+        quantity: sql<number>`SUM(${saleItems.quantity})`,
+        revenue: sql<number>`SUM(${saleItems.totalPrice})`,
+      })
+      .from(saleItems)
+      .innerJoin(products, eq(saleItems.productId, products.id))
+      .innerJoin(sales, eq(saleItems.saleId, sales.id))
+      .where(sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`)
+      .groupBy(saleItems.productId, products.name)
+      .orderBy(sql`SUM(${saleItems.quantity}) DESC`)
+      .limit(limit);
+
+    return result.map((r: any) => ({
+      productId: r.productId,
+      productName: r.productName,
+      quantity: Number(r.quantity),
+      revenue: Number(r.revenue),
+    }));
+  } catch (error) {
+    console.error("Error getting top products:", error);
+    return [];
+  }
+}
+
+export async function getSellerPerformance(startDate: Date, endDate: Date) {
+  const database = await getDb();
+  if (!database) return [];
+
+  try {
+    const { sales, users } = await import("../drizzle/schema");
+    const { sql } = await import("drizzle-orm");
+    
+    const result = await database
+      .select({
+        sellerId: sales.sellerId,
+        sellerName: users.name,
+        salesCount: sql<number>`COUNT(*)`,
+        totalRevenue: sql<number>`SUM(${sales.totalAmount})`,
+      })
+      .from(sales)
+      .innerJoin(users, eq(sales.sellerId, users.id))
+      .where(sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`)
+      .groupBy(sales.sellerId, users.name)
+      .orderBy(sql`SUM(${sales.totalAmount}) DESC`);
+
+    return result.map((r: any) => ({
+      sellerId: r.sellerId,
+      sellerName: r.sellerName || "Sem nome",
+      salesCount: Number(r.salesCount),
+      totalRevenue: Number(r.totalRevenue),
+    }));
+  } catch (error) {
+    console.error("Error getting seller performance:", error);
+    return [];
+  }
+}
+
+export async function getServiceOrderStats(startDate: Date, endDate: Date) {
+  const database = await getDb();
+  if (!database) return { total: 0, byStatus: [] };
+
+  try {
+    const { serviceOrders } = await import("../drizzle/schema");
+    const { sql } = await import("drizzle-orm");
+    
+    // Total de OS
+    const totalResult = await database
+      .select({
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(serviceOrders)
+      .where(sql`${serviceOrders.createdAt} BETWEEN ${startDate} AND ${endDate}`);
+
+    const total = Number(totalResult[0]?.count) || 0;
+
+    // OS por status
+    const byStatusResult = await database
+      .select({
+        status: serviceOrders.status,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(serviceOrders)
+      .where(sql`${serviceOrders.createdAt} BETWEEN ${startDate} AND ${endDate}`)
+      .groupBy(serviceOrders.status);
+
+    return {
+      total,
+      byStatus: byStatusResult.map((r: any) => ({
+        status: r.status,
+        count: Number(r.count),
+      })),
+    };
+  } catch (error) {
+    console.error("Error getting service order stats:", error);
+    return { total: 0, byStatus: [] };
+  }
+}
+
+export async function getFinancialKPIs(startDate: Date, endDate: Date) {
+  const database = await getDb();
+  if (!database) return {
+    totalRevenue: 0,
+    totalExpenses: 0,
+    netProfit: 0,
+    profitMargin: 0,
+  };
+
+  try {
+    const { accountsReceivable, accountsPayable } = await import("../drizzle/schema");
+    const { sql } = await import("drizzle-orm");
+    
+    // Receitas recebidas
+    const revenueResult = await database
+      .select({
+        total: sql<number>`SUM(${accountsReceivable.amount})`,
+      })
+      .from(accountsReceivable)
+      .where(sql`${accountsReceivable.status} = 'recebido' AND ${accountsReceivable.paymentDate} BETWEEN ${startDate} AND ${endDate}`);
+
+    const totalRevenue = Number(revenueResult[0]?.total) || 0;
+
+    // Despesas pagas
+    const expensesResult = await database
+      .select({
+        total: sql<number>`SUM(${accountsPayable.amount})`,
+      })
+      .from(accountsPayable)
+      .where(sql`${accountsPayable.status} = 'pago' AND ${accountsPayable.paymentDate} BETWEEN ${startDate} AND ${endDate}`);
+
+    const totalExpenses = Number(expensesResult[0]?.total) || 0;
+
+    const netProfit = totalRevenue - totalExpenses;
+    const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+
+    return {
+      totalRevenue,
+      totalExpenses,
+      netProfit,
+      profitMargin: Math.round(profitMargin * 100) / 100,
+    };
+  } catch (error) {
+    console.error("Error getting financial KPIs:", error);
+    return {
+      totalRevenue: 0,
+      totalExpenses: 0,
+      netProfit: 0,
+      profitMargin: 0,
+    };
+  }
+}
+
+export async function getInventoryStats() {
+  const database = await getDb();
+  if (!database) return { totalProducts: 0, lowStock: 0, outOfStock: 0, totalValue: 0 };
+
+  try {
+    const { products } = await import("../drizzle/schema");
+    const { sql } = await import("drizzle-orm");
+    
+    const result = await database
+      .select({
+        total: sql<number>`COUNT(*)`,
+        lowStock: sql<number>`SUM(CASE WHEN ${products.currentStock} <= ${products.minStock} AND ${products.currentStock} > 0 THEN 1 ELSE 0 END)`,
+        outOfStock: sql<number>`SUM(CASE WHEN ${products.currentStock} = 0 THEN 1 ELSE 0 END)`,
+        totalValue: sql<number>`SUM(${products.currentStock} * ${products.salePrice})`,
+      })
+      .from(products);
+
+    const stats = result[0] || { total: 0, lowStock: 0, outOfStock: 0, totalValue: 0 };
+
+    return {
+      totalProducts: Number(stats.total),
+      lowStock: Number(stats.lowStock),
+      outOfStock: Number(stats.outOfStock),
+      totalValue: Number(stats.totalValue),
+    };
+  } catch (error) {
+    console.error("Error getting inventory stats:", error);
+    return { totalProducts: 0, lowStock: 0, outOfStock: 0, totalValue: 0 };
+  }
+}

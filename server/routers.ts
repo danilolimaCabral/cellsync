@@ -575,7 +575,61 @@ export const appRouter = router({
         .query(async ({ input }) => {
           return await db.getCashFlow(input.startDate, input.endDate);
         }),
-    }),
+      }),
+  }),
+
+  // ============= RELATÓRIOS E BI =============
+  reports: router({
+    salesStats: protectedProcedure
+      .input(z.object({
+        startDate: z.date(),
+        endDate: z.date(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getSalesStats(input.startDate, input.endDate);
+      }),
+
+    topProducts: protectedProcedure
+      .input(z.object({
+        startDate: z.date(),
+        endDate: z.date(),
+        limit: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getTopProducts(input.startDate, input.endDate, input.limit);
+      }),
+
+    sellerPerformance: protectedProcedure
+      .input(z.object({
+        startDate: z.date(),
+        endDate: z.date(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getSellerPerformance(input.startDate, input.endDate);
+      }),
+
+    serviceOrderStats: protectedProcedure
+      .input(z.object({
+        startDate: z.date(),
+        endDate: z.date(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getServiceOrderStats(input.startDate, input.endDate);
+      }),
+
+    financialKPIs: protectedProcedure
+      .input(z.object({
+        startDate: z.date(),
+        endDate: z.date(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getFinancialKPIs(input.startDate, input.endDate);
+      }),
+
+    inventoryStats: protectedProcedure
+      .query(async () => {
+        return await db.getInventoryStats();
+      }),
   }),
 });
 

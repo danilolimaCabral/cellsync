@@ -82,3 +82,23 @@
 - [x] Implementar categorização (OPEX, Custo Fixo, Custo Variável)
 - [ ] Criar funcionalidade de Conciliação Bancária
 - [ ] Adicionar relatórios financeiros exportáveis
+
+## Módulo de Relatórios e BI - Nova Implementação
+- [x] Criar queries de backend para estatísticas de vendas
+- [x] Implementar queries para análise de produtos
+- [x] Criar queries para performance de vendedores
+- [x] Implementar queries para métricas de OS
+- [x] Criar queries para KPIs financeiros
+- [x] Desenvolver dashboard principal com cards de KPIs
+- [x] Implementar gráfico de vendas por período (Recharts)
+- [x] Criar gráfico de produtos mais vendidos
+- [x] Implementar gráfico de performance de vendedores
+- [x] Criar gráfico de status de OS
+- [x] Implementar gráfico de fluxo de caixa
+- [x] Adicionar filtros de período (dia, semana, mês, ano)
+- [x] Criar relatório detalhado de vendas
+- [x] Implementar relatório de estoque
+- [x] Criar relatório financeiro consolidado
+- [ ] Adicionar funcionalidade de exportação para Excel
+- [ ] Implementar exportação para PDF
+- [x] Criar testes unitários para queries de relatórios

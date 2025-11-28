@@ -12,6 +12,7 @@ import Estoque from "./pages/Estoque";
 import Clientes from "./pages/Clientes";
 import OrdemServico from "./pages/OrdemServico";
 import Financeiro from "./pages/Financeiro";
+import Relatorios from "./pages/Relatorios";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -107,6 +108,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Financeiro />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/relatorios">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Relatorios />
               </DashboardLayout>
             )}
           />
