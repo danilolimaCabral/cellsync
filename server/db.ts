@@ -930,3 +930,186 @@ export async function getStockMovementsByIMEI(imei: string) {
     return [];
   }
 }
+
+
+// ============= PEÇAS EM ORDEM DE SERVIÇO =============
+export async function addPartToServiceOrder(part: {
+  serviceOrderId: number;
+  productId: number;
+  stockItemId?: number;
+  quantity: number;
+  unitPrice: number;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  try {
+    const { serviceOrderParts } = await import("../drizzle/schema");
+    
+    const totalPrice = part.unitPrice * part.quantity;
+
+    const [result] = await database.insert(serviceOrderParts).values({
+      ...part,
+      totalPrice,
+    });
+
+    return { id: result.insertId, success: true };
+  } catch (error) {
+    console.error("Error adding part to service order:", error);
+    throw error;
+  }
+}
+
+export async function removePartFromServiceOrder(partId: number) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  try {
+    const { serviceOrderParts } = await import("../drizzle/schema");
+    
+    await database.delete(serviceOrderParts).where(eq(serviceOrderParts.id, partId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing part from service order:", error);
+    throw error;
+  }
+}
+
+export async function getServiceOrderParts(serviceOrderId: number) {
+  const database = await getDb();
+  if (!database) return [];
+
+  try {
+    const { serviceOrderParts, products, stockItems } = await import("../drizzle/schema");
+
+    const result = await database
+      .select({
+        id: serviceOrderParts.id,
+        serviceOrderId: serviceOrderParts.serviceOrderId,
+        productId: serviceOrderParts.productId,
+        productName: products.name,
+        productSku: products.sku,
+        stockItemId: serviceOrderParts.stockItemId,
+        imei: stockItems.imei,
+        quantity: serviceOrderParts.quantity,
+        unitPrice: serviceOrderParts.unitPrice,
+        totalPrice: serviceOrderParts.totalPrice,
+        createdAt: serviceOrderParts.createdAt,
+      })
+      .from(serviceOrderParts)
+      .leftJoin(products, eq(serviceOrderParts.productId, products.id))
+      .leftJoin(stockItems, eq(serviceOrderParts.stockItemId, stockItems.id))
+      .where(eq(serviceOrderParts.serviceOrderId, serviceOrderId));
+
+    return result;
+  } catch (error) {
+    console.error("Error getting service order parts:", error);
+    return [];
+  }
+}
+
+export async function getPartsByTechnician(filters: {
+  technicianId?: number;
+  startDate?: Date;
+  endDate?: Date;
+}) {
+  const database = await getDb();
+  if (!database) return [];
+
+  try {
+    const { serviceOrderParts, products, serviceOrders, users } = await import("../drizzle/schema");
+    const { and } = await import("drizzle-orm");
+
+    const conditions: any[] = [];
+
+    if (filters.technicianId) {
+      conditions.push(eq(serviceOrders.technicianId, filters.technicianId));
+    }
+    if (filters.startDate) {
+      conditions.push(sql`${serviceOrderParts.createdAt} >= ${filters.startDate}`);
+    }
+    if (filters.endDate) {
+      conditions.push(sql`${serviceOrderParts.createdAt} <= ${filters.endDate}`);
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const result = await database
+      .select({
+        id: serviceOrderParts.id,
+        serviceOrderId: serviceOrderParts.serviceOrderId,
+        productId: serviceOrderParts.productId,
+        productName: products.name,
+        quantity: serviceOrderParts.quantity,
+        unitPrice: serviceOrderParts.unitPrice,
+        totalPrice: serviceOrderParts.totalPrice,
+        technicianId: serviceOrders.technicianId,
+        technicianName: users.name,
+        createdAt: serviceOrderParts.createdAt,
+      })
+      .from(serviceOrderParts)
+      .leftJoin(products, eq(serviceOrderParts.productId, products.id))
+      .leftJoin(serviceOrders, eq(serviceOrderParts.serviceOrderId, serviceOrders.id))
+      .leftJoin(users, eq(serviceOrders.technicianId, users.id))
+      .where(whereClause)
+      .orderBy(sql`${serviceOrderParts.createdAt} DESC`);
+
+    return result;
+  } catch (error) {
+    console.error("Error getting parts by technician:", error);
+    return [];
+  }
+}
+
+export async function processServiceOrderCompletion(serviceOrderId: number, userId: number) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  try {
+    const { serviceOrderParts, products, stockMovements, serviceOrders } = await import("../drizzle/schema");
+
+    // Buscar todas as peças da OS
+    const parts = await database
+      .select()
+      .from(serviceOrderParts)
+      .where(eq(serviceOrderParts.serviceOrderId, serviceOrderId));
+
+    // Para cada peça, criar movimentação de saída e atualizar estoque
+    for (const part of parts) {
+      // Criar movimentação de saída
+      await database.insert(stockMovements).values({
+        productId: part.productId,
+        stockItemId: part.stockItemId,
+        type: "saida",
+        quantity: part.quantity,
+        userId,
+        reason: `Utilizado na OS #${serviceOrderId}`,
+        referenceType: "service_order",
+        referenceId: serviceOrderId,
+      });
+
+      // Atualizar estoque do produto
+      await database
+        .update(products)
+        .set({
+          currentStock: sql`${products.currentStock} - ${part.quantity}`,
+        })
+        .where(eq(products.id, part.productId));
+    }
+
+    // Atualizar status da OS para concluída
+    await database
+      .update(serviceOrders)
+      .set({
+        status: "concluida",
+        completedAt: new Date(),
+      })
+      .where(eq(serviceOrders.id, serviceOrderId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error processing service order completion:", error);
+    throw error;
+  }
+}

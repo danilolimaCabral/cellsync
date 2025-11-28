@@ -108,7 +108,7 @@
 - [x] Adicionar exportação de relatórios para PDF
 - [x] Criar histórico de vendas com filtros avançados
 - [x] Implementar movimentações de estoque detalhadas
-- [ ] Adicionar gestão de peças utilizadas em OS
+- [x] Adicionar gestão de peças utilizadas em OS
 - [ ] Criar módulo de Configurações do sistema
 - [ ] Implementar sistema de notificações automáticas
 - [ ] Adicionar controle automático de comissões por vendedor
@@ -123,3 +123,14 @@
 - [x] Implementar rastreamento por IMEI
 - [x] Adicionar relatório de inventário com divergências
 - [x] Criar testes para movimentações de estoque
+
+## Gestão de Peças em Ordem de Serviço - Nova Implementação
+- [x] Verificar estrutura de dados para peças em OS no schema
+- [x] Implementar backend para adicionar/remover peças em OS
+- [x] Criar query para listar peças utilizadas por OS
+- [x] Desenvolver interface de seleção de peças na OS
+- [x] Implementar cálculo automático de custo total de peças
+- [x] Adicionar baixa automática no estoque ao finalizar OS
+- [x] Criar relatório de peças utilizadas por técnico
+- [x] Implementar histórico de peças por período
+- [x] Criar testes para gestão de peças em OS

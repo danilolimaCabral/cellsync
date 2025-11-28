@@ -698,6 +698,55 @@ export const appRouter = router({
         return await db.getInventoryReport();
       }),
   }),
+
+  // ============= PEÇAS EM ORDEM DE SERVIÇO =============
+  serviceOrderParts: router({
+    add: protectedProcedure
+      .input(z.object({
+        serviceOrderId: z.number(),
+        productId: z.number(),
+        stockItemId: z.number().optional(),
+        quantity: z.number().positive(),
+        unitPrice: z.number().nonnegative(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.addPartToServiceOrder(input);
+      }),
+
+    remove: protectedProcedure
+      .input(z.object({
+        partId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.removePartFromServiceOrder(input.partId);
+      }),
+
+    list: protectedProcedure
+      .input(z.object({
+        serviceOrderId: z.number(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getServiceOrderParts(input.serviceOrderId);
+      }),
+
+    byTechnician: protectedProcedure
+      .input(z.object({
+        technicianId: z.number().optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getPartsByTechnician(input);
+      }),
+
+    completeServiceOrder: protectedProcedure
+      .input(z.object({
+        serviceOrderId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return await db.processServiceOrderCompletion(input.serviceOrderId, ctx.user.id);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
