@@ -109,7 +109,7 @@
 - [x] Criar histórico de vendas com filtros avançados
 - [x] Implementar movimentações de estoque detalhadas
 - [x] Adicionar gestão de peças utilizadas em OS
-- [ ] Criar módulo de Configurações do sistema
+- [x] Criar módulo de Configurações do sistema
 - [ ] Implementar sistema de notificações automáticas
 - [x] Adicionar controle automático de comissões por vendedor
 - [x] Atualizar PDV com integrações completas (estoque, clientes, financeiro)
@@ -158,3 +158,31 @@
 - [x] Adicionar aprovação de comissões pelo gerente
 - [x] Integrar com módulo financeiro para pagamento
 - [ ] Criar testes para cálculo de comissões
+
+## Módulos Pendentes - Implementação Final
+
+### Gestão de Comissões - Interface
+- [x] Criar página de Gestão de Comissões
+- [x] Implementar formulário de configuração de regras por vendedor
+- [x] Adicionar seleção de tipo de comissão (percentual, meta, bônus)
+- [x] Criar relatório de comissões por período com filtros
+- [x] Implementar aprovação individual de comissões pendentes
+- [x] Adicionar dashboard com ranking de vendedores
+- [x] Criar### Módulo de Configurações do Sistema
+- [x] Criar página de Configurações
+- [x] Implementar gestão completa de usuários (CRUD)
+- [ ] Adicionar alteração de senhas de usuários
+- [x] Implementar ativação/desativação de usuários
+- [x] Criar gestão de permissões por role
+- [x] Adicionar parâmetros gerais do sistema (moeda, timezone, impostos)
+- [ ] Implementar personalização de categorias financeiras
+- [ ] Criar logs de auditoria com histórico de alteraçõestomáticas
+- [ ] Criar estrutura de dados para notificações
+- [ ] Implementar backend de notificações
+- [ ] Criar central de notificações in-app
+- [ ] Adicionar alertas de estoque baixo (<15 unidades)
+- [ ] Implementar alertas de OS com prazo vencido
+- [ ] Adicionar alertas de contas a pagar próximas do vencimento
+- [ ] Criar notificações de metas de vendas atingidas
+- [ ] Implementar notificações de aniversários de clientes
+- [ ] Adicionar histórico de notificações lidas/não lidas
