@@ -186,3 +186,19 @@
 - [ ] Criar notificações de metas de vendas atingidas
 - [ ] Implementar notificações de aniversários de clientes
 - [ ] Adicionar histórico de notificações lidas/não lidas
+
+## Módulo de Emissão de NF-e - Implementação Prioritária
+- [x] Criar tabelas para NF-e no schema (invoices, invoiceItems)
+- [x] Implementar validação de CNPJ/CPF
+- [x] Criar cálculo automático de impostos (ICMS, PIS, COFINS, IPI)
+- [x] Implementar backend para emissão de NF-e
+- [ ] Criar armazenamento de XMLs no S3
+- [ ] Desenvolver interface de emissão manual de NF-e
+- [ ] Criar página de gestão de notas fiscais
+- [ ] Implementar filtros por status (Emitida, Cancelada, Inutilizada)
+- [ ] Adicionar consulta de status na SEFAZ
+- [ ] Integrar emissão automática no PDV
+- [x] Implementar cancelamento de NF-e
+- [ ] Adicionar download de XML e DANFE
+- [ ] Criar reemissão de NF-e
+- [ ] Implementar testes para cálculo de impostos

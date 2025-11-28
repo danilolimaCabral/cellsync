@@ -4,7 +4,9 @@ import {
   InsertUser, User, users,
   customers, sales,
   commissionRules, commissions,
-  type InsertCommissionRule, type InsertCommission
+  invoices, invoiceItems,
+  type InsertCommissionRule, type InsertCommission,
+  type InsertInvoice, type InsertInvoiceItem
 } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1339,4 +1341,149 @@ export async function payCommission(commissionId: number, paymentId: number) {
     .where(eq(commissions.id, commissionId));
   
   return { success: true };
+}
+
+
+// ============================================
+// FUNÇÕES DE NOTA FISCAL ELETRÔNICA (NF-e)
+// ============================================
+
+export async function getLastInvoiceNumber(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const result = await db
+    .select({ maxNumber: sql<number>`MAX(${invoices.number})` })
+    .from(invoices);
+  
+  return result[0]?.maxNumber || 0;
+}
+
+export async function createInvoice(data: InsertInvoice): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(invoices).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function createInvoiceItem(data: InsertInvoiceItem): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(invoiceItems).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function getInvoiceById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
+  return result[0] || null;
+}
+
+export async function getInvoiceItems(invoiceId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
+}
+
+export async function listInvoices(filters: {
+  status?: string;
+  startDate?: Date;
+  endDate?: Date;
+  limit?: number;
+  offset?: number;
+}) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  let query = db.select().from(invoices);
+  
+  const conditions = [];
+  if (filters.status) {
+    conditions.push(eq(invoices.status, filters.status as any));
+  }
+  if (filters.startDate) {
+    conditions.push(sql`${invoices.createdAt} >= ${filters.startDate}`);
+  }
+  if (filters.endDate) {
+    conditions.push(sql`${invoices.createdAt} <= ${filters.endDate}`);
+  }
+  
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions)) as any;
+  }
+  
+  query = query.orderBy(desc(invoices.createdAt)) as any;
+  
+  if (filters.limit) {
+    query = query.limit(filters.limit) as any;
+  }
+  if (filters.offset) {
+    query = query.offset(filters.offset) as any;
+  }
+  
+  return query;
+}
+
+export async function updateInvoiceStatus(
+  id: number,
+  status: string,
+  data?: {
+    accessKey?: string;
+    protocol?: string;
+    authorizationDate?: Date;
+    xmlUrl?: string;
+    danfeUrl?: string;
+  }
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const updateData: any = { status };
+  if (data) {
+    Object.assign(updateData, data);
+  }
+  
+  await db.update(invoices).set(updateData).where(eq(invoices.id, id));
+}
+
+export async function cancelInvoice(
+  id: number,
+  reason: string,
+  protocol?: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(invoices).set({
+    status: "cancelada",
+    cancelReason: reason,
+    canceledAt: new Date(),
+    cancelProtocol: protocol,
+  }).where(eq(invoices.id, id));
+}
+
+export async function getInvoiceStats() {
+  const db = await getDb();
+  if (!db) return {
+    total: 0,
+    emitidas: 0,
+    canceladas: 0,
+    totalValue: 0,
+  };
+  
+  const result = await db
+    .select({
+      total: sql<number>`COUNT(*)`,
+      emitidas: sql<number>`SUM(CASE WHEN ${invoices.status} = 'emitida' THEN 1 ELSE 0 END)`,
+      canceladas: sql<number>`SUM(CASE WHEN ${invoices.status} = 'cancelada' THEN 1 ELSE 0 END)`,
+      totalValue: sql<number>`SUM(CASE WHEN ${invoices.status} = 'emitida' THEN ${invoices.totalInvoice} ELSE 0 END)`,
+    })
+    .from(invoices);
+  
+  return result[0] || { total: 0, emitidas: 0, canceladas: 0, totalValue: 0 };
 }

@@ -810,6 +810,158 @@ export const appRouter = router({
         return await db.payCommission(input.commissionId, input.paymentId);
       }),
   }),
+
+  // ============= NOTA FISCAL ELETRÔNICA (NF-e) =============
+  nfe: router({
+    getLastNumber: protectedProcedure
+      .query(async () => {
+        return await db.getLastInvoiceNumber();
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        saleId: z.number().optional(),
+        series: z.number().default(1),
+        model: z.string().default("55"),
+        type: z.enum(["saida", "entrada"]).default("saida"),
+        emitterCnpj: z.string(),
+        emitterName: z.string(),
+        emitterFantasyName: z.string().optional(),
+        emitterAddress: z.string().optional(),
+        emitterCity: z.string().optional(),
+        emitterState: z.string().optional(),
+        emitterZipCode: z.string().optional(),
+        recipientDocument: z.string(),
+        recipientName: z.string(),
+        recipientAddress: z.string().optional(),
+        recipientCity: z.string().optional(),
+        recipientState: z.string().optional(),
+        recipientZipCode: z.string().optional(),
+        recipientPhone: z.string().optional(),
+        recipientEmail: z.string().optional(),
+        cfop: z.string(),
+        natureOperation: z.string(),
+        paymentMethod: z.enum(["dinheiro", "cheque", "cartao_credito", "cartao_debito", "credito_loja", "vale_alimentacao", "vale_refeicao", "vale_presente", "vale_combustivel", "boleto", "deposito", "pix", "sem_pagamento", "outros"]),
+        paymentIndicator: z.enum(["a_vista", "a_prazo", "outros"]),
+        totalProducts: z.number(),
+        totalDiscount: z.number().default(0),
+        totalFreight: z.number().default(0),
+        totalInvoice: z.number(),
+        additionalInfo: z.string().optional(),
+        items: z.array(z.object({
+          productId: z.number().optional(),
+          code: z.string().optional(),
+          ean: z.string().optional(),
+          description: z.string(),
+          ncm: z.string(),
+          cfop: z.string(),
+          unit: z.string().default("UN"),
+          quantity: z.number(),
+          unitPrice: z.number(),
+          totalPrice: z.number(),
+          discount: z.number().default(0),
+          icmsRate: z.number().optional(),
+          ipiRate: z.number().optional(),
+          pisRate: z.number().optional(),
+          cofinsRate: z.number().optional(),
+        })),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const lastNumber = await db.getLastInvoiceNumber();
+        const number = lastNumber + 1;
+        
+        // Criar a NF-e
+        const invoiceId = await db.createInvoice({
+          ...input,
+          number,
+          status: "rascunho",
+          issuedBy: ctx.user.id,
+        });
+        
+        // Criar os itens
+        for (const item of input.items) {
+          await db.createInvoiceItem({
+            invoiceId,
+            ...item,
+            icmsOrigin: "0",
+            icmsCst: "102",
+            icmsBase: item.totalPrice,
+            icmsRate: item.icmsRate || 1800,
+            icmsValue: Math.round((item.totalPrice * (item.icmsRate || 1800)) / 10000),
+            ipiCst: "99",
+            ipiBase: item.totalPrice,
+            ipiRate: item.ipiRate || 0,
+            ipiValue: Math.round((item.totalPrice * (item.ipiRate || 0)) / 10000),
+            pisCst: "99",
+            pisBase: item.totalPrice,
+            pisRate: item.pisRate || 165,
+            pisValue: Math.round((item.totalPrice * (item.pisRate || 165)) / 10000),
+            cofinsCst: "99",
+            cofinsBase: item.totalPrice,
+            cofinsRate: item.cofinsRate || 760,
+            cofinsValue: Math.round((item.totalPrice * (item.cofinsRate || 760)) / 10000),
+          });
+        }
+        
+        return { invoiceId, number };
+      }),
+
+    getById: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .query(async ({ input }) => {
+        const invoice = await db.getInvoiceById(input.id);
+        if (!invoice) throw new Error("NF-e não encontrada");
+        
+        const items = await db.getInvoiceItems(input.id);
+        return { ...invoice, items };
+      }),
+
+    list: protectedProcedure
+      .input(z.object({
+        status: z.string().optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+        limit: z.number().optional(),
+        offset: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        return await db.listInvoices(input);
+      }),
+
+    updateStatus: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.string(),
+        accessKey: z.string().optional(),
+        protocol: z.string().optional(),
+        authorizationDate: z.date().optional(),
+        xmlUrl: z.string().optional(),
+        danfeUrl: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, status, ...data } = input;
+        await db.updateInvoiceStatus(id, status, data);
+        return { success: true };
+      }),
+
+    cancel: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        reason: z.string(),
+        protocol: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.cancelInvoice(input.id, input.reason, input.protocol);
+        return { success: true };
+      }),
+
+    stats: protectedProcedure
+      .query(async () => {
+        return await db.getInvoiceStats();
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

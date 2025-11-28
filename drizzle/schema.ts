@@ -373,3 +373,122 @@ export const commissions = mysqlTable("commissions", {
 
 export type Commission = typeof commissions.$inferSelect;
 export type InsertCommission = typeof commissions.$inferInsert;
+
+// Tabela de Notas Fiscais Eletrônicas
+export const invoices = mysqlTable("invoices", {
+  id: int("id").autoincrement().primaryKey(),
+  saleId: int("saleId"), // Venda relacionada (opcional para NF-e avulsa)
+  number: int("number").notNull(), // Número da NF-e
+  series: int("series").notNull().default(1), // Série da NF-e
+  model: varchar("model", { length: 2 }).notNull().default("55"), // Modelo (55=NF-e, 65=NFC-e)
+  type: mysqlEnum("type", ["saida", "entrada"]).default("saida").notNull(),
+  status: mysqlEnum("status", ["rascunho", "emitida", "cancelada", "inutilizada", "erro"]).default("rascunho").notNull(),
+  
+  // Dados do Emitente (sua empresa)
+  emitterCnpj: varchar("emitterCnpj", { length: 18 }).notNull(),
+  emitterName: varchar("emitterName", { length: 255 }).notNull(),
+  emitterFantasyName: varchar("emitterFantasyName", { length: 255 }),
+  emitterAddress: text("emitterAddress"),
+  emitterCity: varchar("emitterCity", { length: 100 }),
+  emitterState: varchar("emitterState", { length: 2 }),
+  emitterZipCode: varchar("emitterZipCode", { length: 10 }),
+  
+  // Dados do Destinatário (cliente)
+  recipientDocument: varchar("recipientDocument", { length: 18 }).notNull(), // CPF ou CNPJ
+  recipientName: varchar("recipientName", { length: 255 }).notNull(),
+  recipientAddress: text("recipientAddress"),
+  recipientCity: varchar("recipientCity", { length: 100 }),
+  recipientState: varchar("recipientState", { length: 2 }),
+  recipientZipCode: varchar("recipientZipCode", { length: 10 }),
+  recipientPhone: varchar("recipientPhone", { length: 20 }),
+  recipientEmail: varchar("recipientEmail", { length: 255 }),
+  
+  // Valores Totais (em centavos)
+  totalProducts: int("totalProducts").notNull().default(0), // Total dos produtos
+  totalDiscount: int("totalDiscount").notNull().default(0), // Total de descontos
+  totalFreight: int("totalFreight").notNull().default(0), // Valor do frete
+  totalInsurance: int("totalInsurance").notNull().default(0), // Valor do seguro
+  totalOtherExpenses: int("totalOtherExpenses").notNull().default(0), // Outras despesas
+  totalIcms: int("totalIcms").notNull().default(0), // Total de ICMS
+  totalIpi: int("totalIpi").notNull().default(0), // Total de IPI
+  totalPis: int("totalPis").notNull().default(0), // Total de PIS
+  totalCofins: int("totalCofins").notNull().default(0), // Total de COFINS
+  totalInvoice: int("totalInvoice").notNull().default(0), // Valor total da NF-e
+  
+  // Dados Fiscais
+  cfop: varchar("cfop", { length: 4 }).notNull(), // CFOP (ex: 5102)
+  natureOperation: varchar("natureOperation", { length: 60 }).notNull(), // Natureza da operação
+  paymentMethod: mysqlEnum("paymentMethod", ["dinheiro", "cheque", "cartao_credito", "cartao_debito", "credito_loja", "vale_alimentacao", "vale_refeicao", "vale_presente", "vale_combustivel", "boleto", "deposito", "pix", "sem_pagamento", "outros"]).notNull(),
+  paymentIndicator: mysqlEnum("paymentIndicator", ["a_vista", "a_prazo", "outros"]).notNull(),
+  
+  // Dados da SEFAZ
+  accessKey: varchar("accessKey", { length: 44 }), // Chave de acesso da NF-e
+  protocol: varchar("protocol", { length: 20 }), // Protocolo de autorização
+  authorizationDate: timestamp("authorizationDate"), // Data de autorização
+  xmlUrl: text("xmlUrl"), // URL do XML no S3
+  danfeUrl: text("danfeUrl"), // URL do DANFE (PDF) no S3
+  
+  // Cancelamento
+  cancelReason: text("cancelReason"),
+  canceledAt: timestamp("canceledAt"),
+  cancelProtocol: varchar("cancelProtocol", { length: 20 }),
+  
+  // Observações
+  additionalInfo: text("additionalInfo"),
+  internalNotes: text("internalNotes"),
+  
+  // Auditoria
+  issuedBy: int("issuedBy").notNull(), // Usuário que emitiu
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = typeof invoices.$inferInsert;
+
+// Tabela de Itens da Nota Fiscal
+export const invoiceItems = mysqlTable("invoiceItems", {
+  id: int("id").autoincrement().primaryKey(),
+  invoiceId: int("invoiceId").notNull(),
+  productId: int("productId"),
+  
+  // Dados do Produto
+  code: varchar("code", { length: 50 }), // Código do produto
+  ean: varchar("ean", { length: 14 }), // Código de barras EAN
+  description: varchar("description", { length: 255 }).notNull(),
+  ncm: varchar("ncm", { length: 8 }).notNull(), // NCM (Nomenclatura Comum do Mercosul)
+  cest: varchar("cest", { length: 7 }), // CEST (Código Especificador da Substituição Tributária)
+  cfop: varchar("cfop", { length: 4 }).notNull(),
+  unit: varchar("unit", { length: 10 }).notNull().default("UN"), // Unidade (UN, PC, KG, etc)
+  quantity: int("quantity").notNull(), // Quantidade em centésimos (ex: 150 = 1.5)
+  unitPrice: int("unitPrice").notNull(), // Preço unitário em centavos
+  totalPrice: int("totalPrice").notNull(), // Preço total em centavos
+  discount: int("discount").notNull().default(0), // Desconto em centavos
+  
+  // Impostos
+  icmsOrigin: varchar("icmsOrigin", { length: 1 }).notNull().default("0"), // Origem da mercadoria
+  icmsCst: varchar("icmsCst", { length: 3 }).notNull(), // CST do ICMS
+  icmsBase: int("icmsBase").notNull().default(0), // Base de cálculo do ICMS
+  icmsRate: int("icmsRate").notNull().default(0), // Alíquota do ICMS (em centésimos de %)
+  icmsValue: int("icmsValue").notNull().default(0), // Valor do ICMS
+  
+  ipiCst: varchar("ipiCst", { length: 2 }), // CST do IPI
+  ipiBase: int("ipiBase").notNull().default(0),
+  ipiRate: int("ipiRate").notNull().default(0),
+  ipiValue: int("ipiValue").notNull().default(0),
+  
+  pisCst: varchar("pisCst", { length: 2 }).notNull(), // CST do PIS
+  pisBase: int("pisBase").notNull().default(0),
+  pisRate: int("pisRate").notNull().default(0),
+  pisValue: int("pisValue").notNull().default(0),
+  
+  cofinsCst: varchar("cofinsCst", { length: 2 }).notNull(), // CST do COFINS
+  cofinsBase: int("cofinsBase").notNull().default(0),
+  cofinsRate: int("cofinsRate").notNull().default(0),
+  cofinsValue: int("cofinsValue").notNull().default(0),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type InvoiceItem = typeof invoiceItems.$inferSelect;
+export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
