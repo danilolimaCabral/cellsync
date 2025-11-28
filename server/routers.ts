@@ -961,6 +961,46 @@ export const appRouter = router({
       .query(async () => {
         return await db.getInvoiceStats();
       }),
+
+    downloadXML: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .query(async ({ input }) => {
+        const invoice = await db.getInvoiceById(input.id);
+        if (!invoice) throw new Error("NF-e não encontrada");
+        
+        const items = await db.getInvoiceItems(input.id);
+        const nfeData = { ...invoice, items };
+        
+        const { generateNFeXML } = await import("./nfe-xml");
+        const xml = generateNFeXML(nfeData);
+        
+        return {
+          xml,
+          filename: `NFe_${String(invoice.number).padStart(9, "0")}_serie_${invoice.series}.xml`,
+        };
+      }),
+
+    downloadDANFE: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .query(async ({ input }) => {
+        const invoice = await db.getInvoiceById(input.id);
+        if (!invoice) throw new Error("NF-e não encontrada");
+        
+        const items = await db.getInvoiceItems(input.id);
+        const nfeData = { ...invoice, items };
+        
+        const { generateDANFE } = await import("./nfe-danfe");
+        const pdfBuffer = await generateDANFE(nfeData);
+        
+        return {
+          pdf: pdfBuffer.toString("base64"),
+          filename: `DANFE_${String(invoice.number).padStart(9, "0")}_serie_${invoice.series}.pdf`,
+        };
+      }),
   }),
 });
 

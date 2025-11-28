@@ -218,3 +218,16 @@
 - [x] Adicionar feedback visual de sucesso/erro de emissão
 - [x] Implementar opção de emitir NF-e posteriormente (checkbox opcional)
 - [x] Criar testes para integração PDV + NF-e (17 testes passando)
+
+## Download de XML e DANFE - Nova Implementação
+- [x] Instalar dependências (qrcode, xml-js)
+- [x] Criar função de geração de XML da NF-e conforme layout SEFAZ
+- [x] Implementar geração de QR Code para consulta da nota
+- [x] Criar função de geração de DANFE em PDF com jsPDF
+- [x] Adicionar formatação completa do DANFE (cabeçalho, itens, impostos, totais)
+- [x] Implementar endpoint de download de XML no backend
+- [x] Implementar endpoint de download de DANFE no backend
+- [x] Adicionar botões de download na interface de NF-e
+- [x] Testar download de XML
+- [x] Testar geração e download de DANFE
+- [x] Criar testes unitários para geração de XML e DANFE (5 testes passando)

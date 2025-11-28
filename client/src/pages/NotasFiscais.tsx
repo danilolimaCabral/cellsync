@@ -129,6 +129,66 @@ export default function NotasFiscais() {
     return doc;
   };
 
+  const handleDownloadXML = async (invoiceId: number) => {
+    try {
+      toast.info("Gerando XML...");
+      const result = await fetch(
+        `/api/trpc/nfe.downloadXML?input=${encodeURIComponent(JSON.stringify({ id: invoiceId }))}`
+      );
+      const data = await result.json();
+      const { xml, filename } = data.result.data;
+
+      // Criar blob e fazer download
+      const blob = new Blob([xml], { type: "application/xml" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success("XML baixado com sucesso!");
+    } catch (error: any) {
+      toast.error(`Erro ao baixar XML: ${error.message}`);
+    }
+  };
+
+  const handleDownloadDANFE = async (invoiceId: number) => {
+    try {
+      toast.info("Gerando DANFE...");
+      const result = await fetch(
+        `/api/trpc/nfe.downloadDANFE?input=${encodeURIComponent(JSON.stringify({ id: invoiceId }))}`
+      );
+      const data = await result.json();
+      const { pdf, filename } = data.result.data;
+
+      // Converter base64 para blob
+      const byteCharacters = atob(pdf);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+
+      // Fazer download
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success("DANFE baixado com sucesso!");
+    } catch (error: any) {
+      toast.error(`Erro ao baixar DANFE: ${error.message}`);
+    }
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -323,10 +383,24 @@ export default function NotasFiscais() {
                                 setSelectedInvoice(invoice);
                                 setShowCancelar(true);
                               }}
+                              title="Cancelar NF-e"
                             >
                               <XCircle className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDownloadXML(invoice.id)}
+                              title="Baixar XML"
+                            >
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDownloadDANFE(invoice.id)}
+                              title="Baixar DANFE (PDF)"
+                            >
                               <Download className="h-4 w-4" />
                             </Button>
                           </>
