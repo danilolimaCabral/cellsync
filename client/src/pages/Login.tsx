@@ -14,10 +14,17 @@ export default function Login() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState("");
 
+  const utils = trpc.useUtils();
+
   const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Login realizado com sucesso!");
-      setLocation("/dashboard");
+      // Invalidar cache do auth.me para forçar recarregar o usuário
+      await utils.auth.me.invalidate();
+      // Pequeno delay para garantir que o cookie foi salvo
+      setTimeout(() => {
+        setLocation("/dashboard");
+      }, 100);
     },
     onError: (error) => {
       toast.error(error.message || "Erro ao fazer login");

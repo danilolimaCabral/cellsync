@@ -3,6 +3,7 @@ import { jwtVerify } from "jose";
 import type { User } from "../../drizzle/schema";
 import * as db from "../db";
 import { ENV } from "./env";
+import { COOKIE_NAME } from "@shared/const";
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
@@ -16,7 +17,7 @@ export async function createContext(
   let user: User | null = null;
 
   // Tentar obter o token do cookie
-  const token = opts.req.cookies?.["manus-session"];
+  const token = opts.req.cookies?.[COOKIE_NAME];
   
   if (token) {
     try {

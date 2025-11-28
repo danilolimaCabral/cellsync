@@ -231,3 +231,6 @@
 - [x] Testar download de XML
 - [x] Testar geração e download de DANFE
 - [x] Criar testes unitários para geração de XML e DANFE (5 testes passando)
+
+## Bugs Reportados
+- [x] Corrigir redirecionamento após login bem-sucedido (mostra "Login com sucesso" mas não entra no sistema) - RESOLVIDO: Nome do cookie estava incorreto no context.ts
