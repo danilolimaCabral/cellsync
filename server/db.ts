@@ -1487,3 +1487,47 @@ export async function getInvoiceStats() {
   
   return result[0] || { total: 0, emitidas: 0, canceladas: 0, totalValue: 0 };
 }
+
+// ============= FUNÇÕES PARA RECIBO =============
+
+export async function getSaleById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const { sales } = await import("../drizzle/schema");
+  const result = await db.select().from(sales).where(eq(sales.id, id)).limit(1);
+  return result[0] || null;
+}
+
+export async function getCustomerById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const { customers } = await import("../drizzle/schema");
+  const result = await db.select().from(customers).where(eq(customers.id, id)).limit(1);
+  return result[0] || null;
+}
+
+export async function getSaleItems(saleId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { saleItems, products, stockItems } = await import("../drizzle/schema");
+  
+  const items = await db
+    .select({
+      id: saleItems.id,
+      productId: saleItems.productId,
+      productName: products.name,
+      productSku: products.sku,
+      quantity: saleItems.quantity,
+      unitPrice: saleItems.unitPrice,
+      imei: stockItems.imei,
+    })
+    .from(saleItems)
+    .leftJoin(products, eq(saleItems.productId, products.id))
+    .leftJoin(stockItems, eq(saleItems.stockItemId, stockItems.id))
+    .where(eq(saleItems.saleId, saleId));
+  
+  return items;
+}

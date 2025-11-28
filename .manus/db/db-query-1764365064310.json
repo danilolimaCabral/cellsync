@@ -1,0 +1,292 @@
+{
+  "query": "SELECT name, model, sku, salePrice/100 as preco_venda FROM products WHERE brand = 'Apple' ORDER BY model, name",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT name, model, sku, salePrice/100 as preco_venda FROM products WHERE brand = 'Apple' ORDER BY model, name",
+  "rows": [
+    {
+      "name": "iPhone 11 128GB",
+      "model": "iPhone 11",
+      "sku": "IPH11128",
+      "preco_venda": "3800.0000"
+    },
+    {
+      "name": "iPhone 11 64GB",
+      "model": "iPhone 11",
+      "sku": "IPH1164",
+      "preco_venda": "3400.0000"
+    },
+    {
+      "name": "iPhone 11 Pro 256GB",
+      "model": "iPhone 11 Pro",
+      "sku": "IPH11P256",
+      "preco_venda": "5500.0000"
+    },
+    {
+      "name": "iPhone 11 Pro 64GB",
+      "model": "iPhone 11 Pro",
+      "sku": "IPH11P64",
+      "preco_venda": "4800.0000"
+    },
+    {
+      "name": "iPhone 11 Pro Max 256GB",
+      "model": "iPhone 11 Pro Max",
+      "sku": "IPH11PM256",
+      "preco_venda": "6200.0000"
+    },
+    {
+      "name": "iPhone 11 Pro Max 64GB",
+      "model": "iPhone 11 Pro Max",
+      "sku": "IPH11PM64",
+      "preco_venda": "5500.0000"
+    },
+    {
+      "name": "iPhone 12 128GB",
+      "model": "iPhone 12",
+      "sku": "IPH12128",
+      "preco_venda": "4800.0000"
+    },
+    {
+      "name": "iPhone 12 64GB",
+      "model": "iPhone 12",
+      "sku": "IPH1264",
+      "preco_venda": "4300.0000"
+    },
+    {
+      "name": "iPhone 12 mini 128GB",
+      "model": "iPhone 12 mini",
+      "sku": "IPH12M128",
+      "preco_venda": "4300.0000"
+    },
+    {
+      "name": "iPhone 12 mini 64GB",
+      "model": "iPhone 12 mini",
+      "sku": "IPH12M64",
+      "preco_venda": "3800.0000"
+    },
+    {
+      "name": "iPhone 12 Pro 128GB",
+      "model": "iPhone 12 Pro",
+      "sku": "IPH12P128",
+      "preco_venda": "6200.0000"
+    },
+    {
+      "name": "iPhone 12 Pro 256GB",
+      "model": "iPhone 12 Pro",
+      "sku": "IPH12P256",
+      "preco_venda": "6800.0000"
+    },
+    {
+      "name": "iPhone 12 Pro Max 128GB",
+      "model": "iPhone 12 Pro Max",
+      "sku": "IPH12PM128",
+      "preco_venda": "6800.0000"
+    },
+    {
+      "name": "iPhone 12 Pro Max 256GB",
+      "model": "iPhone 12 Pro Max",
+      "sku": "IPH12PM256",
+      "preco_venda": "7500.0000"
+    },
+    {
+      "name": "iPhone 13 128GB",
+      "model": "iPhone 13",
+      "sku": "IPH13128",
+      "preco_venda": "5200.0000"
+    },
+    {
+      "name": "iPhone 13 256GB",
+      "model": "iPhone 13",
+      "sku": "IPH13256",
+      "preco_venda": "5800.0000"
+    },
+    {
+      "name": "iPhone 13 mini 128GB",
+      "model": "iPhone 13 mini",
+      "sku": "IPH13M128",
+      "preco_venda": "4800.0000"
+    },
+    {
+      "name": "iPhone 13 mini 256GB",
+      "model": "iPhone 13 mini",
+      "sku": "IPH13M256",
+      "preco_venda": "5500.0000"
+    },
+    {
+      "name": "iPhone 13 Pro 128GB",
+      "model": "iPhone 13 Pro",
+      "sku": "IPH13P128",
+      "preco_venda": "7200.0000"
+    },
+    {
+      "name": "iPhone 13 Pro 256GB",
+      "model": "iPhone 13 Pro",
+      "sku": "IPH13P256",
+      "preco_venda": "8000.0000"
+    },
+    {
+      "name": "iPhone 13 Pro Max 128GB",
+      "model": "iPhone 13 Pro Max",
+      "sku": "IPH13PM128",
+      "preco_venda": "8000.0000"
+    },
+    {
+      "name": "iPhone 13 Pro Max 256GB",
+      "model": "iPhone 13 Pro Max",
+      "sku": "IPH13PM256",
+      "preco_venda": "8800.0000"
+    },
+    {
+      "name": "iPhone 14 128GB",
+      "model": "iPhone 14",
+      "sku": "IPH14128",
+      "preco_venda": "6200.0000"
+    },
+    {
+      "name": "iPhone 14 256GB",
+      "model": "iPhone 14",
+      "sku": "IPH14256",
+      "preco_venda": "6800.0000"
+    },
+    {
+      "name": "iPhone 14 Plus 128GB",
+      "model": "iPhone 14 Plus",
+      "sku": "IPH14PL128",
+      "preco_venda": "6800.0000"
+    },
+    {
+      "name": "iPhone 14 Plus 256GB",
+      "model": "iPhone 14 Plus",
+      "sku": "IPH14PL256",
+      "preco_venda": "7500.0000"
+    },
+    {
+      "name": "iPhone 14 Pro 128GB",
+      "model": "iPhone 14 Pro",
+      "sku": "IPH14P128",
+      "preco_venda": "8500.0000"
+    },
+    {
+      "name": "iPhone 14 Pro 256GB",
+      "model": "iPhone 14 Pro",
+      "sku": "IPH14P256",
+      "preco_venda": "9200.0000"
+    },
+    {
+      "name": "iPhone 14 Pro Max 128GB",
+      "model": "iPhone 14 Pro Max",
+      "sku": "IPH14PM128",
+      "preco_venda": "9200.0000"
+    },
+    {
+      "name": "iPhone 14 Pro Max 256GB",
+      "model": "iPhone 14 Pro Max",
+      "sku": "IPH14PM256",
+      "preco_venda": "10000.0000"
+    },
+    {
+      "name": "iPhone 15 128GB",
+      "model": "iPhone 15",
+      "sku": "IPH15128",
+      "preco_venda": "7200.0000"
+    },
+    {
+      "name": "iPhone 15 256GB",
+      "model": "iPhone 15",
+      "sku": "IPH15256",
+      "preco_venda": "8000.0000"
+    },
+    {
+      "name": "iPhone 15 Plus 128GB",
+      "model": "iPhone 15 Plus",
+      "sku": "IPH15PL128",
+      "preco_venda": "8000.0000"
+    },
+    {
+      "name": "iPhone 15 Plus 256GB",
+      "model": "iPhone 15 Plus",
+      "sku": "IPH15PL256",
+      "preco_venda": "8800.0000"
+    },
+    {
+      "name": "iPhone 15 Pro 128GB",
+      "model": "iPhone 15 Pro",
+      "sku": "IPH15P128",
+      "preco_venda": "9200.0000"
+    },
+    {
+      "name": "iPhone 15 Pro 256GB",
+      "model": "iPhone 15 Pro",
+      "sku": "IPH15P256",
+      "preco_venda": "10000.0000"
+    },
+    {
+      "name": "iPhone 15 Pro Max 256GB",
+      "model": "iPhone 15 Pro Max",
+      "sku": "IPH15PM256",
+      "preco_venda": "7500.0000"
+    },
+    {
+      "name": "iPhone SE (2ª geração) 128GB",
+      "model": "iPhone SE (2ª geração)",
+      "sku": "IPHSE2128",
+      "preco_venda": "2800.0000"
+    },
+    {
+      "name": "iPhone SE (2ª geração) 64GB",
+      "model": "iPhone SE (2ª geração)",
+      "sku": "IPHSE264",
+      "preco_venda": "2500.0000"
+    },
+    {
+      "name": "iPhone SE (3ª geração) 128GB",
+      "model": "iPhone SE (3ª geração)",
+      "sku": "IPHSE3128",
+      "preco_venda": "3400.0000"
+    },
+    {
+      "name": "iPhone SE (3ª geração) 64GB",
+      "model": "iPhone SE (3ª geração)",
+      "sku": "IPHSE364",
+      "preco_venda": "3000.0000"
+    },
+    {
+      "name": "iPhone XR 128GB",
+      "model": "iPhone XR",
+      "sku": "IPHXR128",
+      "preco_venda": "2800.0000"
+    },
+    {
+      "name": "iPhone XR 64GB",
+      "model": "iPhone XR",
+      "sku": "IPHXR64",
+      "preco_venda": "2500.0000"
+    },
+    {
+      "name": "iPhone XS 256GB",
+      "model": "iPhone XS",
+      "sku": "IPHXS256",
+      "preco_venda": "3500.0000"
+    },
+    {
+      "name": "iPhone XS 64GB",
+      "model": "iPhone XS",
+      "sku": "IPHXS64",
+      "preco_venda": "3000.0000"
+    },
+    {
+      "name": "iPhone XS Max 256GB",
+      "model": "iPhone XS Max",
+      "sku": "IPHXSM256",
+      "preco_venda": "4200.0000"
+    },
+    {
+      "name": "iPhone XS Max 64GB",
+      "model": "iPhone XS Max",
+      "sku": "IPHXSM64",
+      "preco_venda": "3800.0000"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tmodel\tsku\tpreco_venda\niPhone 11 128GB\tiPhone 11\tIPH11128\t3800.0000\niPhone 11 64GB\tiPhone 11\tIPH1164\t3400.0000\niPhone 11 Pro 256GB\tiPhone 11 Pro\tIPH11P256\t5500.0000\niPhone 11 Pro 64GB\tiPhone 11 Pro\tIPH11P64\t4800.0000\niPhone 11 Pro Max 256GB\tiPhone 11 Pro Max\tIPH11PM256\t6200.0000\niPhone 11 Pro Max 64GB\tiPhone 11 Pro Max\tIPH11PM64\t5500.0000\niPhone 12 128GB\tiPhone 12\tIPH12128\t4800.0000\niPhone 12 64GB\tiPhone 12\tIPH1264\t4300.0000\niPhone 12 mini 128GB\tiPhone 12 mini\tIPH12M128\t4300.0000\niPhone 12 mini 64GB\tiPhone 12 mini\tIPH12M64\t3800.0000\niPhone 12 Pro 128GB\tiPhone 12 Pro\tIPH12P128\t6200.0000\niPhone 12 Pro 256GB\tiPhone 12 Pro\tIPH12P256\t6800.0000\niPhone 12 Pro Max 128GB\tiPhone 12 Pro Max\tIPH12PM128\t6800.0000\niPhone 12 Pro Max 256GB\tiPhone 12 Pro Max\tIPH12PM256\t7500.0000\niPhone 13 128GB\tiPhone 13\tIPH13128\t5200.0000\niPhone 13 256GB\tiPhone 13\tIPH13256\t5800.0000\niPhone 13 mini 128GB\tiPhone 13 mini\tIPH13M128\t4800.0000\niPhone 13 mini 256GB\tiPhone 13 mini\tIPH13M256\t5500.0000\niPhone 13 Pro 128GB\tiPhone 13 Pro\tIPH13P128\t7200.0000\niPhone 13 Pro 256GB\tiPhone 13 Pro\tIPH13P256\t8000.0000\niPhone 13 Pro Max 128GB\tiPhone 13 Pro Max\tIPH13PM128\t8000.0000\niPhone 13 Pro Max 256GB\tiPhone 13 Pro Max\tIPH13PM256\t8800.0000\niPhone 14 128GB\tiPhone 14\tIPH14128\t6200.0000\niPhone 14 256GB\tiPhone 14\tIPH14256\t6800.0000\niPhone 14 Plus 128GB\tiPhone 14 Plus\tIPH14PL128\t6800.0000\niPhone 14 Plus 256GB\tiPhone 14 Plus\tIPH14PL256\t7500.0000\niPhone 14 Pro 128GB\tiPhone 14 Pro\tIPH14P128\t8500.0000\niPhone 14 Pro 256GB\tiPhone 14 Pro\tIPH14P256\t9200.0000\niPhone 14 Pro Max 128GB\tiPhone 14 Pro Max\tIPH14PM128\t9200.0000\niPhone 14 Pro Max 256GB\tiPhone 14 Pro Max\tIPH14PM256\t10000.0000\niPhone 15 128GB\tiPhone 15\tIPH15128\t7200.0000\niPhone 15 256GB\tiPhone 15\tIPH15256\t8000.0000\niPhone 15 Plus 128GB\tiPhone 15 Plus\tIPH15PL128\t8000.0000\niPhone 15 Plus 256GB\tiPhone 15 Plus\tIPH15PL256\t8800.0000\niPhone 15 Pro 128GB\tiPhone 15 Pro\tIPH15P128\t9200.0000\niPhone 15 Pro 256GB\tiPhone 15 Pro\tIPH15P256\t10000.0000\niPhone 15 Pro Max 256GB\tiPhone 15 Pro Max\tIPH15PM256\t7500.0000\niPhone SE (2ª geração) 128GB\tiPhone SE (2ª geração)\tIPHSE2128\t2800.0000\niPhone SE (2ª geração) 64GB\tiPhone SE (2ª geração)\tIPHSE264\t2500.0000\niPhone SE (3ª geração) 128GB\tiPhone SE (3ª geração)\tIPHSE3128\t3400.0000\niPhone SE (3ª geração) 64GB\tiPhone SE (3ª geração)\tIPHSE364\t3000.0000\niPhone XR 128GB\tiPhone XR\tIPHXR128\t2800.0000\niPhone XR 64GB\tiPhone XR\tIPHXR64\t2500.0000\niPhone XS 256GB\tiPhone XS\tIPHXS256\t3500.0000\niPhone XS 64GB\tiPhone XS\tIPHXS64\t3000.0000\niPhone XS Max 256GB\tiPhone XS Max\tIPHXSM256\t4200.0000\niPhone XS Max 64GB\tiPhone XS Max\tIPHXSM64\t3800.0000\n",
+  "stderr": "",
+  "execution_time_ms": 50
+}

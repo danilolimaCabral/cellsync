@@ -1,0 +1,130 @@
+{
+  "query": "SELECT COUNT(*) as total, brand, model FROM products WHERE brand = 'Apple' GROUP BY brand, model ORDER BY model",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT COUNT(*) as total, brand, model FROM products WHERE brand = 'Apple' GROUP BY brand, model ORDER BY model",
+  "rows": [
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 11"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 11 Pro"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 11 Pro Max"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 12"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 12 mini"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 12 Pro"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 12 Pro Max"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 13"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 13 mini"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 13 Pro"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 13 Pro Max"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 14"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 14 Plus"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 14 Pro"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 14 Pro Max"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 15"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 15 Plus"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone 15 Pro"
+    },
+    {
+      "total": "1",
+      "brand": "Apple",
+      "model": "iPhone 15 Pro Max"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone SE (2ª geração)"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone SE (3ª geração)"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone XR"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone XS"
+    },
+    {
+      "total": "2",
+      "brand": "Apple",
+      "model": "iPhone XS Max"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tbrand\tmodel\n2\tApple\tiPhone 11\n2\tApple\tiPhone 11 Pro\n2\tApple\tiPhone 11 Pro Max\n2\tApple\tiPhone 12\n2\tApple\tiPhone 12 mini\n2\tApple\tiPhone 12 Pro\n2\tApple\tiPhone 12 Pro Max\n2\tApple\tiPhone 13\n2\tApple\tiPhone 13 mini\n2\tApple\tiPhone 13 Pro\n2\tApple\tiPhone 13 Pro Max\n2\tApple\tiPhone 14\n2\tApple\tiPhone 14 Plus\n2\tApple\tiPhone 14 Pro\n2\tApple\tiPhone 14 Pro Max\n2\tApple\tiPhone 15\n2\tApple\tiPhone 15 Plus\n2\tApple\tiPhone 15 Pro\n1\tApple\tiPhone 15 Pro Max\n2\tApple\tiPhone SE (2ª geração)\n2\tApple\tiPhone SE (3ª geração)\n2\tApple\tiPhone XR\n2\tApple\tiPhone XS\n2\tApple\tiPhone XS Max\n",
+  "stderr": "",
+  "execution_time_ms": 48
+}

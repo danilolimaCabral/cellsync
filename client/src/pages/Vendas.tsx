@@ -269,9 +269,37 @@ export default function Vendas() {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [cart, selectedCustomerId]);
 
+  // Mutation para gerar recibo
+  const generateReceiptMutation = trpc.sales.generateReceipt.useMutation({
+    onSuccess: (result) => {
+      // Converter base64 para blob
+      const byteCharacters = atob(result.pdf);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      
+      // Criar URL e abrir em nova aba
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      
+      toast.success("Recibo gerado com sucesso!");
+    },
+    onError: (error) => {
+      toast.error("Erro ao gerar recibo: " + error.message);
+    },
+  });
+
   // Imprimir comprovante
   const printReceipt = () => {
-    window.print();
+    if (!lastSaleId) {
+      toast.error("Nenhuma venda selecionada");
+      return;
+    }
+    
+    generateReceiptMutation.mutate({ saleId: lastSaleId });
   };
 
   return (

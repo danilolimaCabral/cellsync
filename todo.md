@@ -257,3 +257,14 @@
 - [ ] Popular NF-e emitidas (script básico criado)
 - [x] Criar script rápido para criar usuário admin
 - [x] Documentar uso do script
+
+## Recibo de Venda Moderno
+- [x] Pesquisar designs modernos de recibos
+- [x] Criar função de geração de recibo em PDF
+- [x] Adicionar cabeçalho com logo e dados da loja
+- [x] Incluir informações da venda (número, data, vendedor)
+- [x] Listar produtos com SKU, descrição, IMEI
+- [x] Destacar informações de garantia (box amarelo destacado)
+- [x] Adicionar QR Code para consulta online
+- [x] Integrar botão de impressão no PDV
+- [ ] Testar geração de recibo com venda real

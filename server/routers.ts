@@ -290,6 +290,65 @@ export const appRouter = router({
         });
         return { success: true, saleId };
       }),
+
+    generateReceipt: protectedProcedure
+      .input(z.object({
+        saleId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { generateReceipt } = await import("./receipt-generator");
+        
+        // Buscar dados da venda
+        const sale = await db.getSaleById(input.saleId);
+        if (!sale) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Venda não encontrada" });
+        }
+        
+        // Buscar dados do cliente
+        const customer = sale.customerId ? await db.getCustomerById(sale.customerId) : null;
+        
+        // Buscar dados do vendedor
+        const seller = await db.getUserById(sale.sellerId);
+        
+        // Buscar itens da venda
+        const items = await db.getSaleItems(input.saleId);
+        
+        // Preparar dados para o recibo
+        const receiptData = {
+          saleId: sale.id.toString(),
+          saleNumber: sale.id,
+          date: sale.createdAt,
+          seller: seller?.name || "Vendedor",
+          customer: customer ? {
+            name: customer.name,
+            document: customer.cpf || customer.cnpj || undefined,
+            phone: customer.phone || undefined,
+          } : undefined,
+          products: items.map((item: any) => ({
+            name: item.productName,
+            sku: item.productSku || "N/A",
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            total: item.quantity * item.unitPrice,
+            imei: item.imei,
+            warranty: "90 dias",
+          })),
+          subtotal: sale.totalAmount,
+          discount: sale.discountAmount,
+          total: sale.finalAmount,
+          paymentMethod: sale.paymentMethod || "Não informado",
+          commission: sale.commission || undefined,
+        };
+        
+        // Gerar PDF
+        const pdfBuffer = await generateReceipt(receiptData);
+        
+        // Retornar PDF como base64
+        return {
+          success: true,
+          pdf: pdfBuffer.toString("base64"),
+        };
+      }),
   }),
 
   // ============= ORDENS DE SERVIÇO =============
