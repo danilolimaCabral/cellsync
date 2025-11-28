@@ -268,3 +268,24 @@
 - [x] Adicionar QR Code para consulta online
 - [x] Integrar botão de impressão no PDV
 - [ ] Testar geração de recibo com venda real
+
+## Cadastro de Smartphones e Tablets (Xiaomi, Samsung, LG)
+- [x] Criar script para cadastrar modelos Xiaomi (14, 13, 12 series)
+- [x] Criar script para cadastrar modelos POCO
+- [x] Criar script para cadastrar modelos Redmi e Redmi Note
+- [x] Criar script para cadastrar modelos Samsung Galaxy S
+- [x] Criar script para cadastrar modelos Samsung Galaxy Z (dobráveis)
+- [x] Criar script para cadastrar modelos Samsung Galaxy A, M e F
+- [x] Criar script para cadastrar tablets Samsung Galaxy Tab
+- [x] Criar script para cadastrar modelos LG (Wing, Velvet, G, V series)
+- [x] Criar script para cadastrar modelos LG linha K e Q
+- [x] Criar script para cadastrar tablets LG G Pad
+- [x] Executar scripts e verificar cadastros (127 produtos cadastrados com sucesso!)
+
+## Sistema de Venda Atacado e Varejo
+- [ ] Adicionar campo de preço de atacado nos produtos
+- [ ] Criar configuração de quantidade mínima para atacado
+- [ ] Implementar seleção de tipo de venda no PDV (atacado/varejo)
+- [ ] Ajustar cálculo de preço baseado no tipo de venda
+- [ ] Atualizar recibo para mostrar tipo de venda
+- [ ] Criar relatório de vendas por tipo (atacado/varejo)
