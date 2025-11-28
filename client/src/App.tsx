@@ -7,6 +7,10 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Vendas from "./pages/Vendas";
+import Estoque from "./pages/Estoque";
+import Clientes from "./pages/Clientes";
+import OrdemServico from "./pages/OrdemServico";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -42,6 +46,54 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Dashboard />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/vendas">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Vendas />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/estoque">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Estoque />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/clientes">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Clientes />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/os">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <OrdemServico />
               </DashboardLayout>
             )}
           />

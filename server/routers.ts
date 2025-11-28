@@ -144,10 +144,10 @@ export const appRouter = router({
         segment: z.string().optional(),
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
-      }))
-      .query(async () => {
-        // TODO: Implementar query com filtros
-        return [];
+      }).optional())
+      .query(async ({ input }) => {
+        const customers = await db.listCustomers(input || {});
+        return customers;
       }),
 
     create: protectedProcedure
@@ -178,10 +178,10 @@ export const appRouter = router({
         lowStock: z.boolean().optional(),
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
-      }))
-      .query(async () => {
-        // TODO: Implementar query com filtros
-        return [];
+      }).optional())
+      .query(async ({ input }) => {
+        const products = await db.listProducts(input || {});
+        return products;
       }),
 
     create: protectedProcedure
@@ -267,22 +267,28 @@ export const appRouter = router({
 
     create: protectedProcedure
       .input(z.object({
-        customerId: z.number().optional(),
+        customerId: z.number(),
         items: z.array(z.object({
           productId: z.number(),
-          stockItemId: z.number().optional(),
           quantity: z.number().min(1),
           unitPrice: z.number().min(0),
-          discount: z.number().min(0).default(0),
+          imei: z.string().optional(),
         })),
-        discountAmount: z.number().min(0).default(0),
         paymentMethod: z.string(),
-        notes: z.string().optional(),
+        totalAmount: z.number().min(0),
+        discount: z.number().min(0).default(0),
       }))
       .mutation(async ({ input, ctx }) => {
-        // TODO: Implementar criação de venda com cálculo de comissão
         const sellerId = ctx.user.id;
-        return { success: true, saleId: 0 };
+        const saleId = await db.createSale({
+          customerId: input.customerId,
+          sellerId,
+          items: input.items,
+          paymentMethod: input.paymentMethod,
+          totalAmount: input.totalAmount,
+          discount: input.discount,
+        });
+        return { success: true, saleId };
       }),
   }),
 

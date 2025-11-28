@@ -84,3 +84,144 @@ export async function upsertUser(user: any) {
 }
 
 // TODO: add feature queries here as your schema grows.
+
+// ============= PRODUTOS =============
+export async function listProducts(filters: {
+  search?: string;
+  category?: string;
+  lowStock?: boolean;
+  limit?: number;
+  offset?: number;
+}) {
+  const database = await getDb();
+  if (!database) return [];
+
+  try {
+    const { products } = await import("../drizzle/schema");
+    let query = database.select().from(products);
+    
+    const results = await query.limit(filters.limit || 50).offset(filters.offset || 0);
+    return results.map(p => ({
+      ...p,
+      price: p.salePrice,
+      stockQuantity: 0, // TODO: Calcular do estoque real
+    }));
+  } catch (error) {
+    console.error("[Database] Failed to list products:", error);
+    return [];
+  }
+}
+
+export async function createProduct(data: {
+  name: string;
+  description?: string;
+  category?: string;
+  brand?: string;
+  model?: string;
+  sku?: string;
+  barcode?: string;
+  costPrice: number;
+  salePrice: number;
+  minStock: number;
+  requiresImei: boolean;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { products } = await import("../drizzle/schema");
+  const result = await database.insert(products).values(data);
+  return result;
+}
+
+// ============= CLIENTES =============
+export async function listCustomers(filters: {
+  search?: string;
+  segment?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const database = await getDb();
+  if (!database) return [];
+
+  try {
+    const { customers } = await import("../drizzle/schema");
+    const results = await database
+      .select()
+      .from(customers)
+      .limit(filters.limit || 50)
+      .offset(filters.offset || 0);
+    return results;
+  } catch (error) {
+    console.error("[Database] Failed to list customers:", error);
+    return [];
+  }
+}
+
+export async function createCustomer(data: {
+  name: string;
+  email?: string;
+  phone?: string;
+  cpf?: string;
+  cnpj?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  notes?: string;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { customers } = await import("../drizzle/schema");
+  const result = await database.insert(customers).values(data);
+  return result;
+}
+
+// ============= VENDAS =============
+export async function createSale(data: {
+  customerId: number;
+  sellerId: number;
+  items: Array<{
+    productId: number;
+    quantity: number;
+    unitPrice: number;
+    imei?: string;
+  }>;
+  paymentMethod: string;
+  totalAmount: number;
+  discount: number;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { sales, saleItems } = await import("../drizzle/schema");
+  
+  // Criar venda
+  const finalAmount = data.totalAmount - data.discount;
+  const [saleResult] = await database.insert(sales).values({
+    customerId: data.customerId,
+    sellerId: data.sellerId,
+    totalAmount: data.totalAmount,
+    discountAmount: data.discount,
+    finalAmount,
+    paymentMethod: data.paymentMethod,
+    status: "concluida",
+  });
+
+  const saleId = Number(saleResult.insertId);
+
+  // Criar itens da venda
+  for (const item of data.items) {
+    const totalPrice = item.unitPrice * item.quantity;
+    await database.insert(saleItems).values({
+      saleId,
+      productId: item.productId,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      discount: 0,
+      totalPrice,
+    });
+  }
+
+  return saleId;
+}
