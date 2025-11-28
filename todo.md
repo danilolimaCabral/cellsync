@@ -194,11 +194,16 @@
 - [x] Implementar backend para emissão de NF-e
 - [ ] Criar armazenamento de XMLs no S3
 - [ ] Desenvolver interface de emissão manual de NF-e
-- [ ] Criar página de gestão de notas fiscais
-- [ ] Implementar filtros por status (Emitida, Cancelada, Inutilizada)
+- [x] Criar página de gestão de notas fiscais
+- [x] Implementar filtros por status (Emitida, Cancelada, Inutilizada)
 - [ ] Adicionar consulta de status na SEFAZ
 - [ ] Integrar emissão automática no PDV
 - [x] Implementar cancelamento de NF-e
 - [ ] Adicionar download de XML e DANFE
 - [ ] Criar reemissão de NF-e
-- [ ] Implementar testes para cálculo de impostos
+- [x] Implementar testes para cálculo de impostos
+- [x] Criar listagem de NF-e com cards de resumo
+- [x] Implementar dialog de visualização detalhada
+- [ ] Adicionar formulário de emissão manual completo
+- [x] Criar funcionalidade de cancelamento com motivo
+- [ ] Preparar geração de XML e DANFE para download

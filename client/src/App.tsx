@@ -15,7 +15,8 @@ import Financeiro from "./pages/Financeiro";
 import Relatorios from "./pages/Relatorios";
 import HistoricoVendas from "./pages/HistoricoVendas";
 import Movimentacoes from "./pages/Movimentacoes";
-import Comissoes from "./pages/Comissoes";
+import Comissoes from "@/pages/Comissoes";
+import NotasFiscais from "@/pages/NotasFiscais";
 import Configuracoes from "./pages/Configuracoes";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
@@ -172,6 +173,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Configuracoes />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/notas-fiscais">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <NotasFiscais />
               </DashboardLayout>
             )}
           />
