@@ -289,3 +289,10 @@
 - [ ] Ajustar cálculo de preço baseado no tipo de venda
 - [ ] Atualizar recibo para mostrar tipo de venda
 - [ ] Criar relatório de vendas por tipo (atacado/varejo)
+
+## Busca por IMEI no PDV
+- [x] Atualizar placeholder do campo de busca para "Digite o nome ou IMEI do iPhone"
+- [x] Implementar busca por IMEI exato no backend
+- [x] Implementar busca por IMEI parcial (LIKE)
+- [x] Priorizar resultados por IMEI sobre nome
+- [x] Funcionalidade implementada e pronta para uso

@@ -328,7 +328,7 @@ export default function Vendas() {
             <CardContent>
               <Input
                 ref={searchInputRef}
-                placeholder="Digite o nome ou SKU do produto..."
+                placeholder="Digite o nome ou IMEI do iPhone"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="text-lg"

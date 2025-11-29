@@ -1,4 +1,4 @@
-import { eq, and, or, gte, lte, isNull, desc, sql } from "drizzle-orm";
+import { eq, and, or, gte, lte, isNull, desc, sql, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, User, users,
@@ -104,14 +104,80 @@ export async function listProducts(filters: {
   if (!database) return [];
 
   try {
-    const { products } = await import("../drizzle/schema");
+    const { products, stockItems } = await import("../drizzle/schema");
+    
+    // Se houver busca, tentar por IMEI primeiro
+    if (filters.search && filters.search.trim()) {
+      const searchTerm = filters.search.trim();
+      
+      // Buscar por IMEI exato ou parcial
+      const imeiResults = await database
+        .select({
+          id: products.id,
+          name: products.name,
+          description: products.description,
+          category: products.category,
+          brand: products.brand,
+          model: products.model,
+          sku: products.sku,
+          barcode: products.barcode,
+          costPrice: products.costPrice,
+          salePrice: products.salePrice,
+          minStock: products.minStock,
+          currentStock: products.currentStock,
+          requiresImei: products.requiresImei,
+          active: products.active,
+          createdAt: products.createdAt,
+          updatedAt: products.updatedAt,
+          imei: stockItems.imei,
+        })
+        .from(stockItems)
+        .leftJoin(products, eq(stockItems.productId, products.id))
+        .where(
+          or(
+            eq(stockItems.imei, searchTerm),
+            like(stockItems.imei, `%${searchTerm}%`)
+          )
+        )
+        .limit(filters.limit || 50);
+      
+      // Se encontrou por IMEI, retornar esses resultados priorizados
+      if (imeiResults.length > 0) {
+        return imeiResults.map(p => ({
+          ...p,
+          price: p.salePrice,
+          stockQuantity: 1,
+        }));
+      }
+      
+      // Se não encontrou por IMEI, buscar por nome/SKU
+      const nameResults = await database
+        .select()
+        .from(products)
+        .where(
+          or(
+            like(products.name, `%${searchTerm}%`),
+            like(products.sku, `%${searchTerm}%`),
+            like(products.barcode, `%${searchTerm}%`)
+          )
+        )
+        .limit(filters.limit || 50);
+      
+      return nameResults.map(p => ({
+        ...p,
+        price: p.salePrice,
+        stockQuantity: 0,
+      }));
+    }
+    
+    // Sem busca, listar todos
     let query = database.select().from(products);
     
     const results = await query.limit(filters.limit || 50).offset(filters.offset || 0);
     return results.map(p => ({
       ...p,
       price: p.salePrice,
-      stockQuantity: 0, // TODO: Calcular do estoque real
+      stockQuantity: 0,
     }));
   } catch (error) {
     console.error("[Database] Failed to list products:", error);
