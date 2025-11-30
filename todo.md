@@ -296,3 +296,15 @@
 - [x] Implementar busca por IMEI parcial (LIKE)
 - [x] Priorizar resultados por IMEI sobre nome
 - [x] Funcionalidade implementada e pronta para uso
+
+## Lupa + Campo IMEI no Formulário
+- [x] Adicionar ícone de lupa no campo Nome do Produto
+- [x] Criar modal de busca de modelos cadastrados
+- [x] Implementar autocomplete de modelos em tempo real
+- [x] Preencher automaticamente Nome, Categoria, Marca, Modelo
+- [x] Manter campo SKU (não remover)
+- [x] Adicionar campo IMEI separado
+- [x] Validar IMEI (15 dígitos obrigatórios)
+- [x] Filtro apenas numeros no campo IMEI
+- [ ] Criar endpoint GET /produtos/modelos (não necessário - usando lista local)
+- [ ] Criar endpoint GET /estoque/imei (futuro - autocomplete de IMEI)

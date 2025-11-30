@@ -31,16 +31,32 @@ import {
   Edit,
   Barcode,
 } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function Estoque() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const [showModelSearch, setShowModelSearch] = useState(false);
+  const [modelSearchTerm, setModelSearchTerm] = useState("");
   const [newProduct, setNewProduct] = useState({
     name: "",
     category: "",
     brand: "",
     model: "",
     sku: "",
+    imei: "",
     costPrice: "",
     salePrice: "",
     minStock: "10",
@@ -59,6 +75,7 @@ export default function Estoque() {
         brand: "",
         model: "",
         sku: "",
+        imei: "",
         costPrice: "",
         salePrice: "",
         minStock: "10",
@@ -136,12 +153,70 @@ export default function Estoque() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label>Nome do Produto *</Label>
-                  <Input
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    placeholder="Ex: iPhone 15 Pro Max 256GB"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      value={newProduct.name}
+                      onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                      placeholder="Ex: iPhone 15 Pro Max 256GB"
+                      required
+                    />
+                    <Popover open={showModelSearch} onOpenChange={setShowModelSearch}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                        >
+                          <Search className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput
+                            placeholder="Buscar modelo cadastrado..."
+                            value={modelSearchTerm}
+                            onValueChange={setModelSearchTerm}
+                          />
+                          <CommandList>
+                            <CommandEmpty>Nenhum modelo encontrado.</CommandEmpty>
+                            <CommandGroup>
+                              {products
+                                ?.filter(p => 
+                                  p.name.toLowerCase().includes(modelSearchTerm.toLowerCase()) ||
+                                  p.brand?.toLowerCase().includes(modelSearchTerm.toLowerCase())
+                                )
+                                .slice(0, 10)
+                                .map((product) => (
+                                  <CommandItem
+                                    key={product.id}
+                                    value={product.name}
+                                    onSelect={() => {
+                                      setNewProduct({
+                                        ...newProduct,
+                                        name: product.name,
+                                        category: product.category || "",
+                                        brand: product.brand || "",
+                                        model: product.model || "",
+                                      });
+                                      setShowModelSearch(false);
+                                      setModelSearchTerm("");
+                                    }}
+                                  >
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{product.name}</span>
+                                      <span className="text-sm text-muted-foreground">
+                                        {product.brand} - {product.category}
+                                      </span>
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </div>
 
                 <div>
@@ -178,6 +253,23 @@ export default function Estoque() {
                     onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
                     placeholder="Ex: IPH15PM256"
                   />
+                </div>
+
+                <div>
+                  <Label>IMEI</Label>
+                  <Input
+                    type="text"
+                    value={newProduct.imei}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                      setNewProduct({ ...newProduct, imei: value });
+                    }}
+                    placeholder="Buscar IMEI..."
+                    maxLength={15}
+                  />
+                  {newProduct.imei && newProduct.imei.length !== 15 && (
+                    <p className="text-xs text-red-600 mt-1">IMEI deve ter 15 dígitos</p>
+                  )}
                 </div>
 
                 <div>

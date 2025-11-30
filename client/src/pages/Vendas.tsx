@@ -13,7 +13,7 @@ import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X } from 
 interface CartItem {
   productId: number;
   name: string;
-  sku: string;
+  imei: string;
   quantity: number;
   unitPrice: number;
   stock: number;
@@ -87,7 +87,7 @@ export default function Vendas() {
   const filteredProducts = products.filter(
     (p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+      p.imei?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Adicionar produto ao carrinho
@@ -116,7 +116,7 @@ export default function Vendas() {
         {
           productId: product.id,
           name: product.name,
-          sku: product.sku || "",
+          imei: product.sku || "",
           quantity: 1,
           unitPrice: product.salePrice,
           stock: product.currentStock,
@@ -359,7 +359,7 @@ export default function Vendas() {
                         <div className="flex-1">
                           <p className="font-medium">{product.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            SKU: {product.sku} | Estoque: {product.currentStock}
+                            IMEI: {product.sku} | Estoque: {product.currentStock}
                           </p>
                         </div>
                         <div className="text-right">
