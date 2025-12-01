@@ -41,6 +41,8 @@ import {
   XCircle,
   Package,
   Trash2,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 
 export default function OrdemServico() {
@@ -59,7 +61,14 @@ export default function OrdemServico() {
     imei: "",
     defect: "",
     priority: "media" as "baixa" | "media" | "alta" | "urgente",
+    solution: "",
+    parts: "" as string,
+    estimatedTime: "",
+    estimatedCost: "" as string,
   });
+
+  const [isDiagnosing, setIsDiagnosing] = useState(false);
+  const [devicePhoto, setDevicePhoto] = useState<string>("");
 
   const [newPart, setNewPart] = useState({
     productId: 0,
@@ -88,10 +97,45 @@ export default function OrdemServico() {
         imei: "",
         defect: "",
         priority: "media",
+        solution: "",
+        parts: "",
+        estimatedTime: "",
+        estimatedCost: "",
       });
     },
     onError: (error) => {
       toast.error(`Erro ao criar OS: ${error.message}`);
+    },
+  });
+
+  const diagnoseMutation = trpc.ai.diagnoseServiceOrder.useMutation({
+    onSuccess: (data) => {
+      setNewOS({
+        ...newOS,
+        defect: data.defect,
+        solution: data.solution,
+        parts: data.parts.join(", "),
+        estimatedTime: data.estimatedTime,
+        estimatedCost: (data.estimatedCost / 100).toFixed(2),
+      });
+      
+      if (data.confidence === "high") {
+        toast.success("✨ Diagnóstico realizado com alta confiança!");
+      } else if (data.confidence === "medium") {
+        toast.success("✨ Diagnóstico realizado! Verifique as sugestões.");
+      } else {
+        toast.warning("⚠️ Diagnóstico incerto. Avaliação presencial recomendada.");
+      }
+      
+      if (data.notes) {
+        toast.info("📝 " + data.notes, { duration: 5000 });
+      }
+      
+      setIsDiagnosing(false);
+    },
+    onError: (error) => {
+      toast.error("Erro ao diagnosticar: " + error.message);
+      setIsDiagnosing(false);
     },
   });
 
@@ -127,6 +171,50 @@ export default function OrdemServico() {
       toast.error(`Erro ao finalizar OS: ${error.message}`);
     },
   });
+
+  const handleDiagnose = () => {
+    if (!newOS.defect || newOS.defect.length < 5) {
+      toast.error("Descreva o problema com mais detalhes para o diagnóstico");
+      return;
+    }
+    
+    setIsDiagnosing(true);
+    
+    const deviceInfo = [newOS.deviceType, newOS.brand, newOS.model]
+      .filter(Boolean)
+      .join(" ");
+    
+    diagnoseMutation.mutate({
+      problem: newOS.defect,
+      deviceInfo: deviceInfo || undefined,
+      imageUrl: devicePhoto || undefined,
+    });
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validar tamanho (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Imagem muito grande. Tamanho máximo: 5MB");
+      return;
+    }
+    
+    // Validar tipo
+    if (!file.type.startsWith("image/")) {
+      toast.error("Arquivo inválido. Envie uma imagem.");
+      return;
+    }
+    
+    // Converter para base64 para preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setDevicePhoto(reader.result as string);
+      toast.success("Foto carregada! Clique em 'Diagnosticar com IA' para análise.");
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleCreateOS = () => {
     if (!newOS.customerId || !newOS.defect) {
@@ -328,6 +416,98 @@ export default function OrdemServico() {
                   rows={3}
                 />
               </div>
+              
+              <div className="space-y-2 col-span-2">
+                <Label>Foto do Aparelho (Opcional)</Label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="flex-1"
+                  />
+                  {devicePhoto && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDevicePhoto("")}
+                    >
+                      Remover
+                    </Button>
+                  )}
+                </div>
+                {devicePhoto && (
+                  <img
+                    src={devicePhoto}
+                    alt="Preview"
+                    className="w-full max-w-xs rounded border mt-2"
+                  />
+                )}
+              </div>
+              
+              <div className="col-span-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleDiagnose}
+                  disabled={isDiagnosing || !newOS.defect}
+                  className="w-full border-purple-200 hover:bg-purple-50 hover:border-purple-300"
+                >
+                  {isDiagnosing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Analisando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Diagnosticar com IA
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              {newOS.solution && (
+                <>
+                  <div className="space-y-2 col-span-2">
+                    <Label>Solução Sugerida</Label>
+                    <Textarea
+                      value={newOS.solution}
+                      onChange={(e) => setNewOS({ ...newOS, solution: e.target.value })}
+                      rows={2}
+                      className="bg-green-50 border-green-200"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2 col-span-2">
+                    <Label>Peças Necessárias</Label>
+                    <Input
+                      value={newOS.parts}
+                      onChange={(e) => setNewOS({ ...newOS, parts: e.target.value })}
+                      className="bg-blue-50 border-blue-200"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Tempo Estimado</Label>
+                    <Input
+                      value={newOS.estimatedTime}
+                      onChange={(e) => setNewOS({ ...newOS, estimatedTime: e.target.value })}
+                      className="bg-amber-50 border-amber-200"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Custo Estimado (R$)</Label>
+                    <Input
+                      value={newOS.estimatedCost}
+                      onChange={(e) => setNewOS({ ...newOS, estimatedCost: e.target.value })}
+                      className="bg-amber-50 border-amber-200"
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowNewOS(false)}>

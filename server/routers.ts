@@ -9,6 +9,7 @@ import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
 import { analyzeProductWithAI } from "./ai-product-assistant";
+import { diagnoseServiceOrder } from "./ai-os-assistant";
 
 // Helper para criar procedimentos protegidos
 const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
@@ -1418,6 +1419,18 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const result = await analyzeProductWithAI(input.productName);
+        return result;
+      }),
+
+    // Diagnosticar OS com IA
+    diagnoseServiceOrder: protectedProcedure
+      .input(z.object({
+        problem: z.string().min(5, "Descreva o problema com mais detalhes"),
+        deviceInfo: z.string().optional(),
+        imageUrl: z.string().url().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await diagnoseServiceOrder(input.problem, input.deviceInfo, input.imageUrl);
         return result;
       }),
   }),

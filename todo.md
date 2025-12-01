@@ -859,3 +859,18 @@
 - [x] Adicionar feedback de progresso
 - [x] Adicionar rota no menu lateral
 - [ ] Testar importação com dados reais
+
+## IA Assistente para Diagnóstico de OS
+- [x] Criar módulo backend ai-os-assistant.ts
+- [x] Integrar invokeLLM para análise de problemas
+- [x] Criar endpoint tRPC ai.diagnoseServiceOrder
+- [x] Adicionar suporte a análise de imagem (foto do aparelho)
+- [x] Atualizar endpoint para aceitar URL de imagem
+- [x] Adicionar upload de foto no formulário de OS
+- [x] Adicionar botão "Diagnosticar com IA" no formulário de OS
+- [x] Implementar sugestões de defeito, solução e peças
+- [x] Adicionar estimativa de tempo e custo
+- [x] Implementar loading state durante análise
+- [x] Adicionar feedback visual com nível de confiança
+- [ ] Testar com diferentes tipos de problemas (tela quebrada, bateria, software, água)
+- [ ] Testar análise com fotos de aparelhos danificados
