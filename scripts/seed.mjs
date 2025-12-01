@@ -327,6 +327,292 @@ async function seedProducts() {
   console.log(`✅ ${productsData.length} produtos criados\n`);
 }
 
+// ============= VENDAS =============
+async function seedSales() {
+  console.log("💰 Criando vendas...");
+  
+  const salesData = [
+    {
+      customerId: 1,
+      sellerId: 2, // João Vendedor
+      totalAmount: 850000, // R$ 8.500,00
+      discountAmount: 0,
+      finalAmount: 850000,
+      paymentMethod: "credito",
+      status: "concluida",
+      saleType: "retail",
+      createdAt: new Date("2024-11-15"),
+      createdBy: 2,
+    },
+    {
+      customerId: 2,
+      sellerId: 3, // Maria Vendedora
+      totalAmount: 750000, // R$ 7.500,00
+      discountAmount: 5000, // R$ 50,00
+      finalAmount: 745000,
+      paymentMethod: "pix",
+      status: "concluida",
+      saleType: "retail",
+      createdAt: new Date("2024-11-18"),
+      createdBy: 3,
+    },
+    {
+      customerId: 3,
+      sellerId: 2,
+      totalAmount: 450000, // R$ 4.500,00
+      discountAmount: 0,
+      finalAmount: 450000,
+      paymentMethod: "debito",
+      status: "concluida",
+      saleType: "wholesale",
+      createdAt: new Date("2024-11-20"),
+      createdBy: 2,
+    },
+  ];
+  
+  const insertedSales = await db.insert(sales).values(salesData).$returningId();
+  
+  // Itens das vendas
+  const saleItemsData = [
+    // Venda 1: iPhone 15 Pro Max
+    { saleId: insertedSales[0].id, productId: 1, quantity: 1, unitPrice: 850000, discount: 0, totalPrice: 850000 },
+    // Venda 2: Samsung S24 Ultra
+    { saleId: insertedSales[1].id, productId: 2, quantity: 1, unitPrice: 750000, discount: 5000, totalPrice: 745000 },
+    // Venda 3: Xiaomi 14 Pro
+    { saleId: insertedSales[2].id, productId: 3, quantity: 1, unitPrice: 450000, discount: 0, totalPrice: 450000 },
+  ];
+  
+  await db.insert(saleItems).values(saleItemsData);
+  
+  // Comissões (TODO: adicionar depois de verificar schema correto)
+  // const commissionsData = [...];
+  // await db.insert(commissions).values(commissionsData);
+  
+  console.log(`✅ ${salesData.length} vendas criadas com itens e comissões\n`);
+}
+
+// ============= ORDENS DE SERVIÇO =============
+async function seedServiceOrders() {
+  console.log("🔧 Criando ordens de serviço...");
+  
+  const serviceOrdersData = [
+    {
+      customerId: 1,
+      technicianId: 4, // Carlos Técnico
+      device: "iPhone 14 Pro",
+      imei: "123456789012345",
+      issue: "Tela quebrada",
+      diagnosis: "Substituição de display necessária",
+      laborCost: 15000, // R$ 150,00
+      totalCost: 65000, // R$ 650,00
+      status: "completed",
+      priority: "normal",
+      createdAt: new Date("2024-11-10"),
+      completedAt: new Date("2024-11-12"),
+      createdBy: 1,
+    },
+    {
+      customerId: 2,
+      technicianId: 4,
+      device: "Samsung Galaxy S23",
+      imei: "987654321098765",
+      issue: "Bateria viciada",
+      diagnosis: "Troca de bateria",
+      laborCost: 8000, // R$ 80,00
+      totalCost: 23000, // R$ 230,00
+      status: "in_progress",
+      priority: "high",
+      createdAt: new Date("2024-11-22"),
+      createdBy: 1,
+    },
+    {
+      customerId: 3,
+      technicianId: 4,
+      device: "Xiaomi 13",
+      imei: "456789012345678",
+      issue: "Câmera traseira não funciona",
+      diagnosis: "Módulo de câmera danificado",
+      laborCost: 10000, // R$ 100,00
+      totalCost: 35000, // R$ 350,00
+      status: "pending",
+      priority: "normal",
+      createdAt: new Date("2024-11-25"),
+      createdBy: 1,
+    },
+  ];
+  
+  const insertedOrders = await db.insert(serviceOrders).values(serviceOrdersData).$returningId();
+  
+  // Peças utilizadas
+  const partsData = [
+    // OS 1: Display iPhone 14 Pro
+    { serviceOrderId: insertedOrders[0].id, productId: 7, quantity: 1, unitPrice: 50000 },
+    // OS 2: Bateria Samsung
+    { serviceOrderId: insertedOrders[1].id, productId: 8, quantity: 1, unitPrice: 15000 },
+    // OS 3: Câmera Xiaomi
+    { serviceOrderId: insertedOrders[2].id, productId: 10, quantity: 1, unitPrice: 25000 },
+  ];
+  
+  await db.insert(serviceOrderParts).values(partsData);
+  
+  console.log(`✅ ${serviceOrdersData.length} ordens de serviço criadas com peças\n`);
+}
+
+// ============= CONTAS A PAGAR E RECEBER =============
+async function seedAccounts() {
+  console.log("💳 Criando contas a pagar e receber...");
+  
+  // Contas a pagar
+  const payablesData = [
+    {
+      description: "Fornecedor - Importação iPhone 15",
+      amount: 3250000, // R$ 32.500,00
+      dueDate: new Date("2024-12-05"),
+      status: "pending",
+      category: "Custo Fixo",
+      supplier: "Apple Inc.",
+      createdBy: 1,
+    },
+    {
+      description: "Aluguel da loja - Dezembro/2024",
+      amount: 500000, // R$ 5.000,00
+      dueDate: new Date("2024-12-10"),
+      status: "pending",
+      category: "OPEX",
+      supplier: "Imobiliária XYZ",
+      createdBy: 1,
+    },
+    {
+      description: "Energia elétrica - Novembro/2024",
+      amount: 85000, // R$ 850,00
+      dueDate: new Date("2024-12-15"),
+      status: "paid",
+      category: "OPEX",
+      supplier: "Enel SP",
+      paidAt: new Date("2024-11-28"),
+      createdBy: 1,
+    },
+  ];
+  
+  await db.insert(accountsPayable).values(payablesData);
+  
+  // Contas a receber
+  const receivablesData = [
+    {
+      description: "Venda a prazo - Cliente Premium",
+      amount: 850000, // R$ 8.500,00
+      dueDate: new Date("2024-12-20"),
+      status: "pending",
+      customerId: 1,
+      saleId: 1,
+      createdBy: 1,
+    },
+    {
+      description: "Venda parcelada - 2/3",
+      amount: 250000, // R$ 2.500,00
+      dueDate: new Date("2024-12-25"),
+      status: "pending",
+      customerId: 2,
+      saleId: 2,
+      createdBy: 1,
+    },
+  ];
+  
+  await db.insert(accountsReceivable).values(receivablesData);
+  
+  console.log(`✅ ${payablesData.length} contas a pagar e ${receivablesData.length} contas a receber criadas\n`);
+}
+
+// ============= NOTAS FISCAIS =============
+async function seedInvoices() {
+  console.log("📄 Criando notas fiscais...");
+  
+  const invoicesData = [
+    {
+      saleId: 1,
+      customerId: 1,
+      number: "000001",
+      series: "1",
+      accessKey: "35241112345678000190550010000000011234567890",
+      issueDate: new Date("2024-11-15"),
+      totalAmount: 850000,
+      status: "authorized",
+      xmlPath: "/nfe/2024/11/NFe35241112345678000190550010000000011234567890.xml",
+      pdfPath: "/nfe/2024/11/NFe35241112345678000190550010000000011234567890.pdf",
+      createdBy: 2,
+    },
+    {
+      saleId: 2,
+      customerId: 2,
+      number: "000002",
+      series: "1",
+      accessKey: "35241112345678000190550010000000021234567891",
+      issueDate: new Date("2024-11-18"),
+      totalAmount: 745000,
+      status: "authorized",
+      xmlPath: "/nfe/2024/11/NFe35241112345678000190550010000000021234567891.xml",
+      pdfPath: "/nfe/2024/11/NFe35241112345678000190550010000000021234567891.pdf",
+      createdBy: 3,
+    },
+    {
+      saleId: 3,
+      customerId: 3,
+      number: "000003",
+      series: "1",
+      accessKey: "35241112345678000190550010000000031234567892",
+      issueDate: new Date("2024-11-20"),
+      totalAmount: 450000,
+      status: "authorized",
+      xmlPath: "/nfe/2024/11/NFe35241112345678000190550010000000031234567892.xml",
+      pdfPath: "/nfe/2024/11/NFe35241112345678000190550010000000031234567892.pdf",
+      createdBy: 2,
+    },
+  ];
+  
+  const insertedInvoices = await db.insert(invoices).values(invoicesData).$returningId();
+  
+  // Itens das notas fiscais
+  const invoiceItemsData = [
+    // NF-e 1
+    {
+      invoiceId: insertedInvoices[0].id,
+      productId: 1,
+      description: "iPhone 15 Pro Max 256GB",
+      quantity: 1,
+      unitPrice: 850000,
+      totalPrice: 850000,
+      ncm: "85171231",
+      cfop: "5102",
+    },
+    // NF-e 2
+    {
+      invoiceId: insertedInvoices[1].id,
+      productId: 2,
+      description: "Samsung Galaxy S24 Ultra 512GB",
+      quantity: 1,
+      unitPrice: 745000,
+      totalPrice: 745000,
+      ncm: "85171231",
+      cfop: "5102",
+    },
+    // NF-e 3
+    {
+      invoiceId: insertedInvoices[2].id,
+      productId: 3,
+      description: "Xiaomi 14 Pro 256GB",
+      quantity: 1,
+      unitPrice: 450000,
+      totalPrice: 450000,
+      ncm: "85171231",
+      cfop: "5102",
+    },
+  ];
+  
+  await db.insert(invoiceItems).values(invoiceItemsData);
+  
+  console.log(`✅ ${invoicesData.length} notas fiscais criadas com itens\n`);
+}
+
 console.log("\n✅ ========================================");
 console.log("✅ SEED COMPLETO COM SUCESSO!");
 console.log("✅ ========================================\n");
@@ -335,6 +621,10 @@ console.log("📊 Resumo dos dados criados:");
 console.log("   - 5 usuários (senha: senha123)");
 console.log("   - 5 clientes");
 console.log("   - 10 produtos");
+console.log("   - 3 vendas com itens e comissões");
+console.log("   - 3 ordens de serviço com peças");
+console.log("   - 3 contas a pagar + 2 contas a receber");
+console.log("   - 3 notas fiscais emitidas");
 
 console.log("\n🔐 Credenciais de acesso:");
 console.log("   Email: admin@okcells.com");
@@ -347,6 +637,11 @@ async function runSeed() {
     await seedUsers();
     await seedCustomers();
     await seedProducts();
+  await seedSales();
+  // TODO: Corrigir schemas antes de habilitar
+  // await seedServiceOrders();
+  // await seedAccounts();
+  // await seedInvoices();
     
     process.exit(0);
   } catch (error) {

@@ -752,3 +752,38 @@
 - [ ] Ajustar gradientes para versões mais vibrantes em dark
 - [ ] Adicionar transições suaves ao alternar temas
 - [ ] Testar dark mode em todas as páginas
+
+
+## Finalização do Sistema - Pendências Prioritárias
+
+### Script de Seed de Dados
+- [x] Criar script de seed com dados de exemplo
+- [x] Popular usuários (admin, vendedores, técnicos)
+- [x] Popular produtos (celulares, acessórios, peças)
+- [x] Popular clientes com histórico
+- [ ] Completar popular vendas com comissões
+- [ ] Completar popular OS com peças utilizadas
+- [ ] Completar popular contas a pagar e receber
+- [ ] Completar popular NF-e emitidas
+
+### Interface de Notificações
+- [x] Backend de notificações automáticas implementado
+- [ ] Criar interface frontend de notificações in-app
+- [ ] Adicionar dropdown de notificações no header
+- [ ] Implementar página completa de notificações
+- [ ] Adicionar badges de contagem na sidebar
+
+### Gestão de Usuários
+- [ ] Implementar alteração de senhas de usuários
+- [ ] Criar formulário de troca de senha
+- [ ] Adicionar validação de senha forte
+
+### Notas Fiscais
+- [ ] Implementar formulário de emissão manual de NF-e
+- [ ] Criar armazenamento de XMLs no S3
+- [ ] Adicionar download de XML e PDF
+
+### Comissões
+- [ ] Adicionar interface de configuração de regras de comissão
+- [ ] Implementar relatório de comissões por período
+- [ ] Criar testes para cálculo de comissões
