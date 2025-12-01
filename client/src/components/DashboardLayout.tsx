@@ -21,11 +21,12 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
+import { useTheme } from "@/contexts/ThemeContext";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
@@ -163,6 +164,33 @@ export default function DashboardLayout({
         {children}
       </DashboardLayoutContent>
     </SidebarProvider>
+  );
+}
+
+// Componente de toggle de tema
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+  
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className="h-9 w-9 rounded-lg transition-all hover:bg-accent"
+      aria-label="Alternar tema"
+    >
+      <motion.div
+        initial={false}
+        animate={{ rotate: theme === "dark" ? 180 : 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        {theme === "light" ? (
+          <Sun className="h-4 w-4 text-amber-500" />
+        ) : (
+          <Moon className="h-4 w-4 text-blue-500" />
+        )}
+      </motion.div>
+    </Button>
   );
 }
 
@@ -375,7 +403,10 @@ function DashboardLayoutContent({
                 </div>
               </div>
             </div>
-            <NotificationBell />
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <ThemeToggle />
+            </div>
           </div>
         )}
         <main className="flex-1 p-4">{children}</main>

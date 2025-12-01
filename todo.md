@@ -827,3 +827,13 @@
 - [x] Verificar se useAuth está lendo o cookie
 - [x] Ajustar sameSite de "none" para "lax" no cookie
 - [ ] Testar fluxo completo de autenticação com Bruno
+
+## Implementação de Dark Mode Completo
+- [x] Verificar ThemeContext existente
+- [x] Criar toggle de Dark Mode no header do DashboardLayout
+- [x] Adicionar ícones de sol/lua com animações
+- [x] Implementar persistência no localStorage
+- [x] Atualizar variáveis CSS para dark mode (.dark)
+- [x] Testar dark mode em todas as páginas principais
+- [x] Garantir contraste adequado em todos os componentes
+- [x] Adicionar transições suaves entre temas
