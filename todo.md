@@ -401,3 +401,14 @@
 - [ ] Adicionar exportação para Excel
 - [ ] Adicionar exportação para PDF
 - [ ] Criar testes para relatório avançado
+
+
+## Melhorias em Contas a Pagar - Implementação
+- [x] Criar query backend para métricas de contas a pagar
+- [x] Implementar função de pagamento em massa
+- [x] Criar cartões coloridos de status (Vencidas, Vencendo Hoje, A Vencer, Pagas)
+- [x] Adicionar painel de totais (Custo Total, Valor Pago, Saldo em Aberto)
+- [x] Implementar seleção múltipla de contas
+- [x] Criar modal de confirmação de pagamento em massa
+- [x] Adicionar filtros aprimorados (clique nos cartões)
+- [x] Criar testes para pagamento em massa (9 testes passando)

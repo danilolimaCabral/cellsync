@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -16,6 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -39,12 +42,17 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  AlertCircle,
+  Check,
 } from "lucide-react";
 
 export default function Financeiro() {
   const [activeTab, setActiveTab] = useState("pagar");
   const [showNewPayable, setShowNewPayable] = useState(false);
   const [showNewReceivable, setShowNewReceivable] = useState(false);
+  const [selectedAccountIds, setSelectedAccountIds] = useState<number[]>([]);
+  const [showBulkPaymentDialog, setShowBulkPaymentDialog] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"overdue" | "dueToday" | "upcoming" | "paid" | "all">("all");
 
   // Estados para Contas a Pagar
   const [newPayable, setNewPayable] = useState({
@@ -67,11 +75,18 @@ export default function Financeiro() {
 
   // Queries
   const { data: accountsPayable, refetch: refetchPayable } = trpc.financial.accountsPayable.list.useQuery({});
+  const { data: metrics } = trpc.financial.accountsPayable.metrics.useQuery({});
   const { data: accountsReceivable, refetch: refetchReceivable } = trpc.financial.accountsReceivable.list.useQuery({});
   const { data: cashFlow } = trpc.financial.cashFlow.get.useQuery({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date(),
   });
+
+  // Query para preview de pagamento em massa
+  const { data: bulkPaymentPreview } = trpc.financial.accountsPayable.bulkPaymentPreview.useQuery(
+    { accountIds: selectedAccountIds },
+    { enabled: selectedAccountIds.length > 0 }
+  );
 
   // Mutations
   const createPayableMutation = trpc.financial.accountsPayable.create.useMutation({
@@ -113,51 +128,50 @@ export default function Financeiro() {
 
   const updatePayableStatusMutation = trpc.financial.accountsPayable.updateStatus.useMutation({
     onSuccess: () => {
-      toast.success("Status atualizado!");
+      toast.success("Status atualizado com sucesso!");
       refetchPayable();
     },
   });
 
   const updateReceivableStatusMutation = trpc.financial.accountsReceivable.updateStatus.useMutation({
     onSuccess: () => {
-      toast.success("Status atualizado!");
+      toast.success("Status atualizado com sucesso!");
       refetchReceivable();
     },
   });
 
-  // Handlers
-  const handleSubmitPayable = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!newPayable.description || !newPayable.amount || !newPayable.dueDate) {
-      toast.error("Preencha todos os campos obrigatórios");
-      return;
-    }
+  const bulkPaymentMutation = trpc.financial.accountsPayable.bulkPayment.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.count} contas pagas com sucesso!`);
+      setSelectedAccountIds([]);
+      setShowBulkPaymentDialog(false);
+      refetchPayable();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao realizar pagamento em massa");
+    },
+  });
 
+  const handleCreatePayable = () => {
+    const amountInCents = Math.round(parseFloat(newPayable.amount) * 100);
     createPayableMutation.mutate({
       description: newPayable.description,
       category: newPayable.category,
-      costCenter: newPayable.costCenter || undefined,
-      supplier: newPayable.supplier || undefined,
-      amount: Math.round(parseFloat(newPayable.amount) * 100),
+      costCenter: newPayable.costCenter,
+      supplier: newPayable.supplier,
+      amount: amountInCents,
       dueDate: new Date(newPayable.dueDate),
-      notes: newPayable.notes || undefined,
+      notes: newPayable.notes,
     });
   };
 
-  const handleSubmitReceivable = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!newReceivable.description || !newReceivable.amount || !newReceivable.dueDate) {
-      toast.error("Preencha todos os campos obrigatórios");
-      return;
-    }
-
+  const handleCreateReceivable = () => {
+    const amountInCents = Math.round(parseFloat(newReceivable.amount) * 100);
     createReceivableMutation.mutate({
       description: newReceivable.description,
-      amount: Math.round(parseFloat(newReceivable.amount) * 100),
+      amount: amountInCents,
       dueDate: new Date(newReceivable.dueDate),
-      notes: newReceivable.notes || undefined,
+      notes: newReceivable.notes,
     });
   };
 
@@ -177,268 +191,434 @@ export default function Financeiro() {
     });
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pendente: { color: "bg-yellow-50 text-yellow-700 border-yellow-200", label: "Pendente", icon: Clock },
-      pago: { color: "bg-green-50 text-green-700 border-green-200", label: "Pago", icon: CheckCircle },
-      recebido: { color: "bg-green-50 text-green-700 border-green-200", label: "Recebido", icon: CheckCircle },
-      atrasado: { color: "bg-red-50 text-red-700 border-red-200", label: "Atrasado", icon: XCircle },
-      cancelado: { color: "bg-gray-50 text-gray-700 border-gray-200", label: "Cancelado", icon: XCircle },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pendente;
-    const Icon = config.icon;
-    
-    return (
-      <Badge variant="outline" className={config.color}>
-        <Icon className="h-3 w-3 mr-1" />
-        {config.label}
-      </Badge>
+  const handleToggleAccount = (accountId: number) => {
+    setSelectedAccountIds(prev =>
+      prev.includes(accountId)
+        ? prev.filter(id => id !== accountId)
+        : [...prev, accountId]
     );
   };
 
+  const handleSelectAll = () => {
+    if (!accountsPayable) return;
+    const pendingAccounts = accountsPayable.filter((acc: any) => acc.status === "pendente");
+    const allIds = pendingAccounts.map((acc: any) => acc.id);
+    setSelectedAccountIds(allIds);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedAccountIds([]);
+  };
+
+  const handleBulkPayment = () => {
+    bulkPaymentMutation.mutate({
+      accountIds: selectedAccountIds,
+      paymentDate: new Date(),
+    });
+  };
+
   const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat("pt-BR", {
+    return (cents / 100).toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
-    }).format(cents / 100);
+    });
   };
 
-  const stats = {
-    totalPayable: accountsPayable?.filter((a: any) => a.status === "pendente").reduce((sum: number, a: any) => sum + a.amount, 0) || 0,
-    totalReceivable: accountsReceivable?.filter((a: any) => a.status === "pendente").reduce((sum: number, a: any) => sum + a.amount, 0) || 0,
-    balance: (cashFlow?.balance || 0),
-    totalIncome: (cashFlow?.totalIncome || 0),
-    totalExpenses: (cashFlow?.totalExpenses || 0),
+  const formatDate = (date: Date | string) => {
+    return new Date(date).toLocaleDateString("pt-BR");
   };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pago":
+      case "recebido":
+        return <Badge className="bg-green-100 text-green-800">Pago</Badge>;
+      case "pendente":
+        return <Badge className="bg-yellow-100 text-yellow-800">Pendente</Badge>;
+      case "atrasado":
+        return <Badge className="bg-red-100 text-red-800">Atrasado</Badge>;
+      case "cancelado":
+        return <Badge className="bg-gray-100 text-gray-800">Cancelado</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
+
+  // Filtrar contas baseado no filtro de status
+  const filteredAccountsPayable = accountsPayable?.filter((acc: any) => {
+    if (statusFilter === "all") return true;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const sevenDaysFromNow = new Date(today);
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+    const dueDate = new Date(acc.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+
+    if (statusFilter === "overdue") {
+      return acc.status === "pendente" && dueDate < today;
+    } else if (statusFilter === "dueToday") {
+      return acc.status === "pendente" && dueDate.getTime() === today.getTime();
+    } else if (statusFilter === "upcoming") {
+      return acc.status === "pendente" && dueDate >= tomorrow && dueDate < sevenDaysFromNow;
+    } else if (statusFilter === "paid") {
+      return acc.status === "pago";
+    }
+    return true;
+  }) || [];
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Financeiro</h1>
-          <p className="text-gray-500 mt-1">Gestão completa de contas e fluxo de caixa</p>
+          <h1 className="text-3xl font-bold">Financeiro</h1>
+          <p className="text-muted-foreground">
+            Gerencie contas a pagar, receber e fluxo de caixa
+          </p>
         </div>
       </div>
 
-      {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-red-600" />
-              A Pagar (Pendente)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{formatCurrency(stats.totalPayable)}</div>
-            <p className="text-xs text-gray-500 mt-1">Contas pendentes de pagamento</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-600" />
-              A Receber (Pendente)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(stats.totalReceivable)}</div>
-            <p className="text-xs text-gray-500 mt-1">Contas pendentes de recebimento</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-blue-600" />
-              Saldo Atual
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${stats.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatCurrency(stats.balance)}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">Receitas - Despesas (mês atual)</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-purple-600" />
-              Receita Total
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{formatCurrency(stats.totalIncome)}</div>
-            <p className="text-xs text-gray-500 mt-1">Total recebido no mês</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs de Contas */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList>
           <TabsTrigger value="pagar">Contas a Pagar</TabsTrigger>
           <TabsTrigger value="receber">Contas a Receber</TabsTrigger>
           <TabsTrigger value="fluxo">Fluxo de Caixa</TabsTrigger>
         </TabsList>
 
-        {/* Contas a Pagar */}
-        <TabsContent value="pagar" className="space-y-4">
+        {/* CONTAS A PAGAR */}
+        <TabsContent value="pagar" className="space-y-6">
+          {/* Cartões de Status */}
+          {metrics && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-red-500"
+                onClick={() => setStatusFilter("overdue")}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                    Vencidas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-600">
+                    {metrics.overdueCount}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(metrics.overdueAmount)}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-orange-500"
+                onClick={() => setStatusFilter("dueToday")}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-orange-500" />
+                    Vencendo Hoje
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-orange-600">
+                    {metrics.dueTodayCount}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(metrics.dueTodayAmount)}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-blue-500"
+                onClick={() => setStatusFilter("upcoming")}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-blue-500" />
+                    A Vencer (7 dias)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {metrics.upcomingCount}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(metrics.upcomingAmount)}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-green-500"
+                onClick={() => setStatusFilter("paid")}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Pagas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">
+                    {metrics.paidCount}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(metrics.paidAmount)}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Painel de Totais */}
+          {metrics && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Resumo Financeiro</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Custo Total</p>
+                    <p className="text-2xl font-bold">{formatCurrency(metrics.totalAmount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Valor Pago</p>
+                    <p className="text-2xl font-bold text-green-600">{formatCurrency(metrics.paidAmount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Saldo em Aberto</p>
+                    <p className="text-2xl font-bold text-red-600">{formatCurrency(metrics.pendingAmount)}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Ações e Filtros */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Contas a Pagar</CardTitle>
-                <Dialog open={showNewPayable} onOpenChange={setShowNewPayable}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Nova Conta
+                <div className="flex items-center gap-2">
+                  <CardTitle>Lista de Contas</CardTitle>
+                  {statusFilter !== "all" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setStatusFilter("all")}
+                    >
+                      Limpar filtro
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Criar Conta a Pagar</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmitPayable} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2">
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {selectedAccountIds.length > 0 && (
+                    <>
+                      <Badge variant="secondary">
+                        {selectedAccountIds.length} selecionada(s)
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDeselectAll}
+                      >
+                        Desmarcar Todas
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setShowBulkPaymentDialog(true)}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <Check className="h-4 w-4 mr-2" />
+                        Pagar Selecionadas
+                      </Button>
+                    </>
+                  )}
+                  {selectedAccountIds.length === 0 && filteredAccountsPayable.filter((acc: any) => acc.status === "pendente").length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSelectAll}
+                    >
+                      Selecionar Todas Pendentes
+                    </Button>
+                  )}
+                  <Dialog open={showNewPayable} onOpenChange={setShowNewPayable}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Nova Conta
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Nova Conta a Pagar</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
                           <Label>Descrição *</Label>
                           <Input
                             value={newPayable.description}
-                            onChange={(e) => setNewPayable({ ...newPayable, description: e.target.value })}
-                            placeholder="Ex: Aluguel, Fornecedor, etc"
-                            required
+                            onChange={(e) =>
+                              setNewPayable({ ...newPayable, description: e.target.value })
+                            }
+                            placeholder="Ex: Aluguel, Fornecedor X"
                           />
                         </div>
-
-                        <div>
-                          <Label>Categoria *</Label>
-                          <Select
-                            value={newPayable.category}
-                            onValueChange={(value) => setNewPayable({ ...newPayable, category: value })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="opex">OPEX (Despesas Operacionais)</SelectItem>
-                              <SelectItem value="custo_fixo">Custo Fixo</SelectItem>
-                              <SelectItem value="custo_variavel">Custo Variável</SelectItem>
-                              <SelectItem value="investimento">Investimento</SelectItem>
-                              <SelectItem value="impostos">Impostos</SelectItem>
-                              <SelectItem value="outros">Outros</SelectItem>
-                            </SelectContent>
-                          </Select>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label>Categoria</Label>
+                            <Select
+                              value={newPayable.category}
+                              onValueChange={(value) =>
+                                setNewPayable({ ...newPayable, category: value })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="opex">Operacional</SelectItem>
+                                <SelectItem value="capex">Investimento</SelectItem>
+                                <SelectItem value="salario">Salário</SelectItem>
+                                <SelectItem value="imposto">Imposto</SelectItem>
+                                <SelectItem value="fornecedor">Fornecedor</SelectItem>
+                                <SelectItem value="outros">Outros</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label>Fornecedor</Label>
+                            <Input
+                              value={newPayable.supplier}
+                              onChange={(e) =>
+                                setNewPayable({ ...newPayable, supplier: e.target.value })
+                              }
+                              placeholder="Nome do fornecedor"
+                            />
+                          </div>
                         </div>
-
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label>Valor (R$) *</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={newPayable.amount}
+                              onChange={(e) =>
+                                setNewPayable({ ...newPayable, amount: e.target.value })
+                              }
+                              placeholder="0.00"
+                            />
+                          </div>
+                          <div>
+                            <Label>Data de Vencimento *</Label>
+                            <Input
+                              type="date"
+                              value={newPayable.dueDate}
+                              onChange={(e) =>
+                                setNewPayable({ ...newPayable, dueDate: e.target.value })
+                              }
+                            />
+                          </div>
+                        </div>
                         <div>
                           <Label>Centro de Custo</Label>
                           <Input
                             value={newPayable.costCenter}
-                            onChange={(e) => setNewPayable({ ...newPayable, costCenter: e.target.value })}
+                            onChange={(e) =>
+                              setNewPayable({ ...newPayable, costCenter: e.target.value })
+                            }
                             placeholder="Ex: Loja 1, Administrativo"
                           />
                         </div>
-
                         <div>
-                          <Label>Fornecedor</Label>
-                          <Input
-                            value={newPayable.supplier}
-                            onChange={(e) => setNewPayable({ ...newPayable, supplier: e.target.value })}
-                            placeholder="Nome do fornecedor"
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Valor (R$) *</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={newPayable.amount}
-                            onChange={(e) => setNewPayable({ ...newPayable, amount: e.target.value })}
-                            placeholder="0.00"
-                            required
-                          />
-                        </div>
-
-                        <div className="col-span-2">
-                          <Label>Data de Vencimento *</Label>
-                          <Input
-                            type="date"
-                            value={newPayable.dueDate}
-                            onChange={(e) => setNewPayable({ ...newPayable, dueDate: e.target.value })}
-                            required
-                          />
-                        </div>
-
-                        <div className="col-span-2">
                           <Label>Observações</Label>
-                          <textarea
+                          <Input
                             value={newPayable.notes}
-                            onChange={(e) => setNewPayable({ ...newPayable, notes: e.target.value })}
-                            placeholder="Informações adicionais..."
-                            className="w-full min-h-[60px] px-3 py-2 border rounded-md"
+                            onChange={(e) =>
+                              setNewPayable({ ...newPayable, notes: e.target.value })
+                            }
+                            placeholder="Notas adicionais"
                           />
                         </div>
-                      </div>
-
-                      <div className="flex gap-2 justify-end pt-4">
                         <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setShowNewPayable(false)}
+                          className="w-full"
+                          onClick={handleCreatePayable}
+                          disabled={
+                            !newPayable.description ||
+                            !newPayable.amount ||
+                            !newPayable.dueDate
+                          }
                         >
-                          Cancelar
-                        </Button>
-                        <Button type="submit" disabled={createPayableMutation.isPending}>
-                          {createPayableMutation.isPending ? "Criando..." : "Criar Conta"}
+                          Criar Conta
                         </Button>
                       </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              {accountsPayable && accountsPayable.length > 0 ? (
-                <Table>
-                  <TableHeader>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={selectedAccountIds.length > 0}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            handleSelectAll();
+                          } else {
+                            handleDeselectAll();
+                          }
+                        }}
+                      />
+                    </TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Fornecedor</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>Valor</TableHead>
+                    <TableHead>Vencimento</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAccountsPayable.length === 0 ? (
                     <TableRow>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead>Categoria</TableHead>
-                      <TableHead>Fornecedor</TableHead>
-                      <TableHead className="text-right">Valor</TableHead>
-                      <TableHead>Vencimento</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
-                      <TableHead className="text-center">Ações</TableHead>
+                      <TableCell colSpan={8} className="text-center text-muted-foreground">
+                        Nenhuma conta encontrada
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {accountsPayable.map((account: any) => (
+                  ) : (
+                    filteredAccountsPayable.map((account: any) => (
                       <TableRow key={account.id}>
+                        <TableCell>
+                          {account.status === "pendente" && (
+                            <Checkbox
+                              checked={selectedAccountIds.includes(account.id)}
+                              onCheckedChange={() => handleToggleAccount(account.id)}
+                            />
+                          )}
+                        </TableCell>
                         <TableCell className="font-medium">{account.description}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{account.category || "-"}</Badge>
-                        </TableCell>
                         <TableCell>{account.supplier || "-"}</TableCell>
-                        <TableCell className="text-right font-semibold">
-                          {formatCurrency(account.amount)}
-                        </TableCell>
                         <TableCell>
-                          {new Date(account.dueDate).toLocaleDateString("pt-BR")}
+                          <Badge variant="outline">{account.category || "Outros"}</Badge>
                         </TableCell>
-                        <TableCell className="text-center">
-                          {getStatusBadge(account.status)}
-                        </TableCell>
-                        <TableCell className="text-center">
+                        <TableCell>{formatCurrency(account.amount)}</TableCell>
+                        <TableCell>{formatDate(account.dueDate)}</TableCell>
+                        <TableCell>{getStatusBadge(account.status)}</TableCell>
+                        <TableCell>
                           {account.status === "pendente" && (
                             <Button
-                              variant="ghost"
                               size="sm"
+                              variant="outline"
                               onClick={() => handleMarkAsPaid(account.id)}
                             >
                               Marcar como Pago
@@ -446,21 +626,15 @@ export default function Financeiro() {
                           )}
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-12 text-gray-500">
-                  <DollarSign className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>Nenhuma conta a pagar cadastrada</p>
-                  <p className="text-sm">Clique em "Nova Conta" para começar</p>
-                </div>
-              )}
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Contas a Receber */}
+        {/* CONTAS A RECEBER */}
         <TabsContent value="receber" className="space-y-4">
           <Card>
             <CardHeader>
@@ -473,102 +647,101 @@ export default function Financeiro() {
                       Nova Conta
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Criar Conta a Receber</DialogTitle>
+                      <DialogTitle>Nova Conta a Receber</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmitReceivable} className="space-y-4">
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Descrição *</Label>
+                        <Input
+                          value={newReceivable.description}
+                          onChange={(e) =>
+                            setNewReceivable({ ...newReceivable, description: e.target.value })
+                          }
+                          placeholder="Ex: Venda a prazo, Serviço prestado"
+                        />
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2">
-                          <Label>Descrição *</Label>
-                          <Input
-                            value={newReceivable.description}
-                            onChange={(e) => setNewReceivable({ ...newReceivable, description: e.target.value })}
-                            placeholder="Ex: Venda, Serviço prestado, etc"
-                            required
-                          />
-                        </div>
-
                         <div>
                           <Label>Valor (R$) *</Label>
                           <Input
                             type="number"
                             step="0.01"
                             value={newReceivable.amount}
-                            onChange={(e) => setNewReceivable({ ...newReceivable, amount: e.target.value })}
+                            onChange={(e) =>
+                              setNewReceivable({ ...newReceivable, amount: e.target.value })
+                            }
                             placeholder="0.00"
-                            required
                           />
                         </div>
-
                         <div>
                           <Label>Data de Vencimento *</Label>
                           <Input
                             type="date"
                             value={newReceivable.dueDate}
-                            onChange={(e) => setNewReceivable({ ...newReceivable, dueDate: e.target.value })}
-                            required
-                          />
-                        </div>
-
-                        <div className="col-span-2">
-                          <Label>Observações</Label>
-                          <textarea
-                            value={newReceivable.notes}
-                            onChange={(e) => setNewReceivable({ ...newReceivable, notes: e.target.value })}
-                            placeholder="Informações adicionais..."
-                            className="w-full min-h-[60px] px-3 py-2 border rounded-md"
+                            onChange={(e) =>
+                              setNewReceivable({ ...newReceivable, dueDate: e.target.value })
+                            }
                           />
                         </div>
                       </div>
-
-                      <div className="flex gap-2 justify-end pt-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setShowNewReceivable(false)}
-                        >
-                          Cancelar
-                        </Button>
-                        <Button type="submit" disabled={createReceivableMutation.isPending}>
-                          {createReceivableMutation.isPending ? "Criando..." : "Criar Conta"}
-                        </Button>
+                      <div>
+                        <Label>Observações</Label>
+                        <Input
+                          value={newReceivable.notes}
+                          onChange={(e) =>
+                            setNewReceivable({ ...newReceivable, notes: e.target.value })
+                          }
+                          placeholder="Notas adicionais"
+                        />
                       </div>
-                    </form>
+                      <Button
+                        className="w-full"
+                        onClick={handleCreateReceivable}
+                        disabled={
+                          !newReceivable.description ||
+                          !newReceivable.amount ||
+                          !newReceivable.dueDate
+                        }
+                      >
+                        Criar Conta
+                      </Button>
+                    </div>
                   </DialogContent>
                 </Dialog>
               </div>
             </CardHeader>
             <CardContent>
-              {accountsReceivable && accountsReceivable.length > 0 ? (
-                <Table>
-                  <TableHeader>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Valor</TableHead>
+                    <TableHead>Vencimento</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {!accountsReceivable || accountsReceivable.length === 0 ? (
                     <TableRow>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead className="text-right">Valor</TableHead>
-                      <TableHead>Vencimento</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
-                      <TableHead className="text-center">Ações</TableHead>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        Nenhuma conta a receber
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {accountsReceivable.map((account: any) => (
+                  ) : (
+                    accountsReceivable.map((account: any) => (
                       <TableRow key={account.id}>
                         <TableCell className="font-medium">{account.description}</TableCell>
-                        <TableCell className="text-right font-semibold">
-                          {formatCurrency(account.amount)}
-                        </TableCell>
+                        <TableCell>{formatCurrency(account.amount)}</TableCell>
+                        <TableCell>{formatDate(account.dueDate)}</TableCell>
+                        <TableCell>{getStatusBadge(account.status)}</TableCell>
                         <TableCell>
-                          {new Date(account.dueDate).toLocaleDateString("pt-BR")}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {getStatusBadge(account.status)}
-                        </TableCell>
-                        <TableCell className="text-center">
                           {account.status === "pendente" && (
                             <Button
-                              variant="ghost"
                               size="sm"
+                              variant="outline"
                               onClick={() => handleMarkAsReceived(account.id)}
                             >
                               Marcar como Recebido
@@ -576,64 +749,117 @@ export default function Financeiro() {
                           )}
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-12 text-gray-500">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>Nenhuma conta a receber cadastrada</p>
-                  <p className="text-sm">Clique em "Nova Conta" para começar</p>
-                </div>
-              )}
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Fluxo de Caixa */}
+        {/* FLUXO DE CAIXA */}
         <TabsContent value="fluxo" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Fluxo de Caixa - Mês Atual</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <div className="text-sm text-green-600 font-medium mb-1">Receitas</div>
-                    <div className="text-2xl font-bold text-green-700">
-                      {formatCurrency(stats.totalIncome)}
-                    </div>
-                  </div>
-                  <div className="p-4 bg-red-50 rounded-lg">
-                    <div className="text-sm text-red-600 font-medium mb-1">Despesas</div>
-                    <div className="text-2xl font-bold text-red-700">
-                      {formatCurrency(stats.totalExpenses)}
-                    </div>
-                  </div>
-                  <div className={`p-4 rounded-lg ${stats.balance >= 0 ? 'bg-blue-50' : 'bg-orange-50'}`}>
-                    <div className={`text-sm font-medium mb-1 ${stats.balance >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
-                      Saldo
-                    </div>
-                    <div className={`text-2xl font-bold ${stats.balance >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
-                      {formatCurrency(stats.balance)}
-                    </div>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Entradas</CardTitle>
+                <TrendingUp className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {formatCurrency(cashFlow?.totalIncome || 0)}
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Receitas do período
+                </p>
+              </CardContent>
+            </Card>
 
-                <div className="pt-4">
-                  <p className="text-sm text-gray-600 mb-2">
-                    <strong>Cálculo:</strong> Saldo = Receitas Recebidas - Despesas Pagas (mês atual)
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Este valor representa o fluxo de caixa real do mês, considerando apenas transações já efetivadas.
-                  </p>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Saídas</CardTitle>
+                <TrendingDown className="h-4 w-4 text-red-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-600">
+                  {formatCurrency(cashFlow?.totalExpenses || 0)}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Despesas do período
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Saldo</CardTitle>
+                <Wallet className="h-4 w-4 text-blue-600" />
+              </CardHeader>
+              <CardContent>
+                <div className={`text-2xl font-bold ${(cashFlow?.balance || 0) >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {formatCurrency(cashFlow?.balance || 0)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Saldo do período
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
+
+      {/* Dialog de Pagamento em Massa */}
+      <Dialog open={showBulkPaymentDialog} onOpenChange={setShowBulkPaymentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Pagamento em Massa</DialogTitle>
+            <DialogDescription>
+              Você está prestes a marcar {selectedAccountIds.length} conta(s) como pagas.
+            </DialogDescription>
+          </DialogHeader>
+          {bulkPaymentPreview && (
+            <div className="space-y-4">
+              <div className="bg-muted p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Total de Contas:</span>
+                  <span className="text-lg font-bold">{bulkPaymentPreview.count}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Valor Total:</span>
+                  <span className="text-2xl font-bold text-green-600">
+                    {formatCurrency(bulkPaymentPreview.total)}
+                  </span>
+                </div>
+              </div>
+              <div className="max-h-60 overflow-y-auto space-y-2">
+                {bulkPaymentPreview.accounts.map((acc: any) => (
+                  <div key={acc.id} className="flex items-center justify-between p-2 border rounded">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{acc.description}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {acc.supplier || "Sem fornecedor"} • Venc: {formatDate(acc.dueDate)}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold">{formatCurrency(acc.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkPaymentDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleBulkPayment}
+              disabled={bulkPaymentMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {bulkPaymentMutation.isPending ? "Processando..." : "Confirmar Pagamento"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

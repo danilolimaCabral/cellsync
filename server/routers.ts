@@ -621,6 +621,45 @@ export const appRouter = router({
           await db.updateAccountPayableStatus(input.id, input.status, input.paymentDate);
           return { success: true };
         }),
+
+      // Métricas e melhorias
+      metrics: protectedProcedure
+        .input(z.object({
+          startDate: z.date().optional(),
+          endDate: z.date().optional(),
+        }).optional())
+        .query(async ({ input }) => {
+          const apModule = await import("./accounts-payable-improvements");
+          return await apModule.getAccountsPayableMetrics(input || {});
+        }),
+
+      byStatusCategory: protectedProcedure
+        .input(z.object({
+          category: z.enum(["overdue", "dueToday", "upcoming", "paid"]),
+        }))
+        .query(async ({ input }) => {
+          const apModule = await import("./accounts-payable-improvements");
+          return await apModule.getAccountsByStatusCategory(input.category);
+        }),
+
+      bulkPayment: protectedProcedure
+        .input(z.object({
+          accountIds: z.array(z.number()),
+          paymentDate: z.date().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          const apModule = await import("./accounts-payable-improvements");
+          return await apModule.payAccountsInBulk(input.accountIds, input.paymentDate);
+        }),
+
+      bulkPaymentPreview: protectedProcedure
+        .input(z.object({
+          accountIds: z.array(z.number()),
+        }))
+        .query(async ({ input }) => {
+          const apModule = await import("./accounts-payable-improvements");
+          return await apModule.calculateBulkPaymentTotal(input.accountIds);
+        }),
     }),
 
     // Contas a Receber
