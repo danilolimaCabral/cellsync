@@ -1,14 +1,14 @@
-# Integração de Gateways de Pagamento - OkCells
+# Integração de Gateways de Pagamento - CellSync
 
 ## 📋 Resumo Executivo
 
-Este documento descreve a integração de gateways de pagamento (Mercado Pago, PagSeguro) no sistema OkCells para aceitar **cartão de crédito/débito** e **PIX** automaticamente.
+Este documento descreve a integração de gateways de pagamento (Mercado Pago, PagSeguro) no sistema CellSync para aceitar **cartão de crédito/débito** e **PIX** automaticamente.
 
 ---
 
 ## 🎯 Objetivo
 
-Permitir que o sistema OkCells processe pagamentos automaticamente através de:
+Permitir que o sistema CellSync processe pagamentos automaticamente através de:
 - **PIX** (QR Code e Copia e Cola)
 - **Cartão de Crédito** (parcelado)
 - **Cartão de Débito**

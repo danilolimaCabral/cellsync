@@ -1,4 +1,4 @@
-# Análise de Funcionalidades - Sistema OkCells
+# Análise de Funcionalidades - Sistema CellSync
 
 ## 📊 Status Geral: 60% Implementado
 

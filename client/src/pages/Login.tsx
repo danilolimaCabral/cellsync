@@ -70,7 +70,7 @@ export default function Login() {
               <span className="text-white text-2xl font-bold">OK</span>
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">OkCells</CardTitle>
+          <CardTitle className="text-2xl text-center">CellSync</CardTitle>
           <CardDescription className="text-center">
             {isRegistering 
               ? "Crie sua conta para começar" 

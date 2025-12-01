@@ -1,5 +1,5 @@
 # Análise de Mercado e Estratégia de Precificação
-## Sistema OkCells - Gestão para Lojas de Celular e Assistências Técnicas
+## Sistema CellSync - Gestão para Lojas de Celular e Assistências Técnicas
 
 **Autor**: Manus AI  
 **Data**: 01 de Dezembro de 2025  
@@ -9,9 +9,9 @@
 
 ## Sumário Executivo
 
-O mercado brasileiro de sistemas de gestão para lojas de celular e assistências técnicas apresenta uma ampla variedade de soluções, com preços que variam de **R$ 44,90 a R$ 650 por mês**. Esta análise examinou cinco concorrentes principais (ReparaOS, MercadoPhone, VHSys, Bling e soluções de licença única) para identificar o posicionamento ideal do **OkCells** no mercado.
+O mercado brasileiro de sistemas de gestão para lojas de celular e assistências técnicas apresenta uma ampla variedade de soluções, com preços que variam de **R$ 44,90 a R$ 650 por mês**. Esta análise examinou cinco concorrentes principais (ReparaOS, MercadoPhone, VHSys, Bling e soluções de licença única) para identificar o posicionamento ideal do **CellSync** no mercado.
 
-O OkCells se destaca por oferecer funcionalidades específicas para o segmento de celulares, incluindo rastreamento por IMEI, gestão de ordem de serviço completa, controle financeiro integrado e relatórios de Business Intelligence. Com base na análise competitiva, recomenda-se um **modelo de precificação escalonado** entre **R$ 79,90 e R$ 199,90 mensais**, posicionando o sistema como uma solução premium com excelente custo-benefício.
+O CellSync se destaca por oferecer funcionalidades específicas para o segmento de celulares, incluindo rastreamento por IMEI, gestão de ordem de serviço completa, controle financeiro integrado e relatórios de Business Intelligence. Com base na análise competitiva, recomenda-se um **modelo de precificação escalonado** entre **R$ 79,90 e R$ 199,90 mensais**, posicionando o sistema como uma solução premium com excelente custo-benefício.
 
 ---
 
@@ -157,24 +157,24 @@ Os concorrentes segmentam seus clientes principalmente por:
 
 ---
 
-## 3. Análise SWOT do OkCells
+## 3. Análise SWOT do CellSync
 
 ### 3.1 Forças (Strengths)
 
-**Especialização no Segmento**: O OkCells foi desenvolvido especificamente para lojas de celular e assistências técnicas, oferecendo funcionalidades que concorrentes generalistas não possuem:
+**Especialização no Segmento**: O CellSync foi desenvolvido especificamente para lojas de celular e assistências técnicas, oferecendo funcionalidades que concorrentes generalistas não possuem:
 
 - **Rastreamento por IMEI**: Controle individual de cada aparelho, essencial para garantias e rastreabilidade
 - **Gestão de Ordem de Serviço Completa**: Diagnóstico detalhado, controle de status em tempo real, histórico de reparos
 - **Controle de Garantias Especializado**: Termos personalizados, alertas de vencimento, histórico de acionamentos
 
-**Módulo Financeiro Robusto**: Diferentemente de concorrentes como ReparaOS, o OkCells oferece:
+**Módulo Financeiro Robusto**: Diferentemente de concorrentes como ReparaOS, o CellSync oferece:
 
 - Fluxo de caixa em tempo real
 - Contas a pagar e receber com categorização (OPEX, Custo Fixo, Custo Variável)
 - Centros de custo para análise de rentabilidade
 - Relatórios gerenciais personalizados
 
-**Business Intelligence Integrado**: Enquanto a maioria dos concorrentes oferece relatórios básicos, o OkCells possui:
+**Business Intelligence Integrado**: Enquanto a maioria dos concorrentes oferece relatórios básicos, o CellSync possui:
 
 - Dashboards personalizáveis em tempo real
 - KPIs e métricas de desempenho
@@ -190,11 +190,11 @@ Os concorrentes segmentam seus clientes principalmente por:
 
 **Marca Nova no Mercado**: Sem histórico de clientes ou cases de sucesso para demonstrar confiabilidade.
 
-**Ausência de Integrações com Marketplaces**: Concorrentes como Bling e MercadoPhone já oferecem integração com Mercado Livre, Amazon e Shopee, funcionalidade ainda não disponível no OkCells.
+**Ausência de Integrações com Marketplaces**: Concorrentes como Bling e MercadoPhone já oferecem integração com Mercado Livre, Amazon e Shopee, funcionalidade ainda não disponível no CellSync.
 
 **Falta de App Nativo Mobile**: O sistema é responsivo, mas não possui aplicativo nativo iOS/Android como MercadoPhone e VHSys.
 
-**Recursos de IA Ausentes**: MercadoPhone oferece automação via IA (IA Blue), recurso que o OkCells ainda não possui.
+**Recursos de IA Ausentes**: MercadoPhone oferece automação via IA (IA Blue), recurso que o CellSync ainda não possui.
 
 **Emissão de NF-e Não Implementada**: Funcionalidade crítica para formalização de vendas, ainda pendente de desenvolvimento.
 
@@ -226,9 +226,9 @@ Os concorrentes segmentam seus clientes principalmente por:
 
 ## 4. Comparação de Funcionalidades
 
-A tabela abaixo compara as principais funcionalidades do OkCells com os concorrentes analisados:
+A tabela abaixo compara as principais funcionalidades do CellSync com os concorrentes analisados:
 
-| Funcionalidade | OkCells | ReparaOS | MercadoPhone | VHSys | Bling |
+| Funcionalidade | CellSync | ReparaOS | MercadoPhone | VHSys | Bling |
 |---|---|---|---|---|---|
 | **PDV (Ponto de Venda)** | ✅ | ✅ | ✅ | ✅ (Completo+) | ✅ |
 | **Controle de Estoque** | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -255,7 +255,7 @@ A tabela abaixo compara as principais funcionalidades do OkCells com os concorre
 
 ### 5.1 Princípios Norteadores
 
-A estratégia de precificação do OkCells deve considerar:
+A estratégia de precificação do CellSync deve considerar:
 
 1. **Posicionamento Premium com Custo-Benefício**: Não competir por preço mais baixo, mas por valor entregue
 2. **Escalabilidade**: Planos que acompanham o crescimento do cliente
@@ -370,19 +370,19 @@ Para gerar receita adicional e atender necessidades específicas:
 | **MercadoPhone** | Pro | R$ 133,33 | - |
 | **VHSys** | Completo | R$ 287,20 | R$ 287,20 |
 | **Bling** | Mercúrio | R$ 110,00 | - |
-| **OkCells** | Professional | **R$ 129,90** | **R$ 110,42** |
+| **CellSync** | Professional | **R$ 129,90** | **R$ 110,42** |
 
 **Análise**:
 
-O plano Professional do OkCells (R$ 129,90/mês) posiciona-se estrategicamente entre o MercadoPhone Pro (R$ 133,33) e o Bling Mercúrio (R$ 110), oferecendo funcionalidades superiores ao Bling e preço mais acessível que o MercadoPhone.
+O plano Professional do CellSync (R$ 129,90/mês) posiciona-se estrategicamente entre o MercadoPhone Pro (R$ 133,33) e o Bling Mercúrio (R$ 110), oferecendo funcionalidades superiores ao Bling e preço mais acessível que o MercadoPhone.
 
-Comparado ao ReparaOS, o OkCells é mais caro, mas justifica o premium com funcionalidades avançadas (BI, controle de comissões, programa de fidelidade) que o ReparaOS não oferece.
+Comparado ao ReparaOS, o CellSync é mais caro, mas justifica o premium com funcionalidades avançadas (BI, controle de comissões, programa de fidelidade) que o ReparaOS não oferece.
 
-O VHSys Completo (R$ 287,20 anual) é significativamente mais caro que o OkCells Professional anual (R$ 110,42), tornando o OkCells mais competitivo para lojas que não necessitam de funcionalidades enterprise como Multi-CNPJ.
+O VHSys Completo (R$ 287,20 anual) é significativamente mais caro que o CellSync Professional anual (R$ 110,42), tornando o CellSync mais competitivo para lojas que não necessitam de funcionalidades enterprise como Multi-CNPJ.
 
 ### 6.2 Valor Percebido vs. Preço
 
-O OkCells oferece um **valor percebido superior** ao preço cobrado devido a:
+O CellSync oferece um **valor percebido superior** ao preço cobrado devido a:
 
 1. **Especialização**: Funcionalidades específicas para celulares (IMEI, garantias) que concorrentes generalistas não possuem
 2. **BI Avançado**: Dashboards e relatórios que competem com soluções mais caras
@@ -440,7 +440,7 @@ Com investimento em marketing e parcerias, assumindo taxa de conversão de 10% e
 
 **Ações**:
 1. **Programa de Indicação**: Cliente que indicar outro ganha 1 mês grátis
-2. **Cases de Sucesso**: Publicar estudos de caso de clientes que aumentaram vendas/eficiência com o OkCells
+2. **Cases de Sucesso**: Publicar estudos de caso de clientes que aumentaram vendas/eficiência com o CellSync
 3. **Presença em Eventos**: Participar de feiras e eventos do setor de celulares
 4. **Google Ads e Facebook Ads**: Campanhas segmentadas para donos de lojas de celular
 5. **Parcerias com Contadores**: Oferecer comissão para escritórios contábeis que indicarem clientes
@@ -551,7 +551,7 @@ Com investimento em marketing e parcerias, assumindo taxa de conversão de 10% e
 
 ## 11. Conclusão
 
-O mercado de sistemas de gestão para lojas de celular no Brasil apresenta oportunidades significativas, com concorrentes estabelecidos mas espaço para diferenciação através de especialização e inovação. O OkCells possui funcionalidades competitivas e, em alguns aspectos, superiores aos principais players do mercado.
+O mercado de sistemas de gestão para lojas de celular no Brasil apresenta oportunidades significativas, com concorrentes estabelecidos mas espaço para diferenciação através de especialização e inovação. O CellSync possui funcionalidades competitivas e, em alguns aspectos, superiores aos principais players do mercado.
 
 A estratégia de precificação proposta (R$ 79,90 a R$ 199,90 mensais) posiciona o sistema como uma **solução premium com excelente custo-benefício**, evitando a armadilha de competir apenas por preço. O foco deve estar em comunicar o valor agregado: BI avançado, controle de comissões, programa de fidelidade e especialização no segmento de celulares.
 
@@ -562,7 +562,7 @@ Para o sucesso da estratégia, é crítico:
 4. **Focar em onboarding e sucesso do cliente** para reduzir churn
 5. **Desenvolver roadmap claro** com app mobile e integrações nos próximos 6-12 meses
 
-Com execução disciplinada, o OkCells tem potencial de alcançar **R$ 36.000-50.000 em MRR (Monthly Recurring Revenue) no primeiro ano**, estabelecendo-se como uma alternativa sólida e especializada no mercado de gestão para lojas de celular.
+Com execução disciplinada, o CellSync tem potencial de alcançar **R$ 36.000-50.000 em MRR (Monthly Recurring Revenue) no primeiro ano**, estabelecendo-se como uma alternativa sólida e especializada no mercado de gestão para lojas de celular.
 
 ---
 
@@ -580,4 +580,4 @@ Com execução disciplinada, o OkCells tem potencial de alcançar **R$ 36.000-50
 **Documento elaborado por**: Manus AI  
 **Data**: 01 de Dezembro de 2025  
 **Versão**: 1.0  
-**Contato**: Para dúvidas ou sugestões sobre este relatório, entre em contato através do sistema OkCells.
+**Contato**: Para dúvidas ou sugestões sobre este relatório, entre em contato através do sistema CellSync.

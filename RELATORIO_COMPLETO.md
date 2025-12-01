@@ -1,4 +1,4 @@
-# OkCells - Relatório Completo de Implementação
+# CellSync - Relatório Completo de Implementação
 
 **Data:** 28/11/2025  
 **Versão Atual:** 54deac34  

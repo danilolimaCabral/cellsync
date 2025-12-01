@@ -1,4 +1,4 @@
-# Pendências Finais - OkCells
+# Pendências Finais - CellSync
 
 ## 📊 Visão Geral
 

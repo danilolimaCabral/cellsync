@@ -1,4 +1,4 @@
-# 📊 OkCells - Relatório de Status Completo
+# 📊 CellSync - Relatório de Status Completo
 
 **Data:** 28/11/2025  
 **Versão:** c65f23e5  
@@ -224,7 +224,7 @@
 
 ## 🚀 Sistema Pronto para Produção
 
-O sistema **OkCells está 99% completo** e totalmente funcional para operação de lojas de celular, incluindo:
+O sistema **CellSync está 99% completo** e totalmente funcional para operação de lojas de celular, incluindo:
 
 ✅ PDV completo com emissão de NF-e integrada  
 ✅ Controle de estoque com IMEI  

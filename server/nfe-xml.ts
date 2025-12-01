@@ -54,7 +54,7 @@ export function generateNFeXML(nfe: NFEData): string {
           indFinal: { _text: "1" }, // 1=Consumidor final
           indPres: { _text: "1" }, // 1=Operação presencial
           procEmi: { _text: "0" }, // 0=Emissão própria
-          verProc: { _text: "OkCells 1.0" },
+          verProc: { _text: "CellSync 1.0" },
         },
         emit: {
           CNPJ: { _text: nfe.emitterCnpj.replace(/\D/g, "") },
@@ -188,7 +188,7 @@ export function generateNFeXML(nfe: NFEData): string {
         },
         infAdic: {
           infCpl: {
-            _text: nfe.additionalInfo || "Nota Fiscal emitida pelo sistema OkCells",
+            _text: nfe.additionalInfo || "Nota Fiscal emitida pelo sistema CellSync",
           },
         },
       },

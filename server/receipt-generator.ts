@@ -105,7 +105,7 @@ export async function generateReceipt(data: ReceiptData): Promise<Buffer> {
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
-  doc.text("OkCells", pageWidth / 2, yPos, { align: "center" });
+  doc.text("CellSync", pageWidth / 2, yPos, { align: "center" });
 
   yPos += 6;
 
@@ -433,7 +433,7 @@ export async function generateReceipt(data: ReceiptData): Promise<Buffer> {
 
   doc.setFontSize(7);
   doc.text(
-    "OkCells - Sistema de Gestão para Lojas de Celular",
+    "CellSync - Sistema de Gestão para Lojas de Celular",
     pageWidth / 2,
     pageHeight - 10,
     { align: "center" }

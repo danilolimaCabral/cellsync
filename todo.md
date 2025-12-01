@@ -1,4 +1,4 @@
-# OkCells - Lista de Funcionalidades
+# CellSync - Lista de Funcionalidades
 
 ## Estrutura e Configuração Inicial
 - [x] Configurar autenticação local (usuário e senha) sem OAuth Manus
@@ -643,17 +643,32 @@
 
 ## Análise de Mercado e Precificação
 - [ ] Pesquisar sistemas concorrentes (Tiny ERP, Bling, Omie, etc)
-- [ ] Comparar funcionalidades do OkCells com concorrentes
+- [ ] Comparar funcionalidades do CellSync com concorrentes
 - [ ] Analisar modelos de precificação do mercado
 - [ ] Criar relatório de análise competitiva
-- [ ] Sugerir estratégia de precificação para OkCells
+- [ ] Sugerir estratégia de precificação para CellSync
 
 
 ## Análise de Mercado e Precificação - Concluída
 - [x] Pesquisar sistemas concorrentes no mercado brasileiro (ReparaOS, MercadoPhone, VHSys, Bling)
 - [x] Analisar funcionalidades e preços dos concorrentes
-- [x] Comparar funcionalidades do OkCells com concorrentes
+- [x] Comparar funcionalidades do CellSync com concorrentes
 - [x] Criar relatório completo de análise de mercado (analise_mercado_precificacao.md)
 - [x] Definir estratégia de precificação (3 planos: Starter R$ 79,90, Professional R$ 129,90, Enterprise R$ 199,90)
 - [x] Projetar receita e viabilidade financeira
 - [x] Definir estratégias de go-to-market
+
+
+## Rebrand: OkCells → CellSync
+- [x] Criar logo profissional do CellSync (cellsync-logo.png, cellsync-icon.png)
+- [x] Pesquisar tendências de cores 2025 (paletas suaves + acentos ousados, gradientes fluidos)
+- [x] Definir paleta de cores moderna (azul #3B82F6, roxo #A855F7, rosa #EC4899)
+- [x] Redesenhar landing page (Home.tsx) com nova identidade visual moderna
+- [x] Atualizar CSS global (index.css) com cores do CellSync
+- [x] Renomear "OkCells" para "CellSync" em todo o código
+- [x] Atualizar favicon e meta tags (cellsync-icon.png, Google Fonts Inter)
+- [x] Atualizar documentação (todos os .md files)
+- [x] Criar documento de identidade visual (BRAND_IDENTITY.md)
+- [x] Verificar landing page com nova identidade (gradiente azul→roxo→rosa funcionando perfeitamente)
+
+**Nota**: VITE_APP_TITLE e VITE_APP_LOGO devem ser atualizados manualmente via Settings → General no painel web

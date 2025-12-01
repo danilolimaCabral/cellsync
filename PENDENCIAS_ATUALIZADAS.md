@@ -1,4 +1,4 @@
-# 📋 Relatório Atualizado de Pendências - OkCells
+# 📋 Relatório Atualizado de Pendências - CellSync
 **Data:** 01/12/2025  
 **Sistema:** 99% completo  
 **Testes:** 97+ passando  
@@ -250,7 +250,7 @@
 
 ## 💡 OBSERVAÇÕES FINAIS
 
-O sistema **OkCells** está **99% funcional** para operação diária de uma loja de celular. As pendências são majoritariamente **melhorias e expansões** que não impedem o uso completo do sistema.
+O sistema **CellSync** está **99% funcional** para operação diária de uma loja de celular. As pendências são majoritariamente **melhorias e expansões** que não impedem o uso completo do sistema.
 
 **Funcionalidades Core 100% Operacionais:**
 - ✅ PDV Completo com NF-e

@@ -1,4 +1,4 @@
-# 📱 Sistema OkCells - Resumo Completo de Funcionalidades
+# 📱 Sistema CellSync - Resumo Completo de Funcionalidades
 
 **Sistema de Gestão Completo para Lojas de Celular, Assistências Técnicas e Importadoras**
 
@@ -6,7 +6,7 @@
 
 ## 🎯 Visão Geral
 
-O **OkCells** é um sistema de gestão empresarial (ERP) completo desenvolvido especificamente para lojas de celular, assistências técnicas e importadoras. O sistema integra todos os processos do negócio em uma única plataforma moderna, responsiva e intuitiva.
+O **CellSync** é um sistema de gestão empresarial (ERP) completo desenvolvido especificamente para lojas de celular, assistências técnicas e importadoras. O sistema integra todos os processos do negócio em uma única plataforma moderna, responsiva e intuitiva.
 
 ### 📊 Estatísticas do Sistema
 
@@ -620,7 +620,7 @@ O **OkCells** é um sistema de gestão empresarial (ERP) completo desenvolvido e
 
 ## 📊 Resumo Executivo
 
-O **Sistema OkCells** é uma solução completa e moderna para gestão de lojas de celular, assistências técnicas e importadoras. Com **95% de completude**, o sistema está pronto para uso em produção e cobre todos os processos críticos do negócio:
+O **Sistema CellSync** é uma solução completa e moderna para gestão de lojas de celular, assistências técnicas e importadoras. Com **95% de completude**, o sistema está pronto para uso em produção e cobre todos os processos críticos do negócio:
 
 ✅ **PDV completo** com emissão automática de NF-e  
 ✅ **Controle de estoque** com rastreamento por IMEI  
@@ -633,7 +633,7 @@ O **Sistema OkCells** é uma solução completa e moderna para gestão de lojas 
 
 O sistema foi desenvolvido com as melhores práticas de engenharia de software, incluindo type-safety end-to-end, testes automatizados, segurança robusta e arquitetura modular. A interface é moderna, responsiva e intuitiva, proporcionando uma excelente experiência para os usuários.
 
-**O OkCells está pronto para transformar a gestão do seu negócio!** 🚀
+**O CellSync está pronto para transformar a gestão do seu negócio!** 🚀
 
 ---
 

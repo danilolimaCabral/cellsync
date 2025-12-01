@@ -203,7 +203,7 @@ export async function generateDANFE(nfe: NFEData): Promise<Buffer> {
   doc.text("DADOS ADICIONAIS", margin + 2, y);
   y += 4;
   doc.setFont("helvetica", "normal");
-  doc.text(nfe.additionalInfo || "Nota Fiscal emitida pelo sistema OkCells", margin + 2, y, {
+  doc.text(nfe.additionalInfo || "Nota Fiscal emitida pelo sistema CellSync", margin + 2, y, {
     maxWidth: pageWidth - margin * 2 - 4,
   });
 

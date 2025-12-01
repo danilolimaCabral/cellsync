@@ -1,4 +1,4 @@
-# 📅 Cronograma Detalhado - Sprint 1 (OkCells)
+# 📅 Cronograma Detalhado - Sprint 1 (CellSync)
 
 **Duração Total:** 16 horas (2 dias úteis)  
 **Período:** 02/12/2025 - 03/12/2025  

@@ -1,4 +1,4 @@
-# 📋 Relatório de Pendências - OkCells Sistema de Gestão
+# 📋 Relatório de Pendências - CellSync Sistema de Gestão
 
 **Data:** 01/12/2025  
 **Total de Pendências:** 106 itens  

@@ -266,7 +266,7 @@ export default function Vendas() {
       issueNFeMutation.mutate({
         saleId,
         emitterCnpj: "00000000000000", // TODO: Pegar do sistema
-        emitterName: "OkCells",
+        emitterName: "CellSync",
         recipientDocument: customer.cpf || customer.cnpj || "",
         recipientName: customer.name,
         recipientAddress: customer.address || undefined,
