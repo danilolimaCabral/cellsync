@@ -672,3 +672,22 @@
 - [x] Verificar landing page com nova identidade (gradiente azul→roxo→rosa funcionando perfeitamente)
 
 **Nota**: VITE_APP_TITLE e VITE_APP_LOGO devem ser atualizados manualmente via Settings → General no painel web
+
+
+## Animações e Ícones Modernos - Landing Page
+- [x] Instalar Framer Motion
+- [x] Modernizar ícones com animações (hover rotate 360°, scale 1.1)
+- [x] Aplicar gradientes vibrantes nos ícones e cards (azul→roxo→rosa)
+- [x] Implementar fade-in + slide-up no Hero Section (logo, título, CTAs)
+- [x] Adicionar stagger animations nos cards de features (delay progressivo)
+- [x] Implementar scroll-triggered animations (whileInView)
+- [x] Adicionar micro-interações (hover scale, y-offset, gradiente reverso)
+- [x] Adicionar loading spinner animado com gradiente
+
+
+## Bug: Layout da Página Vendas (PDV)
+- [x] Corrigir sobreposição de texto dos atalhos sobre o botão "Atacado"
+- [x] Reorganizar header da página (PageHeader separado + barra de controles)
+- [x] Modernizar botões Varejo/Atacado com gradiente azul→roxo
+- [x] Criar badges visuais para atalhos de teclado (F2, F3, F4, ESC)
+- [x] Garantir responsividade dos atalhos em mobile (flex-wrap)

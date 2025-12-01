@@ -386,39 +386,55 @@ export default function Vendas() {
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex items-center justify-between mb-6">
+      {/* Header com título */}
+      <div className="mb-6">
         <PageHeader 
           title="Ponto de Venda (PDV)" 
           description="Sistema integrado de vendas"
           backTo="/dashboard"
         />
-        <div className="flex items-center gap-4">
-          {/* Toggle Varejo/Atacado */}
-          <div className="flex items-center gap-2 bg-accent p-2 rounded-lg">
-            <button
-              onClick={() => setSaleType("retail")}
-              className={`px-4 py-2 rounded-md font-medium transition-all ${
-                saleType === "retail"
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              🛒 Varejo
-            </button>
-            <button
-              onClick={() => setSaleType("wholesale")}
-              className={`px-4 py-2 rounded-md font-medium transition-all ${
-                saleType === "wholesale"
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              📦 Atacado
-            </button>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            <p>Atalhos: F2 (Busca) | F3 (Finalizar) | F4 (Cliente) | ESC (Limpar)</p>
-          </div>
+      </div>
+
+      {/* Barra de controles (Varejo/Atacado + Atalhos) */}
+      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+        {/* Toggle Varejo/Atacado */}
+        <div className="flex items-center gap-2 bg-white p-2 rounded-lg shadow-sm border border-slate-200">
+          <button
+            onClick={() => setSaleType("retail")}
+            className={`px-4 py-2 rounded-md font-medium transition-all ${
+              saleType === "retail"
+                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"
+                : "bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            🛍️ Varejo
+          </button>
+          <button
+            onClick={() => setSaleType("wholesale")}
+            className={`px-4 py-2 rounded-md font-medium transition-all ${
+              saleType === "wholesale"
+                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"
+                : "bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            📦 Atacado
+          </button>
+        </div>
+        
+        {/* Atalhos de teclado */}
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-slate-600 font-medium">Atalhos:</span>
+          <span className="px-2 py-1 bg-white rounded border border-slate-300 text-slate-700 font-mono text-xs">F2</span>
+          <span className="text-slate-500">Busca</span>
+          <span className="text-slate-300">|</span>
+          <span className="px-2 py-1 bg-white rounded border border-slate-300 text-slate-700 font-mono text-xs">F3</span>
+          <span className="text-slate-500">Finalizar</span>
+          <span className="text-slate-300">|</span>
+          <span className="px-2 py-1 bg-white rounded border border-slate-300 text-slate-700 font-mono text-xs">F4</span>
+          <span className="text-slate-500">Cliente</span>
+          <span className="text-slate-300">|</span>
+          <span className="px-2 py-1 bg-white rounded border border-slate-300 text-slate-700 font-mono text-xs">ESC</span>
+          <span className="text-slate-500">Limpar</span>
         </div>
       </div>
 
