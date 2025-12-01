@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -31,17 +32,94 @@ import { Button } from "./ui/button";
 import { Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings } from "lucide-react";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: ShoppingCart, label: "Vendas (PDV)", path: "/vendas" },
-  { icon: History, label: "Histórico de Vendas", path: "/historico-vendas" },
-  { icon: Package, label: "Estoque", path: "/estoque" },
-  { icon: FileSpreadsheet, label: "Relatório Avançado", path: "/relatorio-avancado-estoque" },
-  { icon: ArrowLeftRight, label: "Movimentações", path: "/movimentacoes" },
-  { icon: Wrench, label: "Ordem de Serviço", path: "/os" },
-  { icon: Users, label: "Clientes (CRM)", path: "/clientes" },
-  { icon: DollarSign, label: "Financeiro", path: "/financeiro" },
-  { icon: TrendingUp, label: "Relatórios (BI)", path: "/relatorios" },
-  { icon: Settings, label: "Configurações", path: "/configuracoes" },
+  { 
+    icon: LayoutDashboard, 
+    label: "Dashboard", 
+    path: "/dashboard",
+    gradient: "from-blue-500 to-cyan-500",
+    bgGradient: "from-blue-50 to-cyan-50",
+    iconColor: "text-blue-600"
+  },
+  { 
+    icon: ShoppingCart, 
+    label: "Vendas (PDV)", 
+    path: "/vendas",
+    gradient: "from-green-500 to-emerald-500",
+    bgGradient: "from-green-50 to-emerald-50",
+    iconColor: "text-green-600"
+  },
+  { 
+    icon: History, 
+    label: "Histórico de Vendas", 
+    path: "/historico-vendas",
+    gradient: "from-teal-500 to-cyan-500",
+    bgGradient: "from-teal-50 to-cyan-50",
+    iconColor: "text-teal-600"
+  },
+  { 
+    icon: Package, 
+    label: "Estoque", 
+    path: "/estoque",
+    gradient: "from-purple-500 to-pink-500",
+    bgGradient: "from-purple-50 to-pink-50",
+    iconColor: "text-purple-600"
+  },
+  { 
+    icon: FileSpreadsheet, 
+    label: "Relatório Avançado", 
+    path: "/relatorio-avancado-estoque",
+    gradient: "from-indigo-500 to-purple-500",
+    bgGradient: "from-indigo-50 to-purple-50",
+    iconColor: "text-indigo-600"
+  },
+  { 
+    icon: ArrowLeftRight, 
+    label: "Movimentações", 
+    path: "/movimentacoes",
+    gradient: "from-cyan-500 to-blue-500",
+    bgGradient: "from-cyan-50 to-blue-50",
+    iconColor: "text-cyan-600"
+  },
+  { 
+    icon: Wrench, 
+    label: "Ordem de Serviço", 
+    path: "/os",
+    gradient: "from-red-500 to-rose-500",
+    bgGradient: "from-red-50 to-rose-50",
+    iconColor: "text-red-600"
+  },
+  { 
+    icon: Users, 
+    label: "Clientes (CRM)", 
+    path: "/clientes",
+    gradient: "from-pink-500 to-rose-500",
+    bgGradient: "from-pink-50 to-rose-50",
+    iconColor: "text-pink-600"
+  },
+  { 
+    icon: DollarSign, 
+    label: "Financeiro", 
+    path: "/financeiro",
+    gradient: "from-yellow-500 to-orange-400",
+    bgGradient: "from-yellow-50 to-orange-50",
+    iconColor: "text-yellow-600"
+  },
+  { 
+    icon: TrendingUp, 
+    label: "Relatórios (BI)", 
+    path: "/relatorios",
+    gradient: "from-orange-500 to-amber-500",
+    bgGradient: "from-orange-50 to-amber-50",
+    iconColor: "text-orange-600"
+  },
+  { 
+    icon: Settings, 
+    label: "Configurações", 
+    path: "/configuracoes",
+    gradient: "from-slate-500 to-gray-500",
+    bgGradient: "from-slate-50 to-gray-50",
+    iconColor: "text-slate-600"
+  },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -176,23 +254,68 @@ function DashboardLayoutContent({
           </SidebarHeader>
 
           <SidebarContent className="gap-0">
-            <SidebarMenu className="px-2 py-1">
-              {menuItems.map(item => {
+            <SidebarMenu className="px-2 py-1 space-y-1">
+              {menuItems.map((item, index) => {
                 const isActive = location === item.path;
+                const Icon = item.icon;
                 return (
-                  <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      onClick={() => setLocation(item.path)}
-                      tooltip={item.label}
-                      className={`h-10 transition-all font-normal`}
-                    >
-                      <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
-                      />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <motion.div
+                    key={item.path}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        onClick={() => setLocation(item.path)}
+                        tooltip={item.label}
+                        className={`h-11 transition-all duration-300 font-medium group relative overflow-hidden ${
+                          isActive 
+                            ? `bg-gradient-to-r ${item.bgGradient} border-l-4 border-l-transparent shadow-sm` 
+                            : "hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100"
+                        }`}
+                      >
+                        {/* Gradiente de fundo no hover */}
+                        {!isActive && (
+                          <div className={`absolute inset-0 bg-gradient-to-r ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
+                        )}
+                        
+                        {/* Ícone com background colorido */}
+                        <motion.div
+                          className={`relative z-10 p-2 rounded-lg ${
+                            isActive 
+                              ? `bg-gradient-to-br ${item.gradient} shadow-md` 
+                              : `bg-gradient-to-br ${item.bgGradient} group-hover:shadow-sm`
+                          } transition-all duration-300`}
+                          whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Icon className={`h-4 w-4 ${
+                            isActive ? "text-white" : item.iconColor
+                          } transition-colors duration-300`} />
+                        </motion.div>
+                        
+                        {/* Label */}
+                        <span className={`relative z-10 ${
+                          isActive 
+                            ? "font-semibold text-slate-800" 
+                            : "text-slate-600 group-hover:text-slate-800"
+                        } transition-colors duration-300`}>
+                          {item.label}
+                        </span>
+                        
+                        {/* Indicador de ativo */}
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeIndicator"
+                            className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${item.gradient} rounded-r-full`}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </motion.div>
                 );
               })}
             </SidebarMenu>
