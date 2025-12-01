@@ -459,3 +459,28 @@
 - [x] Aplicar Intl.NumberFormat na página Histórico de Vendas - já estava correto
 - [x] Aplicar Intl.NumberFormat na página Comissões - 6 correções
 - [x] Aplicar Intl.NumberFormat na página Estoque - 4 correções
+
+
+## Sprint 1 - Implementação em Andamento
+### Frontend de Notificações In-App
+- [x] Criar componente NotificationBell
+- [x] Integrar NotificationBell no DashboardLayout
+- [x] Criar página Central de Notificações
+- [x] Adicionar rota /notificacoes
+
+### Frontend do Relatório Avançado de Estoque
+- [x] Criar estrutura da página RelatorioAvancadoEstoque
+- [x] Implementar painel de métricas (4 cards)
+- [x] Implementar filtros avançados (fornecedor, almoxarifado, grade, checkboxes)
+- [x] Implementar tabela de dados completa (6 colunas com ordenação)
+- [x] Implementar paginação (10/25/50/100 itens)
+- [x] Adicionar rota /relatorio-avancado-estoque
+- [ ] Implementar exportação Excel (placeholder)
+- [ ] Implementar exportação PDF (placeholder)
+
+### Interface de Gestão de Comissões
+- [ ] Criar formulário de configuração de regras
+- [ ] Criar lista de regras ativas
+- [ ] Criar relatório detalhado de comissões
+- [ ] Adicionar preview de cálculo
+- [ ] Testar fluxo completo

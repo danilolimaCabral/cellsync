@@ -19,6 +19,7 @@ import Comissoes from "@/pages/Comissoes";
 import NotasFiscais from "@/pages/NotasFiscais";
 import Configuracoes from "./pages/Configuracoes";
 import Notificacoes from "./pages/Notificacoes";
+import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -198,6 +199,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Notificacoes />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/relatorio-avancado-estoque">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <RelatorioAvancadoEstoque />
               </DashboardLayout>
             )}
           />
