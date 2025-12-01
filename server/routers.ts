@@ -498,20 +498,56 @@ export const appRouter = router({
       .input(z.object({
         unreadOnly: z.boolean().optional(),
         limit: z.number().min(1).max(100).default(50),
-        offset: z.number().min(0).default(0),
       }))
-      .query(async () => {
-        // TODO: Implementar query de notificações
-        return [];
+      .query(async ({ input, ctx }) => {
+        const notificationsModule = await import("./notifications");
+        
+        if (input.unreadOnly) {
+          return await notificationsModule.getUnreadNotifications(ctx.user.id);
+        }
+        
+        return await notificationsModule.getAllNotifications(ctx.user.id, input.limit);
+      }),
+
+    unreadCount: protectedProcedure
+      .query(async ({ ctx }) => {
+        const notificationsModule = await import("./notifications");
+        const unread = await notificationsModule.getUnreadNotifications(ctx.user.id);
+        return { count: unread.length };
       }),
 
     markAsRead: protectedProcedure
       .input(z.object({
         notificationId: z.number(),
       }))
-      .mutation(async () => {
-        // TODO: Implementar marcação como lida
+      .mutation(async ({ input }) => {
+        const notificationsModule = await import("./notifications");
+        await notificationsModule.markAsRead(input.notificationId);
         return { success: true };
+      }),
+
+    markAllAsRead: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const notificationsModule = await import("./notifications");
+        await notificationsModule.markAllAsRead(ctx.user.id);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({
+        notificationId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        const notificationsModule = await import("./notifications");
+        await notificationsModule.deleteNotification(input.notificationId);
+        return { success: true };
+      }),
+
+    runAlerts: adminProcedure
+      .mutation(async () => {
+        const notificationsModule = await import("./notifications");
+        const results = await notificationsModule.runAutomatedChecks();
+        return { success: true, results };
       }),
   }),
 
@@ -712,6 +748,47 @@ export const appRouter = router({
     inventoryStats: protectedProcedure
       .query(async () => {
         return await db.getInventoryStats();
+      }),
+
+    // Relatório Avançado de Estoque
+    advancedStock: protectedProcedure
+      .input(z.object({
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+        supplier: z.string().optional(),
+        warehouse: z.string().optional(),
+        grade: z.string().optional(),
+        readyForSale: z.boolean().optional(),
+        hasDefect: z.boolean().optional(),
+        minDaysInStock: z.number().optional(),
+        maxDaysInStock: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        const advancedStockModule = await import("./advanced-stock-report");
+        return await advancedStockModule.getAdvancedStockReport(input);
+      }),
+
+    stockMetrics: protectedProcedure
+      .input(z.object({
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+        supplier: z.string().optional(),
+        warehouse: z.string().optional(),
+        grade: z.string().optional(),
+        readyForSale: z.boolean().optional(),
+        hasDefect: z.boolean().optional(),
+        minDaysInStock: z.number().optional(),
+        maxDaysInStock: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        const advancedStockModule = await import("./advanced-stock-report");
+        return await advancedStockModule.getStockMetrics(input);
+      }),
+
+    filterOptions: protectedProcedure
+      .query(async () => {
+        const advancedStockModule = await import("./advanced-stock-report");
+        return await advancedStockModule.getFilterOptions();
       }),
   }),
 

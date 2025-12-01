@@ -372,3 +372,32 @@
 - [ ] Criar fluxo de aprovação (vendedor → gerente → financeiro)
 - [ ] Implementar gamificação com badges
 - [ ] Adicionar gráficos de evolução
+
+
+## Sistema de Notificações In-App - Implementação Sprint 1
+- [x] Criar tabela notifications no schema
+- [x] Implementar backend para criar notificações
+- [x] Criar query para listar notificações do usuário
+- [x] Implementar marcar como lida
+- [x] Criar componente NotificationBell no header
+- [x] Implementar dropdown de notificações
+- [x] Adicionar badge de contador de não lidas
+- [x] Criar página de central de notificações
+- [x] Implementar alertas automáticos de estoque baixo
+- [x] Implementar alertas de OS vencidas
+- [x] Implementar alertas de contas a pagar próximas
+- [x] Criar testes para sistema de notificações (10 testes passando)
+
+
+## Relatório Avançado de Estoque - Implementação Sprint 1
+- [x] Criar query backend para relatório completo de estoque
+- [x] Implementar cálculo de "Dias em Estoque"
+- [x] Adicionar endpoints tRPC (advancedStock, stockMetrics, filterOptions)
+- [ ] Criar página de Relatório Avançado de Estoque
+- [ ] Adicionar filtros: Data, Fornecedor, Almoxarifado, Grade, Apto Venda, Defeito
+- [ ] Implementar tabela com todos os campos (Data Entrada, IMEI, Produto, QTD, Custo, Varejo, Atacado, Grade, Almoxarifado, Fornecedor, Bateria, Defeito, Apto Venda, Dias em Estoque)
+- [ ] Adicionar painel de métricas (Total em estoque, Valor total, Média de dias)
+- [ ] Implementar ordenação por colunas
+- [ ] Adicionar exportação para Excel
+- [ ] Adicionar exportação para PDF
+- [ ] Criar testes para relatório avançado

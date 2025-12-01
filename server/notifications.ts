@@ -34,12 +34,12 @@ export async function createNotification(data: {
   const db = await getDb();
   if (!db) return null;
   
-  const [notification] = await db.insert(notifications).values({
+  const result = await db.insert(notifications).values({
     ...data,
     channel: data.channel || "sistema",
     status: "pendente",
   });
-  return notification;
+  return Number(result[0].insertId);
 }
 
 /**

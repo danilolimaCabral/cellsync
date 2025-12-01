@@ -18,6 +18,7 @@ import Movimentacoes from "./pages/Movimentacoes";
 import Comissoes from "@/pages/Comissoes";
 import NotasFiscais from "@/pages/NotasFiscais";
 import Configuracoes from "./pages/Configuracoes";
+import Notificacoes from "./pages/Notificacoes";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -185,6 +186,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <NotasFiscais />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/notificacoes">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Notificacoes />
               </DashboardLayout>
             )}
           />

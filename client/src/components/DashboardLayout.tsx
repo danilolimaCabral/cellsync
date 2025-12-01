@@ -22,6 +22,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
 import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight } from "lucide-react";
+import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -250,6 +251,7 @@ function DashboardLayoutContent({
                 </div>
               </div>
             </div>
+            <NotificationBell />
           </div>
         )}
         <main className="flex-1 p-4">{children}</main>
