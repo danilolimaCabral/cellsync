@@ -412,3 +412,15 @@
 - [x] Criar modal de confirmação de pagamento em massa
 - [x] Adicionar filtros aprimorados (clique nos cartões)
 - [x] Criar testes para pagamento em massa (9 testes passando)
+
+
+## Melhorias de Navegação - Dashboard
+- [x] Transformar cartões do Dashboard em atalhos clicáveis
+- [x] Adicionar navegação para PDV (Vendas)
+- [x] Adicionar navegação para Estoque
+- [x] Adicionar navegação para Ordem de Serviço
+- [x] Adicionar navegação para Financeiro
+- [x] Adicionar navegação para Relatórios
+- [x] Adicionar seção de Ações Rápidas
+- [x] Validar emissão de NF-e completa (22 testes passando)
+- [x] Testar geração de recibo de venda (6 testes passando)
