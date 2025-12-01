@@ -947,3 +947,10 @@
 - [ ] Criar webhooks Stripe para renovação/cancelamento (futuro)
 - [ ] Criar painel administrativo de tenants (futuro)
 - [ ] Implementar métricas de receita MRR, churn (futuro)
+
+## Bug - Planos não aparecem na página /planos
+- [x] Verificar se planos foram salvos no banco de dados (3 planos encontrados)
+- [x] Verificar se endpoint tRPC está funcionando (erro: db.select is not a function)
+- [x] Corrigir db-plans.ts para usar getDb() ao invés de import direto
+- [x] Testar endpoint novamente (funcionando!)
+- [x] Validar exibição dos planos

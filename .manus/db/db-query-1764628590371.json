@@ -1,0 +1,61 @@
+{
+  "query": "SELECT * FROM plans;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT * FROM plans;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Plano Básico",
+      "slug": "basico",
+      "description": "Ideal para lojas pequenas começando a digitalizar",
+      "price_monthly": "9700",
+      "price_yearly": "970000",
+      "stripe_price_id_monthly": "NULL",
+      "stripe_price_id_yearly": "NULL",
+      "max_users": "1",
+      "max_products": "500",
+      "max_storage": "1024",
+      "features": "[\"Gestão de Estoque\", \"PDV de Vendas\", \"Cadastro de Clientes\", \"Relatórios Básicos\", \"Suporte por Email\"]",
+      "is_active": "1",
+      "createdAt": "2025-12-01 22:10:45",
+      "updatedAt": "2025-12-01 22:10:45"
+    },
+    {
+      "id": "2",
+      "name": "Plano Profissional",
+      "slug": "profissional",
+      "description": "Para lojas em crescimento que precisam de mais recursos",
+      "price_monthly": "19700",
+      "price_yearly": "1970000",
+      "stripe_price_id_monthly": "NULL",
+      "stripe_price_id_yearly": "NULL",
+      "max_users": "5",
+      "max_products": "999999",
+      "max_storage": "5120",
+      "features": "[\"Tudo do Plano Básico\", \"Usuários Ilimitados (até 5)\", \"Produtos Ilimitados\", \"IA para Cadastro de Produtos\", \"IA para Diagnóstico de OS\", \"Ordens de Serviço\", \"Gestão Financeira\", \"Comissões de Vendedores\", \"Geração de Etiquetas\", \"Relatórios Avançados\", \"Notas Fiscais (NFe)\", \"Suporte Prioritário\"]",
+      "is_active": "1",
+      "createdAt": "2025-12-01 22:10:45",
+      "updatedAt": "2025-12-01 22:10:45"
+    },
+    {
+      "id": "3",
+      "name": "Plano Empresarial",
+      "slug": "empresarial",
+      "description": "Solução completa para redes e importadoras",
+      "price_monthly": "39700",
+      "price_yearly": "3970000",
+      "stripe_price_id_monthly": "NULL",
+      "stripe_price_id_yearly": "NULL",
+      "max_users": "999999",
+      "max_products": "999999",
+      "max_storage": "20480",
+      "features": "[\"Tudo do Plano Profissional\", \"Usuários Ilimitados\", \"Multi-loja (até 5 lojas)\", \"White-label (sua marca)\", \"Domínio Personalizado\", \"API de Integração\", \"Backup Automático Diário\", \"Relatórios Personalizados\", \"Dashboard Executivo\", \"Suporte 24/7\", \"Gerente de Conta Dedicado\", \"Treinamento Personalizado\"]",
+      "is_active": "1",
+      "createdAt": "2025-12-01 22:10:45",
+      "updatedAt": "2025-12-01 22:10:45"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\tdescription\tprice_monthly\tprice_yearly\tstripe_price_id_monthly\tstripe_price_id_yearly\tmax_users\tmax_products\tmax_storage\tfeatures\tis_active\tcreatedAt\tupdatedAt\n1\tPlano Básico\tbasico\tIdeal para lojas pequenas começando a digitalizar\t9700\t970000\tNULL\tNULL\t1\t500\t1024\t[\"Gestão de Estoque\", \"PDV de Vendas\", \"Cadastro de Clientes\", \"Relatórios Básicos\", \"Suporte por Email\"]\t1\t2025-12-01 22:10:45\t2025-12-01 22:10:45\n2\tPlano Profissional\tprofissional\tPara lojas em crescimento que precisam de mais recursos\t19700\t1970000\tNULL\tNULL\t5\t999999\t5120\t[\"Tudo do Plano Básico\", \"Usuários Ilimitados (até 5)\", \"Produtos Ilimitados\", \"IA para Cadastro de Produtos\", \"IA para Diagnóstico de OS\", \"Ordens de Serviço\", \"Gestão Financeira\", \"Comissões de Vendedores\", \"Geração de Etiquetas\", \"Relatórios Avançados\", \"Notas Fiscais (NFe)\", \"Suporte Prioritário\"]\t1\t2025-12-01 22:10:45\t2025-12-01 22:10:45\n3\tPlano Empresarial\tempresarial\tSolução completa para redes e importadoras\t39700\t3970000\tNULL\tNULL\t999999\t999999\t20480\t[\"Tudo do Plano Profissional\", \"Usuários Ilimitados\", \"Multi-loja (até 5 lojas)\", \"White-label (sua marca)\", \"Domínio Personalizado\", \"API de Integração\", \"Backup Automático Diário\", \"Relatórios Personalizados\", \"Dashboard Executivo\", \"Suporte 24/7\", \"Gerente de Conta Dedicado\", \"Treinamento Personalizado\"]\t1\t2025-12-01 22:10:45\t2025-12-01 22:10:45\n",
+  "stderr": "",
+  "execution_time_ms": 97
+}
