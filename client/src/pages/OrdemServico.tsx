@@ -65,8 +65,8 @@ export default function OrdemServico() {
   });
 
   const { data: serviceOrders, refetch } = trpc.serviceOrders.list.useQuery({});
-  const { data: customers } = trpc.customers.list.useQuery({ limit: 1000 });
-  const { data: products } = trpc.products.list.useQuery({ limit: 1000 });
+  const { data: customers } = trpc.customers.list.useQuery({ limit: 100 });
+  const { data: products } = trpc.products.list.useQuery({ limit: 100 });
   const { data: parts, refetch: refetchParts } = trpc.serviceOrderParts.list.useQuery(
     { serviceOrderId: selectedOS! },
     { enabled: selectedOS !== null }

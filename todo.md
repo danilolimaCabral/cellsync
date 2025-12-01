@@ -424,3 +424,8 @@
 - [x] Adicionar seção de Ações Rápidas
 - [x] Validar emissão de NF-e completa (22 testes passando)
 - [x] Testar geração de recibo de venda (6 testes passando)
+
+
+## Correção de Bugs
+- [x] Corrigir erro de limit > 100 na página de Ordem de Serviço
+- [x] Corrigir erro de limit > 100 na página de Movimentações

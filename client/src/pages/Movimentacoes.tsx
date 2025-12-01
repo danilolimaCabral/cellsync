@@ -61,7 +61,7 @@ export default function Movimentacoes() {
   const [searchIMEI, setSearchIMEI] = useState("");
 
   const { data: movementsData, isLoading, refetch } = trpc.stockMovements.list.useQuery(filters);
-  const { data: products } = trpc.products.list.useQuery({ limit: 1000 });
+  const { data: products } = trpc.products.list.useQuery({ limit: 100 });
   const { data: inventoryReport } = trpc.stockMovements.inventoryReport.useQuery();
   const { data: imeiMovements } = trpc.stockMovements.byIMEI.useQuery(
     { imei: searchIMEI },
