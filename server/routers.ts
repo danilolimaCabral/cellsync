@@ -303,9 +303,44 @@ export const appRouter = router({
         minStock: z.number().min(0).default(10),
         requiresImei: z.boolean().default(false),
       }))
-      .mutation(async () => {
-        // TODO: Implementar criação de produto
-        return { success: true };
+      .mutation(async ({ input }) => {
+        const product = await db.createProduct(input);
+        return product;
+      }),
+
+    importBulk: protectedProcedure
+      .input(z.object({
+        products: z.array(z.object({
+          name: z.string().min(1),
+          category: z.string().optional(),
+          brand: z.string().optional(),
+          model: z.string().optional(),
+          sku: z.string().optional(),
+          barcode: z.string().optional(),
+          costPrice: z.number().min(0),
+          salePrice: z.number().min(0),
+          minStock: z.number().min(0).default(10),
+          requiresImei: z.boolean().default(false),
+        })),
+      }))
+      .mutation(async ({ input }) => {
+        const results = {
+          success: 0,
+          failed: 0,
+          errors: [] as string[],
+        };
+
+        for (const productData of input.products) {
+          try {
+            await db.createProduct(productData);
+            results.success++;
+          } catch (error) {
+            results.failed++;
+            results.errors.push(`Erro ao importar "${productData.name}": ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+          }
+        }
+
+        return results;
       }),
   }),
 

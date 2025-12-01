@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -64,6 +64,14 @@ const menuItems = [
     gradient: "from-purple-500 to-pink-500",
     bgGradient: "from-purple-50 to-pink-50",
     iconColor: "text-purple-600"
+  },
+  { 
+    icon: Upload, 
+    label: "Importar Produtos", 
+    path: "/importar-produtos",
+    gradient: "from-violet-500 to-purple-500",
+    bgGradient: "from-violet-50 to-purple-50",
+    iconColor: "text-violet-600"
   },
   { 
     icon: FileSpreadsheet, 

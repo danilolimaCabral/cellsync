@@ -21,6 +21,7 @@ import EmitirNFe from "@/pages/EmitirNFe";
 import Configuracoes from "./pages/Configuracoes";
 import Notificacoes from "./pages/Notificacoes";
 import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
+import ImportarProdutos from "./pages/ImportarProdutos";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -80,6 +81,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Estoque />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/importar-produtos">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <ImportarProdutos />
               </DashboardLayout>
             )}
           />

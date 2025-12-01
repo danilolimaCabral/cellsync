@@ -848,3 +848,14 @@
 - [x] Adicionar feedback visual de sucesso/erro
 - [ ] Testar com diferentes tipos de produtos (iPhone, Samsung, Xiaomi, acessórios)
 - [ ] Criar testes unitários para análise de IA
+
+## Interface de Importação de Produtos
+- [x] Criar endpoint tRPC products.importBulk
+- [x] Criar página ImportarProdutos.tsx
+- [x] Adicionar textarea para colar dados CSV
+- [x] Implementar parser de CSV/TSV
+- [x] Adicionar preview dos dados antes de importar
+- [x] Implementar validação de campos
+- [x] Adicionar feedback de progresso
+- [x] Adicionar rota no menu lateral
+- [ ] Testar importação com dados reais
