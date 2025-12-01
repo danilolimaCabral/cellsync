@@ -35,6 +35,9 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function RelatorioAvancadoEstoque() {
   // Estado de paginação
@@ -137,13 +140,100 @@ export default function RelatorioAvancadoEstoque() {
 
   const activeFiltersCount = Object.values(filters).filter((v) => v !== undefined).length;
 
-  // Exportação (placeholder)
+  // Exportação Excel
   const handleExportExcel = () => {
-    alert("Exportação Excel em desenvolvimento");
+    // Preparar dados para exportação
+    const exportData = sortedData.map((item: any) => ({
+      "Data Entrada": item.entryDate ? format(new Date(item.entryDate), "dd/MM/yyyy") : "-",
+      "IMEI": item.imei || "-",
+      "Produto": item.productName,
+      "SKU": item.sku || "-",
+      "Quantidade": item.quantity || 1,
+      "Custo (R$)": item.costPrice ? (item.costPrice / 100).toFixed(2) : "0.00",
+      "Preço Varejo (R$)": item.salePrice ? (item.salePrice / 100).toFixed(2) : "0.00",
+      "Preço Atacado (R$)": item.wholesalePrice ? (item.wholesalePrice / 100).toFixed(2) : "-",
+      "Grade": item.grade || "-",
+      "Almoxarifado": item.warehouse || "-",
+      "Fornecedor": item.supplier || "-",
+      "Bateria (%)": item.batteryHealth || "-",
+      "Defeito": item.defect || "-",
+      "Apto Venda": item.readyForSale ? "Sim" : "Não",
+      "Dias em Estoque": item.daysInStock,
+    }));
+
+    // Criar workbook
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Estoque");
+
+    // Ajustar largura das colunas
+    const colWidths = [
+      { wch: 12 }, // Data Entrada
+      { wch: 18 }, // IMEI
+      { wch: 30 }, // Produto
+      { wch: 15 }, // SKU
+      { wch: 10 }, // Quantidade
+      { wch: 12 }, // Custo
+      { wch: 15 }, // Preço Varejo
+      { wch: 15 }, // Preço Atacado
+      { wch: 10 }, // Grade
+      { wch: 15 }, // Almoxarifado
+      { wch: 20 }, // Fornecedor
+      { wch: 10 }, // Bateria
+      { wch: 20 }, // Defeito
+      { wch: 12 }, // Apto Venda
+      { wch: 15 }, // Dias em Estoque
+    ];
+    ws["!cols"] = colWidths;
+
+    // Download
+    const fileName = `relatorio-estoque-${format(new Date(), "dd-MM-yyyy")}.xlsx`;
+    XLSX.writeFile(wb, fileName);
   };
 
+  // Exportação PDF
   const handleExportPDF = () => {
-    alert("Exportação PDF em desenvolvimento");
+    const doc = new jsPDF("landscape");
+
+    // Título
+    doc.setFontSize(16);
+    doc.text("Relatório Avançado de Estoque", 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, 14, 22);
+
+    // Métricas
+    if (metrics) {
+      doc.setFontSize(9);
+      doc.text(`Total de Itens: ${metrics.totalItems}`, 14, 30);
+      doc.text(`Valor Total: ${formatCurrency(metrics.totalValue)}`, 80, 30);
+      doc.text(`Média de Dias: ${metrics.averageDaysInStock.toFixed(0)}`, 150, 30);
+      doc.text(`Itens com Defeito: ${metrics.itemsWithDefect}`, 220, 30);
+    }
+
+    // Tabela
+    const tableData = sortedData.map((item: any) => [
+      item.entryDate ? format(new Date(item.entryDate), "dd/MM/yy") : "-",
+      item.imei ? item.imei.substring(0, 12) + "..." : "-",
+      item.productName.substring(0, 25),
+      formatCurrency(item.salePrice || 0),
+      item.grade || "-",
+      item.warehouse || "-",
+      item.daysInStock,
+      item.readyForSale ? "Sim" : "Não",
+    ]);
+
+    autoTable(doc, {
+      startY: 35,
+      head: [["Data", "IMEI", "Produto", "Preço", "Grade", "Almox.", "Dias", "Apto"]],
+      body: tableData,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [59, 130, 246] },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+    });
+
+    // Download
+    const fileName = `relatorio-estoque-${format(new Date(), "dd-MM-yyyy")}.pdf`;
+    doc.save(fileName);
   };
 
   return (

@@ -1413,6 +1413,59 @@ export async function payCommission(commissionId: number, paymentId: number) {
   return { success: true };
 }
 
+export async function listCommissionRules() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select({
+      id: commissionRules.id,
+      userId: commissionRules.userId,
+      userName: users.name,
+      name: commissionRules.name,
+      type: commissionRules.type,
+      active: commissionRules.active,
+      percentage: commissionRules.percentage,
+      minSalesAmount: commissionRules.minSalesAmount,
+      maxSalesAmount: commissionRules.maxSalesAmount,
+      productId: commissionRules.productId,
+      bonusAmount: commissionRules.bonusAmount,
+      bonusPercentage: commissionRules.bonusPercentage,
+      priority: commissionRules.priority,
+      startDate: commissionRules.startDate,
+      endDate: commissionRules.endDate,
+      createdAt: commissionRules.createdAt,
+    })
+    .from(commissionRules)
+    .leftJoin(users, eq(commissionRules.userId, users.id))
+    .orderBy(desc(commissionRules.createdAt));
+}
+
+export async function updateCommissionRule(data: { ruleId: number; [key: string]: any }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { ruleId, ...updateData } = data;
+  
+  await db
+    .update(commissionRules)
+    .set(updateData)
+    .where(eq(commissionRules.id, ruleId));
+  
+  return { success: true };
+}
+
+export async function deleteCommissionRule(ruleId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .delete(commissionRules)
+    .where(eq(commissionRules.id, ruleId));
+  
+  return { success: true };
+}
+
 
 // ============================================
 // FUNÇÕES DE NOTA FISCAL ELETRÔNICA (NF-e)

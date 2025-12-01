@@ -484,3 +484,25 @@
 - [ ] Criar relatório detalhado de comissões
 - [ ] Adicionar preview de cálculo
 - [ ] Testar fluxo completo
+
+
+## Sprint 2 - Implementação em Andamento
+### Completar Interface de Gestão de Comissões
+- [x] Expandir formulário com todos os tipos de regra (Percentual Fixo, Meta Progressiva, Bônus por Produto)
+- [x] Criar lista de regras ativas com edição e exclusão (aba "Regras de Comissão")
+- [x] Adicionar preview de cálculo em tempo real no formulário
+- [x] Criar endpoints backend (listRules, updateRule, deleteRule)
+- [x] Adicionar descrições dos tipos de regra
+- [x] Implementar AlertDialog de confirmação de exclusão
+- [ ] Implementar relatório detalhado de comissões por período (futuro)
+- [ ] Criar testes para interface de comissõe### Implementar Exportação Real
+- [x] Adicionar biblioteca xlsx para exportação Excel
+- [x] Implementar exportação Excel no Relatório Avançado (15 colunas)
+- [x] Adicionar biblioteca jspdf e jspdf-autotable para exportação PDF
+- [x] Implementar exportação PDF no Relatório Avançado (tabela formatada)
+- [x] Ajustar largura de colunas no Excel
+- [x] Adicionar métricas no PDF
+- [x] Formatar nomes de arquivo### Adicionar Links de Navegação
+- [x] Adicionar link "Relatório Avançado" no menu lateral
+- [x] Adicionar ícone FileSpreadsheet apropriado
+- [x] Posicionar após "Estoque" para agrupamento lógico

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -35,6 +35,7 @@ const menuItems = [
   { icon: ShoppingCart, label: "Vendas (PDV)", path: "/vendas" },
   { icon: History, label: "Histórico de Vendas", path: "/historico-vendas" },
   { icon: Package, label: "Estoque", path: "/estoque" },
+  { icon: FileSpreadsheet, label: "Relatório Avançado", path: "/relatorio-avancado-estoque" },
   { icon: ArrowLeftRight, label: "Movimentações", path: "/movimentacoes" },
   { icon: Wrench, label: "Ordem de Serviço", path: "/os" },
   { icon: Users, label: "Clientes (CRM)", path: "/clientes" },

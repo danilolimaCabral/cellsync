@@ -990,6 +990,40 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         return await db.payCommission(input.commissionId, input.paymentId);
       }),
+
+    listRules: protectedProcedure
+      .query(async () => {
+        return await db.listCommissionRules();
+      }),
+
+    updateRule: protectedProcedure
+      .input(z.object({
+        ruleId: z.number(),
+        userId: z.number().optional(),
+        name: z.string().optional(),
+        type: z.enum(["percentual_fixo", "meta_progressiva", "bonus_produto"]).optional(),
+        active: z.boolean().optional(),
+        percentage: z.number().optional(),
+        minSalesAmount: z.number().optional(),
+        maxSalesAmount: z.number().optional(),
+        productId: z.number().optional(),
+        bonusAmount: z.number().optional(),
+        bonusPercentage: z.number().optional(),
+        priority: z.number().optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.updateCommissionRule(input);
+      }),
+
+    deleteRule: protectedProcedure
+      .input(z.object({
+        ruleId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.deleteCommissionRule(input.ruleId);
+      }),
   }),
 
   // ============= NOTA FISCAL ELETRÔNICA (NF-e) =============
