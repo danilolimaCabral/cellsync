@@ -76,6 +76,21 @@ export async function updateUserLastSignIn(id: number) {
   }
 }
 
+export async function changeUserPassword(userId: number, newPasswordHash: string): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot change password: database not available");
+    throw new Error("Database not available");
+  }
+
+  try {
+    await db.update(users).set({ password: newPasswordHash }).where(eq(users.id, userId));
+  } catch (error) {
+    console.error("[Database] Failed to change password:", error);
+    throw error;
+  }
+}
+
 // Funções de compatibilidade com OAuth (não utilizadas no sistema local)
 export async function getUserByOpenId(openId: string): Promise<User | undefined> {
   // Função mantida para compatibilidade com sdk.ts

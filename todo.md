@@ -534,3 +534,34 @@
 - [ ] Implementar processamento de pagamento com cartão
 - [ ] Adicionar webhook para confirmação de pagamento
 - [ ] Criar testes de integração de pagamentos
+
+
+## Sprint 3 - Funcionalidades Rápidas de Alta Prioridade
+
+### Alteração de Senhas
+- [x] Criar formulário de alteração de senha
+- [x] Implementar validação de senha atual
+- [x] Adicionar requisitos de segurança (mínimo 8 caracteres, letras e números)
+- [x] Criar endpoint tRPC changePassword
+- [x] Implementar hash bcrypt da nova senha
+- [x] Adicionar função changeUserPassword no db.ts
+- [x] Integrar na página Configurações (aba "Alterar Senha")
+- [x] Testar fluxo completo de alteração
+
+### Personalização de Categorias Financeiras
+- [ ] Criar tabela financialCategories no schema
+- [ ] Implementar backend CRUD de categorias
+- [ ] Criar endpoints tRPC (listCategories, createCategory, updateCategory, deleteCategory)
+- [ ] Criar página de Configuração de Categorias
+- [ ] Implementar formulário de criação/edição
+- [ ] Adicionar validação de nome único
+- [ ] Integrar com Contas a Pagar/Receber
+- [ ] Testar CRUD completo
+
+### Paginação em Outras Listas
+- [ ] Implementar paginação na página Clientes
+- [ ] Implementar paginação na página Produtos (Estoque)
+- [ ] Implementar paginação na página Histórico de Vendas
+- [ ] Implementar paginação na página NF-e
+- [ ] Adicionar controles (10/25/50/100 itens)
+- [ ] Testar navegação em todas as páginas

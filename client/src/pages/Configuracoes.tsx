@@ -10,8 +10,134 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Users, Settings, Shield, Plus, Edit, Trash2 } from "lucide-react";
+import { Users, Settings, Shield, Plus, Edit, Trash2, Key, AlertCircle, CheckCircle2 } from "lucide-react";
+
+function ChangePasswordForm() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const changePasswordMutation = trpc.auth.changePassword.useMutation({
+    onSuccess: () => {
+      toast.success("Senha alterada com sucesso!");
+      setSuccess("Senha alterada com sucesso!");
+      setError("");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setSuccess(""), 5000);
+    },
+    onError: (error) => {
+      toast.error(`Erro: ${error.message}`);
+      setError(error.message);
+      setSuccess("");
+    },
+  });
+
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Validações
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError("Preencha todos os campos");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setError("A nova senha deve ter pelo menos 8 caracteres");
+      return;
+    }
+
+    if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/.test(newPassword)) {
+      setError("A senha deve conter letras e números");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError("As senhas não coincidem");
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      setError("A nova senha deve ser diferente da senha atual");
+      return;
+    }
+
+    changePasswordMutation.mutate({
+      currentPassword,
+      newPassword,
+    });
+  };
+
+  return (
+    <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {success && (
+        <Alert className="bg-green-50 text-green-900 border-green-200">
+          <CheckCircle2 className="h-4 w-4 text-green-600" />
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
+      <div>
+        <Label htmlFor="currentPassword">Senha Atual *</Label>
+        <Input
+          id="currentPassword"
+          type="password"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          placeholder="Digite sua senha atual"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="newPassword">Nova Senha *</Label>
+        <Input
+          id="newPassword"
+          type="password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          placeholder="Digite a nova senha"
+        />
+        <p className="text-sm text-muted-foreground mt-1">
+          Mínimo 8 caracteres, incluindo letras e números
+        </p>
+      </div>
+
+      <div>
+        <Label htmlFor="confirmPassword">Confirmar Nova Senha *</Label>
+        <Input
+          id="confirmPassword"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Digite a nova senha novamente"
+        />
+      </div>
+
+      <Button
+        type="submit"
+        disabled={changePasswordMutation.isPending}
+        className="flex items-center gap-2"
+      >
+        <Key className="h-4 w-4" />
+        {changePasswordMutation.isPending ? "Alterando..." : "Alterar Senha"}
+      </Button>
+    </form>
+  );
+}
 
 export default function Configuracoes() {
   const { user } = useAuth();
@@ -95,6 +221,7 @@ export default function Configuracoes() {
       <Tabs defaultValue="usuarios" className="space-y-4">
         <TabsList>
           <TabsTrigger value="usuarios">Usuários</TabsTrigger>
+          <TabsTrigger value="senha">Alterar Senha</TabsTrigger>
           <TabsTrigger value="parametros">Parâmetros</TabsTrigger>
           <TabsTrigger value="auditoria">Auditoria</TabsTrigger>
         </TabsList>
@@ -230,6 +357,18 @@ export default function Configuracoes() {
                   ))
                 )}
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Aba de Alteração de Senha */}
+        <TabsContent value="senha" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Alterar Senha</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChangePasswordForm />
             </CardContent>
           </Card>
         </TabsContent>

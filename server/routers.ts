@@ -114,6 +114,40 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    changePassword: protectedProcedure
+      .input(z.object({
+        currentPassword: z.string().min(6),
+        newPassword: z.string().min(8).regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/, "A senha deve conter pelo menos 8 caracteres, incluindo letras e números"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+        }
+
+        // Buscar usuário atual
+        const user = await db.getUserById(ctx.user.id);
+        if (!user) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Usuário não encontrado" });
+        }
+
+        // Verificar senha atual
+        const isValidPassword = await bcrypt.compare(input.currentPassword, user.password);
+        if (!isValidPassword) {
+          throw new TRPCError({ 
+            code: "UNAUTHORIZED", 
+            message: "Senha atual incorreta" 
+          });
+        }
+
+        // Hash da nova senha
+        const newPasswordHash = await bcrypt.hash(input.newPassword, 10);
+
+        // Atualizar senha
+        await db.changeUserPassword(ctx.user.id, newPasswordHash);
+
+        return { success: true, message: "Senha alterada com sucesso" };
+      }),
+
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
