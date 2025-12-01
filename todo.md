@@ -308,3 +308,20 @@
 - [x] Filtro apenas numeros no campo IMEI
 - [ ] Criar endpoint GET /produtos/modelos (não necessário - usando lista local)
 - [ ] Criar endpoint GET /estoque/imei (futuro - autocomplete de IMEI)
+
+## Sistema Atacado/Varejo - Implementação
+- [x] Criar migrations para adicionar campos wholesalePrice e minWholesaleQty em products
+- [x] Criar migration para adicionar saleType e appliedDiscount em sales
+- [x] Criar migration para adicionar unitPriceType em saleItems
+- [ ] Criar tabela priceHistory para auditoria (futuro)
+- [ ] Adicionar procedures tRPC para CRUD de preços de atacado
+- [x] Implementar lógica de cálculo de preço (atacado vs varejo)
+- [ ] Adicionar toggle de tipo de venda no PDV
+- [ ] Implementar cálculo automático no carrinho
+- [ ] Adicionar alertas de quantidade mínima
+- [ ] Atualizar formulário de produtos com campos de atacado
+- [ ] Atualizar recibo para mostrar tipo de venda e economia
+- [ ] Criar relatório de vendas por tipo (atacado/varejo)
+- [ ] Implementar atualização em massa de preços
+- [ ] Criar testes unitários para cálculo de preços
+- [ ] Testar fluxo completo de venda atacado/varejo

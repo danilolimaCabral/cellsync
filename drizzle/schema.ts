@@ -58,6 +58,8 @@ export const products = mysqlTable("products", {
   barcode: varchar("barcode", { length: 100 }),
   costPrice: int("costPrice").notNull(), // Preço em centavos
   salePrice: int("salePrice").notNull(), // Preço em centavos
+  wholesalePrice: int("wholesalePrice"), // Preço de atacado em centavos (opcional)
+  minWholesaleQty: int("minWholesaleQty").default(5), // Quantidade mínima para atacado
   minStock: int("minStock").default(10).notNull(),
   currentStock: int("currentStock").default(0).notNull(),
   requiresImei: boolean("requiresImei").default(false).notNull(),
@@ -119,6 +121,8 @@ export const sales = mysqlTable("sales", {
   nfeNumber: varchar("nfeNumber", { length: 100 }),
   nfeIssued: boolean("nfeIssued").default(false).notNull(),
   commission: int("commission").default(0).notNull(), // Comissão em centavos
+  saleType: mysqlEnum("saleType", ["retail", "wholesale"]).default("retail").notNull(), // Tipo de venda
+  appliedDiscount: int("appliedDiscount").default(0).notNull(), // Desconto total aplicado em centavos
   notes: text("notes"),
   saleDate: timestamp("saleDate").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -136,6 +140,7 @@ export const saleItems = mysqlTable("saleItems", {
   stockItemId: int("stockItemId"), // Para produtos com IMEI
   quantity: int("quantity").notNull(),
   unitPrice: int("unitPrice").notNull(), // Preço unitário em centavos
+  unitPriceType: mysqlEnum("unitPriceType", ["retail", "wholesale"]).default("retail").notNull(), // Tipo de preço aplicado
   discount: int("discount").default(0).notNull(),
   totalPrice: int("totalPrice").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
