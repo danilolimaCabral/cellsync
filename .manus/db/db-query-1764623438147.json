@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, name, brand, category, salePrice, costPrice FROM products LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT id, name, brand, category, salePrice, costPrice FROM products LIMIT 10;",
+  "rows": [
+    {
+      "id": "120061",
+      "name": "iPhone 15 Pro Max 256GB",
+      "brand": "Apple",
+      "category": "Smartphone",
+      "salePrice": "850000",
+      "costPrice": "650000"
+    },
+    {
+      "id": "120062",
+      "name": "Samsung Galaxy S24 Ultra 512GB",
+      "brand": "Samsung",
+      "category": "Smartphone",
+      "salePrice": "750000",
+      "costPrice": "580000"
+    },
+    {
+      "id": "120063",
+      "name": "Xiaomi 14 Pro 256GB",
+      "brand": "Xiaomi",
+      "category": "Smartphone",
+      "salePrice": "450000",
+      "costPrice": "320000"
+    },
+    {
+      "id": "120064",
+      "name": "Capinha Silicone iPhone 15 Pro",
+      "brand": "Apple",
+      "category": "Acessório",
+      "salePrice": "15000",
+      "costPrice": "8000"
+    },
+    {
+      "id": "120065",
+      "name": "Película de Vidro Temperado",
+      "brand": "Genérica",
+      "category": "Acessório",
+      "salePrice": "2000",
+      "costPrice": "500"
+    },
+    {
+      "id": "120066",
+      "name": "Carregador Turbo 65W USB-C",
+      "brand": "Genérica",
+      "category": "Acessório",
+      "salePrice": "8000",
+      "costPrice": "3500"
+    },
+    {
+      "id": "120067",
+      "name": "Tela LCD iPhone 13",
+      "brand": "Apple",
+      "category": "Peça",
+      "salePrice": "80000",
+      "costPrice": "45000"
+    },
+    {
+      "id": "120068",
+      "name": "Bateria Samsung Galaxy S21",
+      "brand": "Samsung",
+      "category": "Peça",
+      "salePrice": "15000",
+      "costPrice": "8000"
+    },
+    {
+      "id": "120069",
+      "name": "Conector de Carga USB-C",
+      "brand": "Genérica",
+      "category": "Peça",
+      "salePrice": "4000",
+      "costPrice": "1500"
+    },
+    {
+      "id": "120070",
+      "name": "Câmera Traseira Xiaomi 13",
+      "brand": "Xiaomi",
+      "category": "Peça",
+      "salePrice": "25000",
+      "costPrice": "12000"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tbrand\tcategory\tsalePrice\tcostPrice\n120061\tiPhone 15 Pro Max 256GB\tApple\tSmartphone\t850000\t650000\n120062\tSamsung Galaxy S24 Ultra 512GB\tSamsung\tSmartphone\t750000\t580000\n120063\tXiaomi 14 Pro 256GB\tXiaomi\tSmartphone\t450000\t320000\n120064\tCapinha Silicone iPhone 15 Pro\tApple\tAcessório\t15000\t8000\n120065\tPelícula de Vidro Temperado\tGenérica\tAcessório\t2000\t500\n120066\tCarregador Turbo 65W USB-C\tGenérica\tAcessório\t8000\t3500\n120067\tTela LCD iPhone 13\tApple\tPeça\t80000\t45000\n120068\tBateria Samsung Galaxy S21\tSamsung\tPeça\t15000\t8000\n120069\tConector de Carga USB-C\tGenérica\tPeça\t4000\t1500\n120070\tCâmera Traseira Xiaomi 13\tXiaomi\tPeça\t25000\t12000\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}

@@ -1,0 +1,70 @@
+{
+  "query": "SELECT name, brand, category, salePrice/100 as preco FROM products WHERE brand IS NOT NULL ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT name, brand, category, salePrice/100 as preco FROM products WHERE brand IS NOT NULL ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "name": "APPLE WATCH ULTRA 3 49MM (APPLE)  - PRETO - NOVO",
+      "brand": "APPLE",
+      "category": "Smartwatch",
+      "preco": "4850.0000"
+    },
+    {
+      "name": "MACBOOK AIR M1 8GB 256 SSD (APPLE)  - 256 GB - ROSE GOLD - NOVO",
+      "brand": "APPLE",
+      "category": "Outros",
+      "preco": "3880.0000"
+    },
+    {
+      "name": "APPLE WATCH S11 42MM (APPLE)  - ROSE GOLD - NOVO",
+      "brand": "APPLE",
+      "category": "Smartwatch",
+      "preco": "2700.0000"
+    },
+    {
+      "name": "APPLE WATCH ULTRA 2 49MM (APPLE)  - PRETO - NOVO",
+      "brand": "APPLE",
+      "category": "Smartwatch",
+      "preco": "4180.0000"
+    },
+    {
+      "name": "BOOMBOX 4 (JBL)  - PRETO - NOVO",
+      "brand": "JBL",
+      "category": "Áudio",
+      "preco": "2580.0000"
+    },
+    {
+      "name": "SAMSUNG A56 (SAMSUNG)  - 256 GB - ROSA - NOVO",
+      "brand": "SAMSUNG",
+      "category": "Smartphone",
+      "preco": "2000.0000"
+    },
+    {
+      "name": "IPHONE 14 PRO MAX (APPLE)  - 128 GB - PRETO - CPO",
+      "brand": "APPLE",
+      "category": "Smartphone",
+      "preco": "4500.0000"
+    },
+    {
+      "name": "STARLINK MINI (STARLINK)  - SEM COR - NOVO",
+      "brand": "STARLINK",
+      "category": "Outros",
+      "preco": "630.0000"
+    },
+    {
+      "name": "STARLINK V4 DE AÇO (SUPORTE)  - SEM COR - NOVO",
+      "brand": "SUPORTE",
+      "category": "Outros",
+      "preco": "0.0000"
+    },
+    {
+      "name": "MOTO G15 (MOTOROLA)  - 256 GB - VERDE - NOVO",
+      "brand": "MOTOROLA",
+      "category": "Smartphone",
+      "preco": "750.0000"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tbrand\tcategory\tpreco\nAPPLE WATCH ULTRA 3 49MM (APPLE)  - PRETO - NOVO\tAPPLE\tSmartwatch\t4850.0000\nMACBOOK AIR M1 8GB 256 SSD (APPLE)  - 256 GB - ROSE GOLD - NOVO\tAPPLE\tOutros\t3880.0000\nAPPLE WATCH S11 42MM (APPLE)  - ROSE GOLD - NOVO\tAPPLE\tSmartwatch\t2700.0000\nAPPLE WATCH ULTRA 2 49MM (APPLE)  - PRETO - NOVO\tAPPLE\tSmartwatch\t4180.0000\nBOOMBOX 4 (JBL)  - PRETO - NOVO\tJBL\tÁudio\t2580.0000\nSAMSUNG A56 (SAMSUNG)  - 256 GB - ROSA - NOVO\tSAMSUNG\tSmartphone\t2000.0000\nIPHONE 14 PRO MAX (APPLE)  - 128 GB - PRETO - CPO\tAPPLE\tSmartphone\t4500.0000\nSTARLINK MINI (STARLINK)  - SEM COR - NOVO\tSTARLINK\tOutros\t630.0000\nSTARLINK V4 DE AÇO (SUPORTE)  - SEM COR - NOVO\tSUPORTE\tOutros\t0.0000\nMOTO G15 (MOTOROLA)  - 256 GB - VERDE - NOVO\tMOTOROLA\tSmartphone\t750.0000\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

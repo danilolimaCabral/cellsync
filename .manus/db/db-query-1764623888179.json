@@ -1,0 +1,45 @@
+{
+  "query": "SELECT COUNT(*) as total, category, COUNT(*) as count FROM products GROUP BY category ORDER BY count DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT COUNT(*) as total, category, COUNT(*) as count FROM products GROUP BY category ORDER BY count DESC;",
+  "rows": [
+    {
+      "total": "19",
+      "category": "Smartphone",
+      "count": "19"
+    },
+    {
+      "total": "6",
+      "category": "Outros",
+      "count": "6"
+    },
+    {
+      "total": "6",
+      "category": "Acessório",
+      "count": "6"
+    },
+    {
+      "total": "4",
+      "category": "Peça",
+      "count": "4"
+    },
+    {
+      "total": "3",
+      "category": "Smartwatch",
+      "count": "3"
+    },
+    {
+      "total": "2",
+      "category": "Áudio",
+      "count": "2"
+    },
+    {
+      "total": "1",
+      "category": "Tablet",
+      "count": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tcategory\tcount\n19\tSmartphone\t19\n6\tOutros\t6\n6\tAcessório\t6\n4\tPeça\t4\n3\tSmartwatch\t3\n2\tÁudio\t2\n1\tTablet\t1\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}

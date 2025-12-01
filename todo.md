@@ -874,3 +874,9 @@
 - [x] Adicionar feedback visual com nível de confiança
 - [ ] Testar com diferentes tipos de problemas (tela quebrada, bateria, software, água)
 - [ ] Testar análise com fotos de aparelhos danificados
+
+## Importação Automática de Planilhas
+- [x] Criar script Node.js para ler CSV
+- [x] Importar dados de RelatóriodoEstoque(1).csv
+- [x] Verificar dados importados no banco
+- [x] Confirmar total de produtos cadastrados (41 produtos)
