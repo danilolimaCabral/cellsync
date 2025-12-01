@@ -22,6 +22,7 @@ import Configuracoes from "./pages/Configuracoes";
 import Notificacoes from "./pages/Notificacoes";
 import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
 import ImportarProdutos from "./pages/ImportarProdutos";
+import GerarEtiquetas from "./pages/GerarEtiquetas";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -93,6 +94,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <ImportarProdutos />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/gerar-etiquetas">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <GerarEtiquetas />
               </DashboardLayout>
             )}
           />

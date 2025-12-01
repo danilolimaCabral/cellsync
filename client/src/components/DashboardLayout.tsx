@@ -30,7 +30,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
-import { Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings } from "lucide-react";
+import { Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag } from "lucide-react";
 
 const menuItems = [
   { 
@@ -72,6 +72,14 @@ const menuItems = [
     gradient: "from-violet-500 to-purple-500",
     bgGradient: "from-violet-50 to-purple-50",
     iconColor: "text-violet-600"
+  },
+  { 
+    icon: Tag, 
+    label: "Gerar Etiquetas", 
+    path: "/gerar-etiquetas",
+    gradient: "from-amber-500 to-yellow-500",
+    bgGradient: "from-amber-50 to-yellow-50",
+    iconColor: "text-amber-600"
   },
   { 
     icon: FileSpreadsheet, 

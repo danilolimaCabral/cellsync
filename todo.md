@@ -880,3 +880,16 @@
 - [x] Importar dados de RelatóriodoEstoque(1).csv
 - [x] Verificar dados importados no banco
 - [x] Confirmar total de produtos cadastrados (41 produtos)
+
+## Sistema de Geração de Etiquetas
+- [x] Instalar bibliotecas: bwip-js (código de barras), qrcode (QR code)
+- [x] Criar endpoint tRPC para gerar código de barras
+- [x] Criar endpoint tRPC para gerar QR code
+- [x] Criar página GerarEtiquetas.tsx
+- [x] Implementar seleção de produtos para etiquetas
+- [x] Adicionar 3 templates de tamanho (Pequena, Média, Vitrine)
+- [x] Implementar preview em tempo real
+- [x] Adicionar opção de quantidade de cópias por produto
+- [x] Implementar impressão direta (window.print)
+- [x] Criar rota no menu lateral
+- [ ] Testar impressão em diferentes tamanhos com produtos reais

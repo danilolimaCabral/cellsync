@@ -10,6 +10,7 @@ import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
 import { analyzeProductWithAI } from "./ai-product-assistant";
 import { diagnoseServiceOrder } from "./ai-os-assistant";
+import { generateLabel, generateBarcode, generateQRCode } from "./label-generator";
 
 // Helper para criar procedimentos protegidos
 const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
@@ -1432,6 +1433,44 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const result = await diagnoseServiceOrder(input.problem, input.deviceInfo, input.imageUrl);
         return result;
+      }),
+  }),
+
+  // Labels (Etiquetas)
+  labels: router({
+    // Gerar etiqueta completa
+    generate: protectedProcedure
+      .input(z.object({
+        productName: z.string(),
+        price: z.number(),
+        sku: z.string(),
+        brand: z.string().optional(),
+        model: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const label = await generateLabel(input);
+        return label;
+      }),
+
+    // Gerar apenas código de barras
+    generateBarcode: protectedProcedure
+      .input(z.object({
+        text: z.string(),
+        type: z.enum(['code128', 'ean13']).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const barcode = await generateBarcode(input.text, input.type);
+        return { barcode };
+      }),
+
+    // Gerar apenas QR code
+    generateQRCode: protectedProcedure
+      .input(z.object({
+        data: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const qrcode = await generateQRCode(input.data);
+        return { qrcode };
       }),
   }),
 });
