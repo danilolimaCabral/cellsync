@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import PageHeader from "@/components/PageHeader";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -108,10 +109,11 @@ export default function HistoricoVendas() {
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Histórico de Vendas</h1>
-          <p className="text-gray-500 mt-1">Consulte e exporte vendas realizadas</p>
-        </div>
+        <PageHeader 
+          title="Histórico de Vendas" 
+          description="Consulte e exporte vendas realizadas"
+          backTo="/dashboard"
+        />
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={handleExportExcel} disabled={!salesData || salesData.sales.length === 0}>
             <FileSpreadsheet className="h-4 w-4 mr-2" />

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
+import PageHeader from "@/components/PageHeader";
 import { 
   DollarSign, 
   Package, 
@@ -42,11 +43,11 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 md:p-8 space-y-6 md:space-y-8">
-      {/* Cabeçalho */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm md:text-base text-gray-500 mt-1">Visão geral do seu negócio</p>
-      </div>
+      <PageHeader 
+        title="Dashboard" 
+        description="Visão geral do seu negócio"
+        backTo="/"
+      />
 
       {/* Estatísticas Principais - Grid Responsivo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">

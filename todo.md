@@ -624,3 +624,36 @@
 - [x] Melhorar espaçamento e alinhamento dos cards (padding responsivo)
 - [x] Criar testes automatizados do Dashboard (5 testes passando)
 - [x] Testar Dashboard em diferentes resoluções
+
+
+## Botão de Voltar - Melhorias de Navegação
+- [ ] Identificar páginas que precisam de botão voltar
+- [ ] Adicionar botão voltar no cabeçalho das páginas
+- [ ] Implementar navegação com router.back() ou rota específica
+- [ ] Testar navegação em todas as páginas
+- [ ] Garantir que botão voltar funciona corretamente
+
+
+## Bug: Erro de Autenticação em Configurações
+- [ ] Corrigir erro "Acesso negado" na página /configuracoes
+- [ ] Adicionar verificação de autenticação (useAuth)
+- [ ] Adicionar loading state e redirect
+- [ ] Testar acesso à página após correção
+
+
+## Análise de Mercado e Precificação
+- [ ] Pesquisar sistemas concorrentes (Tiny ERP, Bling, Omie, etc)
+- [ ] Comparar funcionalidades do OkCells com concorrentes
+- [ ] Analisar modelos de precificação do mercado
+- [ ] Criar relatório de análise competitiva
+- [ ] Sugerir estratégia de precificação para OkCells
+
+
+## Análise de Mercado e Precificação - Concluída
+- [x] Pesquisar sistemas concorrentes no mercado brasileiro (ReparaOS, MercadoPhone, VHSys, Bling)
+- [x] Analisar funcionalidades e preços dos concorrentes
+- [x] Comparar funcionalidades do OkCells com concorrentes
+- [x] Criar relatório completo de análise de mercado (analise_mercado_precificacao.md)
+- [x] Definir estratégia de precificação (3 planos: Starter R$ 79,90, Professional R$ 129,90, Enterprise R$ 199,90)
+- [x] Projetar receita e viabilidade financeira
+- [x] Definir estratégias de go-to-market

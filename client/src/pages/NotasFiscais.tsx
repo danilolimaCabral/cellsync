@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -214,12 +215,11 @@ export default function NotasFiscais() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Notas Fiscais Eletrônicas</h1>
-          <p className="text-muted-foreground">
-            Gerencie as NF-e emitidas pelo sistema
-          </p>
-        </div>
+        <PageHeader 
+          title="Notas Fiscais Eletrônicas" 
+          description="Gerencie as NF-e emitidas pelo sistema"
+          backTo="/dashboard"
+        />
         <Button onClick={() => setShowEmitir(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Emitir NF-e

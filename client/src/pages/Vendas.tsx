@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import PageHeader from "@/components/PageHeader";
 import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X } from "lucide-react";
 
 interface CartItem {
@@ -386,10 +387,11 @@ export default function Vendas() {
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Ponto de Venda (PDV)</h1>
-          <p className="text-muted-foreground">Sistema integrado de vendas</p>
-        </div>
+        <PageHeader 
+          title="Ponto de Venda (PDV)" 
+          description="Sistema integrado de vendas"
+          backTo="/dashboard"
+        />
         <div className="flex items-center gap-4">
           {/* Toggle Varejo/Atacado */}
           <div className="flex items-center gap-2 bg-accent p-2 rounded-lg">

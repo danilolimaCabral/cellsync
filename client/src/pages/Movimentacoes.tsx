@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import PageHeader from "@/components/PageHeader";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -174,10 +175,11 @@ export default function Movimentacoes() {
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Movimentações de Estoque</h1>
-          <p className="text-gray-500 mt-1">Gerencie entradas, saídas e ajustes de estoque</p>
-        </div>
+        <PageHeader 
+          title="Movimentações de Estoque" 
+          description="Gerencie entradas, saídas e ajustes de estoque"
+          backTo="/dashboard"
+        />
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>

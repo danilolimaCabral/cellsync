@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -140,9 +141,23 @@ function ChangePasswordForm() {
 }
 
 export default function Configuracoes() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [showNewUser, setShowNewUser] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
+
+  // Verificar autenticação
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    window.location.href = "/";
+    return null;
+  }
 
   // Queries
   const { data: users = [] } = trpc.users.list.useQuery({});
@@ -175,12 +190,11 @@ export default function Configuracoes() {
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Configurações do Sistema</h1>
-          <p className="text-muted-foreground">Gerenciamento de usuários e parâmetros do sistema</p>
-        </div>
-      </div>
+      <PageHeader 
+        title="Configurações do Sistema" 
+        description="Gerenciamento de usuários e parâmetros do sistema"
+        backTo="/dashboard"
+      />
 
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

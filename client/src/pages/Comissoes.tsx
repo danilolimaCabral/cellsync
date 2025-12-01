@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -154,10 +155,11 @@ export default function Comissoes() {
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Gestão de Comissões</h1>
-          <p className="text-muted-foreground">Configuração de regras e aprovação de comissões</p>
-        </div>
+        <PageHeader 
+          title="Gestão de Comissões" 
+          description="Configuração de regras e aprovação de comissões"
+          backTo="/dashboard"
+        />
         <Dialog open={showNewRule || !!editingRule} onOpenChange={(open) => {
           setShowNewRule(open);
           if (!open) setEditingRule(null);

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import PageHeader from "@/components/PageHeader";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -271,14 +272,11 @@ export default function Financeiro() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Financeiro</h1>
-          <p className="text-muted-foreground">
-            Gerencie contas a pagar, receber e fluxo de caixa
-          </p>
-        </div>
-      </div>
+      <PageHeader 
+        title="Financeiro" 
+        description="Gerencie contas a pagar, receber e fluxo de caixa"
+        backTo="/dashboard"
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>

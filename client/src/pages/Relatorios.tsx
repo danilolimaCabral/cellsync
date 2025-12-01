@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import PageHeader from "@/components/PageHeader";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
@@ -102,10 +103,11 @@ export default function Relatorios() {
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Relatórios e BI</h1>
-          <p className="text-gray-500 mt-1">Análises e indicadores de performance</p>
-        </div>
+        <PageHeader 
+          title="Relatórios e BI" 
+          description="Análises e indicadores de performance"
+          backTo="/dashboard"
+        />
         <div className="flex items-center gap-3">
           <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-[180px]">
