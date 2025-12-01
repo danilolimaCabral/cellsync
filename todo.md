@@ -787,3 +787,20 @@
 - [ ] Adicionar interface de configuração de regras de comissão
 - [ ] Implementar relatório de comissões por período
 - [ ] Criar testes para cálculo de comissões
+
+
+## Formulário de Emissão Manual de NF-e
+- [x] Criar backend para emissão manual (procedure nfe.emit)
+- [x] Implementar armazenamento de XMLs no S3 (storagePut integrado)
+- [x] Criar formulário multi-step (5 etapas: Emitente, Destinatário, Produtos, Impostos, Confirmação)
+- [x] Implementar validações de campos obrigatórios por etapa
+- [x] Adicionar cálculo automático de totais (ICMS 18%, PIS 1.65%, COFINS 7.6%)
+- [x] Criar preview completo da nota antes de emitir (etapa 5)
+- [x] Implementar geração de XML (usa generateNFeXML existente)
+- [x] Adicionar upload automático do XML para S3 após emissão
+- [x] Geração de chave de acesso (44 dígitos)
+- [x] Adicionar rota /emitir-nfe no App.tsx
+- [x] Adicionar botão "Emissão Manual" com gradiente na página Notas Fiscais
+- [x] Animações Framer Motion no stepper e transições
+- [x] Adicionar/remover itens dinamicamente
+- [ ] Testar emissão completa com dados reais

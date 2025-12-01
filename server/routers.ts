@@ -1323,6 +1323,54 @@ export const appRouter = router({
           filename: `DANFE_${String(invoice.number).padStart(9, "0")}_serie_${invoice.series}.pdf`,
         };
       }),
+
+    emit: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        const invoice = await db.getInvoiceById(input.id);
+        if (!invoice) throw new Error("NF-e não encontrada");
+        
+        if (invoice.status === "emitida") {
+          throw new Error("NF-e já foi emitida");
+        }
+        
+        const items = await db.getInvoiceItems(input.id);
+        const nfeData = { ...invoice, items };
+        
+        // Gerar XML
+        const { generateNFeXML } = await import("./nfe-xml");
+        const xml = generateNFeXML(nfeData);
+        
+        // Salvar XML no S3
+        const { storagePut } = await import("./storage");
+        const filename = `nfe/NFe_${String(invoice.number).padStart(9, "0")}_serie_${invoice.series}_${Date.now()}.xml`;
+        const { url: xmlUrl } = await storagePut(
+          filename,
+          xml,
+          "application/xml"
+        );
+        
+        // Gerar chave de acesso (simplificado - em produção viria da SEFAZ)
+        const accessKey = `${invoice.emitterState || "52"}${new Date().toISOString().slice(2, 7).replace("-", "")}${invoice.emitterCnpj.replace(/\D/g, "").padStart(14, "0")}55${String(invoice.series).padStart(3, "0")}${String(invoice.number).padStart(9, "0")}${Math.random().toString().slice(2, 11)}`;
+        
+        // Atualizar status para emitida
+        await db.updateInvoiceStatus(input.id, "emitida", {
+          accessKey,
+          xmlUrl,
+          authorizationDate: new Date(),
+          protocol: `PROT${Date.now()}`,
+        });
+        
+        return {
+          success: true,
+          accessKey,
+          xmlUrl,
+          number: invoice.number,
+          series: invoice.series,
+        };
+      }),
   }),
 });
 

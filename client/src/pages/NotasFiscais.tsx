@@ -32,6 +32,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { useLocation } from "wouter";
 import {
   FileText,
   Download,
@@ -42,6 +43,7 @@ import {
   FileCheck,
   AlertCircle,
   Calendar,
+  Edit,
 } from "lucide-react";
 
 export default function NotasFiscais() {
@@ -53,6 +55,7 @@ export default function NotasFiscais() {
   const [showEmitir, setShowEmitir] = useState(false);
   const [showCancelar, setShowCancelar] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [, setLocation] = useLocation();
 
   // Queries
   const { user, loading } = useAuth();
@@ -223,10 +226,19 @@ export default function NotasFiscais() {
           description="Gerencie as NF-e emitidas pelo sistema"
           backTo="/dashboard"
         />
-        <Button onClick={() => setShowEmitir(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Emitir NF-e
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowEmitir(true)} variant="outline">
+            <Plus className="mr-2 h-4 w-4" />
+            Emitir NF-e (Venda)
+          </Button>
+          <Button 
+            onClick={() => setLocation("/emitir-nfe")}
+            className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600"
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            Emissão Manual
+          </Button>
+        </div>
       </div>
 
       {/* Cards de Estatísticas */}

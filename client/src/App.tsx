@@ -17,6 +17,7 @@ import HistoricoVendas from "./pages/HistoricoVendas";
 import Movimentacoes from "./pages/Movimentacoes";
 import Comissoes from "@/pages/Comissoes";
 import NotasFiscais from "@/pages/NotasFiscais";
+import EmitirNFe from "@/pages/EmitirNFe";
 import Configuracoes from "./pages/Configuracoes";
 import Notificacoes from "./pages/Notificacoes";
 import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
@@ -187,6 +188,17 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <NotasFiscais />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+      <Route path="/emitir-nfe">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <EmitirNFe />
               </DashboardLayout>
             )}
           />
