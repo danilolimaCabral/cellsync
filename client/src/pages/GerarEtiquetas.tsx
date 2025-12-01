@@ -272,44 +272,44 @@ export default function GerarEtiquetas() {
                   className={`border rounded p-4 bg-white text-black print:break-inside-avoid ${getLabelSizeClass()}`}
                 >
                   {labelSize === "large" ? (
-                    // Layout Vitrine
-                    <div className="h-full flex flex-col justify-between">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold mb-2">{label.productName}</div>
+                    // Layout Vitrine - Melhorado
+                    <div className="h-full flex flex-col justify-between p-2 bg-gradient-to-br from-white to-gray-50">
+                      <div className="text-center space-y-1">
+                        <div className="text-xl font-bold text-gray-900 leading-tight">{label.productName}</div>
                         {label.brand && (
-                          <div className="text-lg text-gray-600">{label.brand}</div>
+                          <div className="text-sm font-medium text-blue-600 uppercase tracking-wide">{label.brand}</div>
                         )}
                       </div>
-                      <div className="flex items-center justify-center gap-4">
-                        <img src={label.barcode} alt="Barcode" className="h-16" />
-                        <img src={label.qrcode} alt="QR Code" className="w-20 h-20" />
+                      <div className="flex flex-col items-center gap-3 my-2">
+                        <img src={label.barcode} alt="Barcode" className="h-14 w-full object-contain" />
+                        <img src={label.qrcode} alt="QR Code" className="w-16 h-16 border-2 border-gray-200 rounded" />
                       </div>
-                      <div className="text-center">
-                        <div className="text-4xl font-bold text-green-600">{label.price}</div>
-                        <div className="text-sm text-gray-500">SKU: {label.sku}</div>
+                      <div className="text-center space-y-1 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border-2 border-green-200">
+                        <div className="text-5xl font-black text-green-600 tracking-tight">{label.price}</div>
+                        <div className="text-xs text-gray-600 font-medium">SKU: {label.sku}</div>
                       </div>
                     </div>
                   ) : labelSize === "medium" ? (
-                    // Layout Médio
-                    <div className="h-full flex flex-col justify-between">
-                      <div className="text-sm font-semibold truncate">{label.productName}</div>
-                      <div className="flex items-center justify-between gap-2">
-                        <img src={label.barcode} alt="Barcode" className="h-10 flex-1" />
-                        <img src={label.qrcode} alt="QR Code" className="w-12 h-12" />
+                    // Layout Médio - Melhorado
+                    <div className="h-full flex flex-col justify-between p-2 bg-gradient-to-br from-white to-gray-50">
+                      <div className="text-sm font-bold text-gray-900 truncate">{label.productName}</div>
+                      <div className="flex items-center justify-between gap-2 my-1">
+                        <img src={label.barcode} alt="Barcode" className="h-10 flex-1 object-contain" />
+                        <img src={label.qrcode} alt="QR Code" className="w-10 h-10 border border-gray-200 rounded" />
                       </div>
-                      <div className="flex justify-between items-end">
-                        <div className="text-2xl font-bold text-green-600">{label.price}</div>
-                        <div className="text-xs text-gray-500">{label.sku}</div>
+                      <div className="flex justify-between items-end bg-gradient-to-r from-green-50 to-emerald-50 rounded p-2 border border-green-200">
+                        <div className="text-2xl font-black text-green-600">{label.price}</div>
+                        <div className="text-xs text-gray-600 font-medium">{label.sku}</div>
                       </div>
                     </div>
                   ) : (
-                    // Layout Pequeno
-                    <div className="h-full flex flex-col justify-between text-xs">
-                      <div className="font-semibold truncate">{label.productName}</div>
-                      <img src={label.barcode} alt="Barcode" className="h-8" />
-                      <div className="flex justify-between items-end">
-                        <div className="text-lg font-bold text-green-600">{label.price}</div>
-                        <div className="text-xs text-gray-500">{label.sku}</div>
+                    // Layout Pequeno - Melhorado
+                    <div className="h-full flex flex-col justify-between text-xs p-1 bg-gradient-to-br from-white to-gray-50">
+                      <div className="font-bold text-gray-900 truncate text-xs">{label.productName}</div>
+                      <img src={label.barcode} alt="Barcode" className="h-8 w-full object-contain my-1" />
+                      <div className="flex justify-between items-end bg-gradient-to-r from-green-50 to-emerald-50 rounded px-1 py-0.5 border border-green-200">
+                        <div className="text-lg font-black text-green-600">{label.price}</div>
+                        <div className="text-xs text-gray-600 font-medium">{label.sku}</div>
                       </div>
                     </div>
                   )}
@@ -334,39 +334,39 @@ export default function GerarEtiquetas() {
               className={`border rounded p-4 bg-white text-black print:break-inside-avoid ${getLabelSizeClass()}`}
             >
               {labelSize === "large" ? (
-                <div className="h-full flex flex-col justify-between">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold mb-2">{label.productName}</div>
-                    {label.brand && <div className="text-lg text-gray-600">{label.brand}</div>}
+                <div className="h-full flex flex-col justify-between p-2 bg-gradient-to-br from-white to-gray-50">
+                  <div className="text-center space-y-1">
+                    <div className="text-xl font-bold text-gray-900 leading-tight">{label.productName}</div>
+                    {label.brand && <div className="text-sm font-medium text-blue-600 uppercase tracking-wide">{label.brand}</div>}
                   </div>
-                  <div className="flex items-center justify-center gap-4">
-                    <img src={label.barcode} alt="Barcode" className="h-16" />
-                    <img src={label.qrcode} alt="QR Code" className="w-20 h-20" />
+                  <div className="flex flex-col items-center gap-3 my-2">
+                    <img src={label.barcode} alt="Barcode" className="h-14 w-full object-contain" />
+                    <img src={label.qrcode} alt="QR Code" className="w-16 h-16 border-2 border-gray-200 rounded" />
                   </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-green-600">{label.price}</div>
-                    <div className="text-sm text-gray-500">SKU: {label.sku}</div>
+                  <div className="text-center space-y-1 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border-2 border-green-200">
+                    <div className="text-5xl font-black text-green-600 tracking-tight">{label.price}</div>
+                    <div className="text-xs text-gray-600 font-medium">SKU: {label.sku}</div>
                   </div>
                 </div>
               ) : labelSize === "medium" ? (
-                <div className="h-full flex flex-col justify-between">
-                  <div className="text-sm font-semibold truncate">{label.productName}</div>
-                  <div className="flex items-center justify-between gap-2">
-                    <img src={label.barcode} alt="Barcode" className="h-10 flex-1" />
-                    <img src={label.qrcode} alt="QR Code" className="w-12 h-12" />
+                <div className="h-full flex flex-col justify-between p-2 bg-gradient-to-br from-white to-gray-50">
+                  <div className="text-sm font-bold text-gray-900 truncate">{label.productName}</div>
+                  <div className="flex items-center justify-between gap-2 my-1">
+                    <img src={label.barcode} alt="Barcode" className="h-10 flex-1 object-contain" />
+                    <img src={label.qrcode} alt="QR Code" className="w-10 h-10 border border-gray-200 rounded" />
                   </div>
-                  <div className="flex justify-between items-end">
-                    <div className="text-2xl font-bold text-green-600">{label.price}</div>
-                    <div className="text-xs text-gray-500">{label.sku}</div>
+                  <div className="flex justify-between items-end bg-gradient-to-r from-green-50 to-emerald-50 rounded p-2 border border-green-200">
+                    <div className="text-2xl font-black text-green-600">{label.price}</div>
+                    <div className="text-xs text-gray-600 font-medium">{label.sku}</div>
                   </div>
                 </div>
               ) : (
-                <div className="h-full flex flex-col justify-between text-xs">
-                  <div className="font-semibold truncate">{label.productName}</div>
-                  <img src={label.barcode} alt="Barcode" className="h-8" />
-                  <div className="flex justify-between items-end">
-                    <div className="text-lg font-bold text-green-600">{label.price}</div>
-                    <div className="text-xs text-gray-500">{label.sku}</div>
+                <div className="h-full flex flex-col justify-between text-xs p-1 bg-gradient-to-br from-white to-gray-50">
+                  <div className="font-bold text-gray-900 truncate text-xs">{label.productName}</div>
+                  <img src={label.barcode} alt="Barcode" className="h-8 w-full object-contain my-1" />
+                  <div className="flex justify-between items-end bg-gradient-to-r from-green-50 to-emerald-50 rounded px-1 py-0.5 border border-green-200">
+                    <div className="text-lg font-black text-green-600">{label.price}</div>
+                    <div className="text-xs text-gray-600 font-medium">{label.sku}</div>
                   </div>
                 </div>
               )}

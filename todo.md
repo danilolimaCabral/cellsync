@@ -901,3 +901,25 @@
 - [x] Atualizar 153 produtos com preços corretos
 - [x] Atualizar saldos de estoque
 - [x] Verificar dados atualizados no banco
+
+## Bug - Login no Mobile não Redireciona
+- [ ] Investigar por que login mostra sucesso no celular mas não redireciona
+- [ ] Verificar se cookie está sendo salvo no navegador mobile
+- [ ] Verificar se useAuth está detectando usuário logado no mobile
+- [ ] Testar redirecionamento após login no mobile
+- [ ] Verificar se há diferença entre desktop e mobile
+- [ ] Corrigir problema de redirecionamento mobile
+
+## Problema - Módulos não aparecem no menu
+- [ ] Verificar se "Gerar Etiquetas" está no menu lateral
+- [ ] Verificar se "Importar Produtos" está no menu lateral
+- [ ] Verificar ordem dos itens no menu
+- [ ] Garantir que todos os módulos implementados apareçam
+
+## Melhorias no Estilo das Etiquetas
+- [x] Melhorar layout do preview das etiquetas
+- [x] Aumentar destaque do preço (fonte maior e negrito)
+- [x] Melhorar posicionamento do código de barras
+- [x] Melhorar visibilidade do QR Code (borda e arredondamento)
+- [x] Ajustar espaçamento e cores (gradientes sutis)
+- [x] Tornar layout mais profissional (caixa de preço destacada)
