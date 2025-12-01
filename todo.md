@@ -577,3 +577,28 @@
 - [x] Atualizar getSaleItems para incluir brand, model, category
 - [x] Atualizar interface ReceiptProduct
 - [x] Atualizar renderização do recibo PDF
+
+
+## Correções de Autenticação e Erros
+- [x] Corrigir erro "Acesso negado" na página Notas Fiscais
+- [x] Corrigir erro "Cannot read properties of undefined (reading 'data')" na página Notas Fiscais
+- [x] Adicionar verificação de autenticação (loading state + redirect)
+- [x] Adicionar tratamento de dados undefined (data?.result?.data)
+
+## Testes de Recibo
+- [ ] Criar testes para validar marca no recibo
+- [ ] Criar testes para validar modelo no recibo
+- [ ] Criar testes para validar categoria no recibo
+- [ ] Criar testes para validar IMEI no recibo
+- [ ] Executar todos os testes
+
+
+## Correções e Melhorias de NF-e
+- [ ] Analisar sistema atual de NF-e
+- [ ] Identificar problemas na integração
+- [ ] Corrigir emissão de NF-e no PDV
+- [ ] Corrigir download de XML e DANFE
+- [ ] Melhorar interface de visualização de NF-e
+- [ ] Adicionar validações de campos obrigatórios
+- [ ] Testar fluxo completo de emissão
+- [ ] Criar testes automatizados para NF-e

@@ -30,6 +30,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 import {
   FileText,
   Download,
@@ -43,6 +44,7 @@ import {
 } from "lucide-react";
 
 export default function NotasFiscais() {
+  const { user, loading } = useAuth();
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -76,13 +78,33 @@ export default function NotasFiscais() {
 
   const getByIdQuery = trpc.nfe.getById.useQuery;
 
+  // Verificar autenticação
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    window.location.href = "/";
+    return null;
+  }
+
   const handleViewDetails = async (invoiceId: number) => {
     try {
       // Usar fetch para buscar os detalhes
       const response = await fetch(`/api/trpc/nfe.getById?input=${JSON.stringify({ id: invoiceId })}`);
       const data = await response.json();
-      setSelectedInvoice(data.result.data);
-      setShowDetails(true);
+      
+      // Verificar se data.result e data.result.data existem
+      if (data?.result?.data) {
+        setSelectedInvoice(data.result.data);
+        setShowDetails(true);
+      } else {
+        toast.error("Dados da nota fiscal não encontrados");
+      }
     } catch (error: any) {
       toast.error(`Erro ao carregar detalhes: ${error.message}`);
     }
