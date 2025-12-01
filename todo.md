@@ -506,3 +506,31 @@
 - [x] Adicionar link "Relatório Avançado" no menu lateral
 - [x] Adicionar ícone FileSpreadsheet apropriado
 - [x] Posicionar após "Estoque" para agrupamento lógico
+
+## Formulário de Emissão Manual de NF-e
+- [ ] Criar página EmissaoNFe.tsx
+- [ ] Implementar formulário com dados do emitente
+- [ ] Adicionar seleção de cliente (destinatário)
+- [ ] Implementar seleção de produtos com quantidade e valores
+- [ ] Adicionar cálculo automático de impostos
+- [ ] Criar preview da NF-e antes de emitir
+- [ ] Implementar função de armazenamento de XML no S3
+- [ ] Adicionar download de XML e DANFE após emissão
+- [ ] Criar rota /emissao-nfe no App.tsx
+- [ ] Adicionar link no menu lateral
+- [ ] Criar testes para emissão manual
+
+
+## Integração com Gateways de Pagamento
+- [ ] Pesquisar API do Mercado Pago (PIX e Cartão)
+- [ ] Pesquisar API do PagSeguro (PIX e Cartão)
+- [ ] Pesquisar outras opções (Stripe, Asaas, etc.)
+- [ ] Criar schema de configuração de gateway no banco
+- [ ] Implementar backend de integração com Mercado Pago
+- [ ] Implementar backend de integração com PagSeguro
+- [ ] Criar interface de configuração de credenciais
+- [ ] Adicionar seleção de método de pagamento no PDV (Dinheiro, Cartão, PIX)
+- [ ] Implementar geração de QR Code PIX
+- [ ] Implementar processamento de pagamento com cartão
+- [ ] Adicionar webhook para confirmação de pagamento
+- [ ] Criar testes de integração de pagamentos
