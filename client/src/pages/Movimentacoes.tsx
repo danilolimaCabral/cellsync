@@ -39,6 +39,8 @@ import { toast } from "sonner";
 
 export default function Movimentacoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const [filters, setFilters] = useState({
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
@@ -148,6 +150,25 @@ export default function Movimentacoes() {
       style: "currency",
       currency: "BRL",
     }).format(cents / 100);
+  };
+
+  // Paginação
+  const movements = movementsData?.movements || [];
+  const totalItems = movements.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedMovements = movements.slice(startIndex, endIndex);
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(parseInt(value));
+    setCurrentPage(1);
+  };
+
+  // Reset para página 1 quando mudar os filtros
+  const handleFilterChange = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
   };
 
   return (
@@ -374,7 +395,7 @@ export default function Movimentacoes() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {movementsData?.movements.map((movement: any) => (
+                      {paginatedMovements.map((movement: any) => (
                         <TableRow key={movement.id}>
                           <TableCell>{formatDate(movement.createdAt)}</TableCell>
                           <TableCell className="font-medium">{movement.productName}</TableCell>
@@ -399,6 +420,55 @@ export default function Movimentacoes() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              )}
+              
+              {/* Controles de Paginação */}
+              {totalItems > 0 && (
+                <div className="flex items-center justify-between px-4 py-4 border-t">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm text-gray-600">Itens por página:</Label>
+                      <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                        <SelectTrigger className="w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Mostrando {startIndex + 1} a {Math.min(endIndex, totalItems)} de {totalItems} registros
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Anterior
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm text-gray-600">Página</span>
+                      <span className="text-sm font-semibold">{currentPage}</span>
+                      <span className="text-sm text-gray-600">de {totalPages}</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Próxima
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>

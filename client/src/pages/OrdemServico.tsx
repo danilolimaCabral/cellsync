@@ -47,6 +47,8 @@ export default function OrdemServico() {
   const [showNewOS, setShowNewOS] = useState(false);
   const [selectedOS, setSelectedOS] = useState<number | null>(null);
   const [showAddPart, setShowAddPart] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   
   const [newOS, setNewOS] = useState({
     customerId: "",
@@ -161,6 +163,24 @@ export default function OrdemServico() {
       os.deviceType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       os.imei?.includes(searchTerm)
   );
+
+  // Paginação
+  const totalItems = filteredOrders?.length || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = filteredOrders?.slice(startIndex, endIndex);
+
+  // Reset para página 1 quando mudar o filtro
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(parseInt(value));
+    setCurrentPage(1);
+  };
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -355,7 +375,7 @@ export default function OrdemServico() {
             <Input
               placeholder="Buscar por OS, cliente, aparelho ou IMEI..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -384,7 +404,7 @@ export default function OrdemServico() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders?.map((os: any) => (
+                {paginatedOrders?.map((os: any) => (
                   <TableRow key={os.id}>
                     <TableCell className="font-medium">#{os.id}</TableCell>
                     <TableCell>{os.customerName}</TableCell>
@@ -417,6 +437,55 @@ export default function OrdemServico() {
               </TableBody>
             </Table>
           </div>
+          
+          {/* Controles de Paginação */}
+          {totalItems > 0 && (
+            <div className="flex items-center justify-between px-4 py-4 border-t">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-gray-600">Itens por página:</Label>
+                  <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Mostrando {startIndex + 1} a {Math.min(endIndex, totalItems)} de {totalItems} registros
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </Button>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-gray-600">Página</span>
+                  <span className="text-sm font-semibold">{currentPage}</span>
+                  <span className="text-sm text-gray-600">de {totalPages}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Próxima
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

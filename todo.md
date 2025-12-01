@@ -429,3 +429,13 @@
 ## Correção de Bugs
 - [x] Corrigir erro de limit > 100 na página de Ordem de Serviço
 - [x] Corrigir erro de limit > 100 na página de Movimentações
+
+
+## Implementação de Paginação
+- [x] Adicionar controles de paginação na página Ordem de Serviço
+- [x] Adicionar seletor de itens por página (10, 25, 50, 100)
+- [x] Adicionar botões Anterior/Próxima
+- [x] Adicionar indicador de página atual e total
+- [x] Implementar paginação na página Movimentações
+- [x] Adicionar mesmos controles de paginação
+- [x] Testar navegação entre páginas
