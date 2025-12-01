@@ -325,3 +325,14 @@
 - [ ] Implementar atualização em massa de preços (futuro)
 - [ ] Criar testes unitários para cálculo de preços (futuro)
 - [ ] Testar fluxo completo de venda atacado/varejo
+
+## Importação de Dados dos Arquivos Excel
+- [x] Analisar estrutura do arquivo ClientesTrue.xlsx
+- [x] Identificar campos faltantes no schema
+- [x] Adicionar campos: Grade, Almoxarifado, Fornecedor, Bateria, Defeito, Apto Venda
+- [x] Adicionar campos de data de entrada
+- [x] Adicionar campos em customers (fantasyName, rg, stateRegistration, phone2, email2)
+- [x] Atualizar schema do banco de dados
+- [x] Criar script de importação unificado
+- [x] Executar importação e validar dados
+- [x] Importados: 1.100 clientes, 204 produtos, 88 itens de estoque

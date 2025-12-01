@@ -27,10 +27,15 @@ export type InsertUser = typeof users.$inferInsert;
 export const customers = mysqlTable("customers", {
   id: int("id").autoincrement().primaryKey(),
   name: text("name").notNull(),
+  fantasyName: varchar("fantasyName", { length: 255 }), // Nome fantasia
   email: varchar("email", { length: 320 }),
+  email2: varchar("email2", { length: 320 }), // Email alternativo
   phone: varchar("phone", { length: 20 }),
+  phone2: varchar("phone2", { length: 20 }), // Telefone alternativo
   cpf: varchar("cpf", { length: 14 }),
   cnpj: varchar("cnpj", { length: 18 }),
+  rg: varchar("rg", { length: 20 }), // RG
+  stateRegistration: varchar("stateRegistration", { length: 50 }), // Inscrição Estadual
   address: text("address"),
   city: varchar("city", { length: 100 }),
   state: varchar("state", { length: 2 }),
@@ -54,6 +59,7 @@ export const products = mysqlTable("products", {
   category: varchar("category", { length: 100 }),
   brand: varchar("brand", { length: 100 }),
   model: varchar("model", { length: 100 }),
+  grade: varchar("grade", { length: 50 }), // Grade (tamanho/memória)
   sku: varchar("sku", { length: 100 }).unique(),
   barcode: varchar("barcode", { length: 100 }),
   costPrice: int("costPrice").notNull(), // Preço em centavos
@@ -64,6 +70,9 @@ export const products = mysqlTable("products", {
   currentStock: int("currentStock").default(0).notNull(),
   requiresImei: boolean("requiresImei").default(false).notNull(),
   active: boolean("active").default(true).notNull(),
+  supplier: varchar("supplier", { length: 255 }), // Fornecedor
+  warehouse: varchar("warehouse", { length: 100 }), // Almoxarifado
+  entryDate: timestamp("entryDate"), // Data de entrada
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -79,6 +88,10 @@ export const stockItems = mysqlTable("stockItems", {
   serialNumber: varchar("serialNumber", { length: 100 }),
   status: mysqlEnum("status", ["disponivel", "vendido", "reservado", "defeito", "em_reparo"]).default("disponivel").notNull(),
   location: varchar("location", { length: 100 }), // Filial ou localização física
+  batteryHealth: int("batteryHealth"), // % de saúde da bateria
+  hasDefect: boolean("hasDefect").default(false), // Tem defeito?
+  readyForSale: boolean("readyForSale").default(true), // Apto para venda?
+  stockType: varchar("stockType", { length: 50 }), // Tipo de estoque
   purchaseDate: timestamp("purchaseDate"),
   warrantyExpiry: timestamp("warrantyExpiry"),
   notes: text("notes"),
