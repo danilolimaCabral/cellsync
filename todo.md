@@ -893,3 +893,11 @@
 - [x] Implementar impressão direta (window.print)
 - [x] Criar rota no menu lateral
 - [ ] Testar impressão em diferentes tamanhos com produtos reais
+
+## Atualização de Preços e Estoque
+- [x] Verificar se tabela products tem campos wholesalePrice e currentStock
+- [x] Criar script de atualização update-prices-stock.mjs
+- [x] Ler Produtos(2).csv e extrair preços de atacado/varejo e quantidade
+- [x] Atualizar 153 produtos com preços corretos
+- [x] Atualizar saldos de estoque
+- [x] Verificar dados atualizados no banco

@@ -1,0 +1,40 @@
+{
+  "query": "SELECT name, currentStock, salePrice/100 as preco_varejo, wholesalePrice/100 as preco_atacado FROM products WHERE name LIKE '%IPHONE 17%' OR name LIKE '%SAMSUNG S25%' OR name LIKE '%CANETA TOUCH 48%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT name, currentStock, salePrice/100 as preco_varejo, wholesalePrice/100 as preco_atacado FROM products WHERE name LIKE '%IPHONE 17%' OR name LIKE '%SAMSUNG S25%' OR name LIKE '%CANETA TOUCH 48%' LIMIT 5;",
+  "rows": [
+    {
+      "name": "IPHONE 17 PRO MAX (APPLE)  - 256 GB - LARANJA?CÓSMICO - NOVO",
+      "currentStock": "0",
+      "preco_varejo": "8500.0000",
+      "preco_atacado": "NULL"
+    },
+    {
+      "name": "IPHONE 17 PRO (APPLE)  - 256 GB - PRATEADO - NOVO",
+      "currentStock": "0",
+      "preco_varejo": "8480.0000",
+      "preco_atacado": "NULL"
+    },
+    {
+      "name": "CANETA TOUCH 48PÇS (CHINA)  - SEM COR - NOVO",
+      "currentStock": "488",
+      "preco_varejo": "82.0000",
+      "preco_atacado": "80.0000"
+    },
+    {
+      "name": "SAMSUNG S25 ULTRA (SAMSUNG)  - 512 GB - PRATA",
+      "currentStock": "1",
+      "preco_varejo": "6050.0000",
+      "preco_atacado": "6050.0000"
+    },
+    {
+      "name": "IPHONE 17 (APPLE)  - 256 GB - LAVANDA",
+      "currentStock": "1",
+      "preco_varejo": "8950.0000",
+      "preco_atacado": "8950.0000"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tcurrentStock\tpreco_varejo\tpreco_atacado\nIPHONE 17 PRO MAX (APPLE)  - 256 GB - LARANJA?CÓSMICO - NOVO\t0\t8500.0000\tNULL\nIPHONE 17 PRO (APPLE)  - 256 GB - PRATEADO - NOVO\t0\t8480.0000\tNULL\nCANETA TOUCH 48PÇS (CHINA)  - SEM COR - NOVO\t488\t82.0000\t80.0000\nSAMSUNG S25 ULTRA (SAMSUNG)  - 512 GB - PRATA\t1\t6050.0000\t6050.0000\nIPHONE 17 (APPLE)  - 256 GB - LAVANDA\t1\t8950.0000\t8950.0000\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}
