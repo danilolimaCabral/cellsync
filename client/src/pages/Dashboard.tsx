@@ -13,115 +13,24 @@ import {
   BarChart3
 } from "lucide-react";
 
+// Função auxiliar para formatação de moeda
+const formatCurrency = (cents: number) => {
+  return new Intl.NumberFormat('pt-BR', { 
+    style: 'currency', 
+    currency: 'BRL' 
+  }).format(cents / 100);
+};
+
 export default function Dashboard() {
   const { data: overview, isLoading } = trpc.dashboard.overview.useQuery();
   const [, setLocation] = useLocation();
 
-  const stats = [
-    {
-      title: "Vendas Hoje",
-      value: overview?.totalSales || 0,
-      icon: ShoppingCart,
-      description: "Total de vendas realizadas",
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
-      link: "/vendas",
-      action: "Ir para PDV",
-    },
-    {
-      title: "Receita Total",
-      value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((overview?.totalRevenue || 0) / 100),
-      icon: DollarSign,
-      description: "Receita acumulada",
-      color: "text-green-600",
-      bgColor: "bg-green-100",
-      link: "/financeiro",
-      action: "Ver Financeiro",
-    },
-    {
-      title: "Clientes",
-      value: overview?.totalCustomers || 0,
-      icon: Users,
-      description: "Clientes cadastrados",
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
-      link: "/clientes",
-      action: "Gerenciar Clientes",
-    },
-    {
-      title: "Produtos",
-      value: overview?.totalProducts || 0,
-      icon: Package,
-      description: "Produtos em estoque",
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
-      link: "/estoque",
-      action: "Ver Estoque",
-    },
-    {
-      title: "OS Abertas",
-      value: overview?.openServiceOrders || 0,
-      icon: Wrench,
-      description: "Ordens de serviço em andamento",
-      color: "text-red-600",
-      bgColor: "bg-red-100",
-      link: "/os",
-      action: "Ver Ordens",
-    },
-    {
-      title: "Pagamentos Pendentes",
-      value: overview?.pendingPayments || 0,
-      icon: AlertCircle,
-      description: "Contas a receber",
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-100",
-      link: "/financeiro",
-      action: "Ver Contas",
-    },
-  ];
-
-  // Atalhos rápidos adicionais
-  const quickActions = [
-    {
-      title: "Nova Venda",
-      description: "Abrir PDV para realizar venda",
-      icon: ShoppingCart,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      link: "/vendas",
-    },
-    {
-      title: "Nova OS",
-      description: "Criar ordem de serviço",
-      icon: Wrench,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-      link: "/os",
-    },
-    {
-      title: "Relatórios",
-      description: "Ver análises e relatórios",
-      icon: BarChart3,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      link: "/relatorios",
-    },
-    {
-      title: "Notas Fiscais",
-      description: "Gerenciar NF-e",
-      icon: FileText,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      link: "/notas-fiscais",
-    },
-  ];
-
   if (isLoading) {
     return (
-      <div className="p-8">
-        <div className="animate-pulse space-y-4">
+      <div className="p-4 md:p-8">
+        <div className="animate-pulse space-y-6">
           <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="h-32 bg-gray-200 rounded"></div>
             ))}
@@ -132,73 +41,226 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8">
+      {/* Cabeçalho */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Visão geral do seu negócio</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-sm md:text-base text-gray-500 mt-1">Visão geral do seu negócio</p>
       </div>
 
-      {/* Estatísticas Principais - Clicáveis */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <Card 
-              key={index} 
-              className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 duration-200"
-              onClick={() => setLocation(stat.link)}
-            >
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  {stat.title}
-                </CardTitle>
-                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                  <Icon className={`h-5 w-5 ${stat.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
-                <p className={`text-xs font-medium mt-2 ${stat.color}`}>
-                  → {stat.action}
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
+      {/* Estatísticas Principais - Grid Responsivo */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {/* Vendas Hoje */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02] duration-200"
+          onClick={() => setLocation("/vendas")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Vendas Hoje
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-blue-100">
+              <ShoppingCart className="h-5 w-5 text-blue-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl md:text-3xl font-bold">{overview?.totalSales || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">Total de vendas realizadas</p>
+            <p className="text-xs font-medium mt-2 text-blue-600">
+              → Ir para PDV
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Receita Total */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02] duration-200"
+          onClick={() => setLocation("/financeiro")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Receita Total
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-green-100">
+              <DollarSign className="h-5 w-5 text-green-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl md:text-3xl font-bold text-green-700">
+              {formatCurrency(overview?.totalRevenue || 0)}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Receita acumulada</p>
+            <p className="text-xs font-medium mt-2 text-green-600">
+              → Ver Financeiro
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Clientes */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02] duration-200"
+          onClick={() => setLocation("/clientes")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Clientes
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-purple-100">
+              <Users className="h-5 w-5 text-purple-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl md:text-3xl font-bold">{overview?.totalCustomers || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">Clientes cadastrados</p>
+            <p className="text-xs font-medium mt-2 text-purple-600">
+              → Gerenciar Clientes
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Produtos */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02] duration-200"
+          onClick={() => setLocation("/estoque")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Produtos
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-orange-100">
+              <Package className="h-5 w-5 text-orange-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl md:text-3xl font-bold">{overview?.totalProducts || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">Produtos em estoque</p>
+            <p className="text-xs font-medium mt-2 text-orange-600">
+              → Ver Estoque
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* OS Abertas */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02] duration-200"
+          onClick={() => setLocation("/os")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              OS Abertas
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-red-100">
+              <Wrench className="h-5 w-5 text-red-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl md:text-3xl font-bold">{overview?.openServiceOrders || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">Ordens de serviço em andamento</p>
+            <p className="text-xs font-medium mt-2 text-red-600">
+              → Ver Ordens
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Pagamentos Pendentes */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02] duration-200"
+          onClick={() => setLocation("/financeiro")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Pagamentos Pendentes
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-yellow-100">
+              <AlertCircle className="h-5 w-5 text-yellow-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl md:text-3xl font-bold">{overview?.pendingPayments || 0}</div>
+            <p className="text-xs text-gray-500 mt-1">Contas a receber</p>
+            <p className="text-xs font-medium mt-2 text-yellow-600">
+              → Ver Contas
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Atalhos Rápidos */}
+      {/* Ações Rápidas */}
       <div>
         <h2 className="text-xl font-bold text-gray-900 mb-4">Ações Rápidas</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action, index) => {
-            const Icon = action.icon;
-            return (
-              <Card
-                key={index}
-                className="hover:shadow-md transition-all cursor-pointer hover:scale-105 duration-200"
-                onClick={() => setLocation(action.link)}
-              >
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-3">
-                    <div className={`p-3 rounded-lg ${action.bgColor}`}>
-                      <Icon className={`h-6 w-6 ${action.color}`} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm">{action.title}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{action.description}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card
+            className="hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] duration-200"
+            onClick={() => setLocation("/vendas")}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <div className="p-3 rounded-lg bg-blue-50">
+                  <ShoppingCart className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">Nova Venda</h3>
+                  <p className="text-xs text-gray-500 mt-1">Abrir PDV para realizar venda</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] duration-200"
+            onClick={() => setLocation("/os")}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <div className="p-3 rounded-lg bg-orange-50">
+                  <Wrench className="h-6 w-6 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">Nova OS</h3>
+                  <p className="text-xs text-gray-500 mt-1">Criar ordem de serviço</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] duration-200"
+            onClick={() => setLocation("/relatorios")}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <div className="p-3 rounded-lg bg-purple-50">
+                  <BarChart3 className="h-6 w-6 text-purple-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">Relatórios</h3>
+                  <p className="text-xs text-gray-500 mt-1">Ver análises e relatórios</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] duration-200"
+            onClick={() => setLocation("/notas-fiscais")}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <div className="p-3 rounded-lg bg-green-50">
+                  <FileText className="h-6 w-6 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">Notas Fiscais</h3>
+                  <p className="text-xs text-gray-500 mt-1">Gerenciar NF-e</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
       {/* Seção de Informações Adicionais */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setLocation("/historico-vendas")}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

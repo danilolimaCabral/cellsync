@@ -158,15 +158,85 @@ export const appRouter = router({
   // ============= DASHBOARD / BI =============
   dashboard: router({
     overview: protectedProcedure.query(async () => {
-      // TODO: Implementar queries para métricas principais
-      return {
-        totalSales: 0,
-        totalRevenue: 0,
-        totalCustomers: 0,
-        totalProducts: 0,
-        openServiceOrders: 0,
-        pendingPayments: 0,
-      };
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          totalSales: 0,
+          totalRevenue: 0,
+          totalCustomers: 0,
+          totalProducts: 0,
+          openServiceOrders: 0,
+          pendingPayments: 0,
+        };
+      }
+
+      const { sales, customers, products, serviceOrders, accountsReceivable } = await import("../drizzle/schema");
+      const { sql, eq } = await import("drizzle-orm");
+
+      try {
+        // Vendas de hoje
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const salesTodayResult = await database
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(sales)
+          .where(sql`${sales.createdAt} >= ${today} AND ${sales.createdAt} < ${tomorrow}`);
+        const totalSales = Number(salesTodayResult[0]?.count) || 0;
+
+        // Receita total (todas as vendas)
+        const revenueResult = await database
+          .select({ total: sql<number>`SUM(${sales.finalAmount})` })
+          .from(sales);
+        const totalRevenue = Number(revenueResult[0]?.total) || 0;
+
+        // Total de clientes
+        const customersResult = await database
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(customers);
+        const totalCustomers = Number(customersResult[0]?.count) || 0;
+
+        // Total de produtos
+        const productsResult = await database
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(products);
+        const totalProducts = Number(productsResult[0]?.count) || 0;
+
+        // OS abertas (status diferente de concluída e cancelada)
+        const openOSResult = await database
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(serviceOrders)
+          .where(sql`${serviceOrders.status} NOT IN ('concluida', 'cancelada')`);
+        const openServiceOrders = Number(openOSResult[0]?.count) || 0;
+
+        // Pagamentos pendentes (contas a receber pendentes)
+        const pendingPaymentsResult = await database
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(accountsReceivable)
+          .where(eq(accountsReceivable.status, "pendente"));
+        const pendingPayments = Number(pendingPaymentsResult[0]?.count) || 0;
+
+        return {
+          totalSales,
+          totalRevenue,
+          totalCustomers,
+          totalProducts,
+          openServiceOrders,
+          pendingPayments,
+        };
+      } catch (error) {
+        console.error("[Dashboard] Error fetching overview:", error);
+        return {
+          totalSales: 0,
+          totalRevenue: 0,
+          totalCustomers: 0,
+          totalProducts: 0,
+          openServiceOrders: 0,
+          pendingPayments: 0,
+        };
+      }
     }),
   }),
 

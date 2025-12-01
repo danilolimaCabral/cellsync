@@ -602,3 +602,25 @@
 - [ ] Adicionar validações de campos obrigatórios
 - [ ] Testar fluxo completo de emissão
 - [ ] Criar testes automatizados para NF-e
+
+
+## Testes Automatizados de NF-e
+- [ ] Criar teste de emissão de NF-e com venda
+- [ ] Criar teste de cálculo de impostos (ICMS, PIS, COFINS)
+- [ ] Criar teste de validação de dados do cliente (CPF/CNPJ)
+- [ ] Criar teste de validação de produtos na NF-e
+- [ ] Criar teste de geração de XML
+- [ ] Criar teste de geração de DANFE
+- [ ] Criar teste de cancelamento de NF-e
+- [ ] Executar todos os testes e garantir 100% de sucesso
+
+
+## Correções de Layout e Valores do Dashboard
+- [x] Analisar layout atual do Dashboard
+- [x] Identificar valores que não estão aparecendo corretamente (backend retornando zeros)
+- [x] Implementar queries reais no backend (vendas hoje, receita total, clientes, produtos, OS abertas, pagamentos pendentes)
+- [x] Corrigir formatação de valores monetários (função formatCurrency)
+- [x] Corrigir layout responsivo (grid sm:grid-cols-2 lg:grid-cols-3)
+- [x] Melhorar espaçamento e alinhamento dos cards (padding responsivo)
+- [x] Criar testes automatizados do Dashboard (5 testes passando)
+- [x] Testar Dashboard em diferentes resoluções
