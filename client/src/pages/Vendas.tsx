@@ -55,8 +55,12 @@ export default function Vendas() {
   }
 
   // Queries
-  const { data: products = [] } = trpc.products.list.useQuery();
-  const { data: customers = [] } = trpc.customers.list.useQuery();
+  const { data: products = [] } = trpc.products.list.useQuery(undefined, {
+    enabled: !!user,
+  });
+  const { data: customers = [] } = trpc.customers.list.useQuery(undefined, {
+    enabled: !!user,
+  });
 
   // Mutations
   const createSaleMutation = trpc.sales.create.useMutation({

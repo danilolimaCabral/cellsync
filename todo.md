@@ -691,3 +691,18 @@
 - [x] Modernizar botões Varejo/Atacado com gradiente azul→roxo
 - [x] Criar badges visuais para atalhos de teclado (F2, F3, F4, ESC)
 - [x] Garantir responsividade dos atalhos em mobile (flex-wrap)
+
+
+## Bug: Erro de Autenticação em Vendas
+- [x] Corrigir queries sendo executadas sem autenticação
+- [x] Adicionar enabled: !!user nas queries tRPC (products.list, customers.list)
+
+## Modernização do Dashboard Interno
+- [x] Aplicar gradientes coloridos nos 6 cards (azul→cyan, verde→esmeralda, roxo→rosa, laranja→âmbar, vermelho→rose, amarelo→laranja)
+- [x] Modernizar ícones com backgrounds em gradiente
+- [x] Adicionar animações Framer Motion (fade-in, slide-up, hover y:-8px, rotate 360°)
+- [x] Adicionar sombras modernas (hover:shadow-2xl) e bordas arredondadas (rounded-2xl)
+- [x] Criar seção de Insights Rápidos (Taxa de Conversão, Ticket Médio, Taxa de Ocupação)
+- [x] Loading skeleton com gradiente animado
+- [ ] Criar seletor de tema (claro/escuro/colorido) - próxima fase
+- [ ] Permitir personalização de cores de fundo - próxima fase
