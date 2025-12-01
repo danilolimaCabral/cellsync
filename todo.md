@@ -446,3 +446,16 @@
 - [x] Usar Intl.NumberFormat para formatação correta (R$ 1.234,56)
 - [x] Corrigir valores na tabela de produtos
 - [x] Corrigir cálculo de economia no formulário
+
+
+## Padronização de Formatação de Moeda em Todo o Sistema
+- [x] Identificar todas as páginas com valores monetários
+- [x] Aplicar Intl.NumberFormat na página Vendas (PDV) - 9 correções
+- [x] Aplicar Intl.NumberFormat na página Financeiro (Contas a Pagar) - já estava correto
+- [x] Aplicar Intl.NumberFormat na página Relatórios - já estava correto
+- [x] Aplicar Intl.NumberFormat na página Ordem de Serviço - já estava correto
+- [x] Aplicar Intl.NumberFormat na página Dashboard - 1 correção
+- [x] Aplicar Intl.NumberFormat na página Movimentações - já estava correto
+- [x] Aplicar Intl.NumberFormat na página Histórico de Vendas - já estava correto
+- [x] Aplicar Intl.NumberFormat na página Comissões - 6 correções
+- [x] Aplicar Intl.NumberFormat na página Estoque - 4 correções

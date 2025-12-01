@@ -14,6 +14,11 @@ import { DollarSign, TrendingUp, Users, CheckCircle, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+// Helper para formatação de moeda brasileira
+const formatCurrency = (cents: number) => {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
+};
+
 export default function Comissoes() {
   const { user } = useAuth();
   const [showNewRule, setShowNewRule] = useState(false);
@@ -155,7 +160,7 @@ export default function Comissoes() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ {(totalPendente / 100).toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(totalPendente)}</div>
             <p className="text-xs text-muted-foreground">{totalComissoes} comissões</p>
           </CardContent>
         </Card>
@@ -178,7 +183,7 @@ export default function Comissoes() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              R$ {ranking.length > 0 ? ((totalPendente / ranking.length) / 100).toFixed(2) : "0.00"}
+              {ranking.length > 0 ? formatCurrency(totalPendente / ranking.length) : formatCurrency(0)}
             </div>
             <p className="text-xs text-muted-foreground">comissão média</p>
           </CardContent>
@@ -222,10 +227,10 @@ export default function Comissoes() {
                         </p>
                       </div>
                       <div className="text-right mr-4">
-                        <p className="text-lg font-bold">R$ {(commission.amount / 100).toFixed(2)}</p>
+                        <p className="text-lg font-bold">{formatCurrency(commission.amount)}</p>
                         {commission.percentage && (
                           <p className="text-sm text-muted-foreground">
-                            {commission.percentage.toFixed(2)}% de R$ {(commission.baseAmount / 100).toFixed(2)}
+                            {commission.percentage.toFixed(2)}% de {formatCurrency(commission.baseAmount)}
                           </p>
                         )}
                         <Badge variant="outline" className="mt-1">
@@ -283,7 +288,7 @@ export default function Comissoes() {
                       </div>
                       <div className="text-right">
                         <p className="text-xl font-bold text-primary">
-                          R$ {(vendedor.totalComissoes / 100).toFixed(2)}
+                          {formatCurrency(vendedor.totalComissoes)}
                         </p>
                       </div>
                     </div>

@@ -30,7 +30,7 @@ export default function Dashboard() {
     },
     {
       title: "Receita Total",
-      value: `R$ ${((overview?.totalRevenue || 0) / 100).toFixed(2)}`,
+      value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((overview?.totalRevenue || 0) / 100),
       icon: DollarSign,
       description: "Receita acumulada",
       color: "text-green-600",

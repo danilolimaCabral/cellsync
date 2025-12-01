@@ -19,6 +19,11 @@ interface CartItem {
   stock: number;
 }
 
+// Helper para formatação de moeda brasileira
+const formatCurrency = (cents: number) => {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
+};
+
 export default function Vendas() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
@@ -451,7 +456,7 @@ export default function Vendas() {
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-bold text-primary">
-                            R$ {((product.salePrice || 0) / 100).toFixed(2)}
+                            {formatCurrency(product.salePrice || 0)}
                           </p>
                         </div>
                       </div>
@@ -473,7 +478,7 @@ export default function Vendas() {
                 {saleType === "wholesale" && savedAmount > 0 && (
                   <div className="flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium">
                     <span className="text-green-600">✓</span>
-                    Economia: R$ {(savedAmount / 100).toFixed(2)}
+                    Economia: {formatCurrency(savedAmount)}
                   </div>
                 )}
               </CardTitle>
@@ -514,7 +519,7 @@ export default function Vendas() {
                       <div className="flex-1">
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          R$ {(item.unitPrice / 100).toFixed(2)} x {item.quantity}
+                          {formatCurrency(item.unitPrice)} x {item.quantity}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -545,7 +550,7 @@ export default function Vendas() {
                       </div>
                       <div className="text-right min-w-24">
                         <p className="font-bold text-lg">
-                          R$ {((item.unitPrice * item.quantity) / 100).toFixed(2)}
+                          {formatCurrency(item.unitPrice * item.quantity)}
                         </p>
                       </div>
                     </div>
@@ -696,17 +701,17 @@ export default function Vendas() {
             <CardContent className="space-y-2">
               <div className="flex justify-between text-lg">
                 <span>Subtotal:</span>
-                <span>R$ {(subtotal / 100).toFixed(2)}</span>
+                <span>{formatCurrency(subtotal)}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-lg text-destructive">
                   <span>Desconto:</span>
-                  <span>- R$ {(discount / 100).toFixed(2)}</span>
+                  <span>- {formatCurrency(discount)}</span>
                 </div>
               )}
               <div className="flex justify-between text-2xl font-bold pt-2 border-t">
                 <span>Total:</span>
-                <span className="text-primary">R$ {(total / 100).toFixed(2)}</span>
+                <span className="text-primary">{formatCurrency(total)}</span>
               </div>
             </CardContent>
           </Card>
@@ -750,7 +755,7 @@ export default function Vendas() {
               <div className="text-6xl mb-4">✓</div>
               <p className="text-xl font-bold">Venda #{lastSaleId}</p>
               <p className="text-3xl font-bold text-primary mt-2">
-                R$ {(total / 100).toFixed(2)}</p>
+                {formatCurrency(total)}</p>
             </div>
             <div className="flex gap-2">
               <Button onClick={printReceipt} className="flex-1">
