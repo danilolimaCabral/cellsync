@@ -316,12 +316,12 @@
 - [ ] Criar tabela priceHistory para auditoria (futuro)
 - [ ] Adicionar procedures tRPC para CRUD de preços de atacado
 - [x] Implementar lógica de cálculo de preço (atacado vs varejo)
-- [ ] Adicionar toggle de tipo de venda no PDV
-- [ ] Implementar cálculo automático no carrinho
-- [ ] Adicionar alertas de quantidade mínima
-- [ ] Atualizar formulário de produtos com campos de atacado
-- [ ] Atualizar recibo para mostrar tipo de venda e economia
-- [ ] Criar relatório de vendas por tipo (atacado/varejo)
-- [ ] Implementar atualização em massa de preços
-- [ ] Criar testes unitários para cálculo de preços
+- [x] Adicionar toggle de tipo de venda no PDV (botões Varejo/Atacado)
+- [x] Implementar cálculo automático no carrinho (recalcula ao adicionar/alterar quantidade)
+- [ ] Adicionar alertas de quantidade mínima (futuro)
+- [ ] Atualizar formulário de produtos com campos de atacado (próxima fase)
+- [ ] Atualizar recibo para mostrar tipo de venda e economia (próxima fase)
+- [ ] Criar relatório de vendas por tipo (atacado/varejo) (futuro)
+- [ ] Implementar atualização em massa de preços (futuro)
+- [ ] Criar testes unitários para cálculo de preços (futuro)
 - [ ] Testar fluxo completo de venda atacado/varejo

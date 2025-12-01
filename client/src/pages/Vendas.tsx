@@ -31,6 +31,7 @@ export default function Vendas() {
   const [lastSaleId, setLastSaleId] = useState<number | null>(null);
   const [emitirNFe, setEmitirNFe] = useState(false);
   const [emitindoNFe, setEmitindoNFe] = useState(false);
+  const [saleType, setSaleType] = useState<"retail" | "wholesale">("retail");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Queries
@@ -86,40 +87,63 @@ export default function Vendas() {
   // Filtrar produtos pela busca
   const filteredProducts = products.filter(
     (p) =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.imei?.toLowerCase().includes(searchTerm.toLowerCase())
+      p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p as any).imei?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Calcular preço baseado em tipo de venda e quantidade
+  const calculatePrice = (product: typeof products[0], quantity: number) => {
+    const retailPrice = product.salePrice || 0;
+    const wholesalePrice = (product as any).wholesalePrice;
+    const minWholesaleQty = (product as any).minWholesaleQty || 5;
+
+    // Se não tem preço de atacado ou tipo é varejo, usa preço de varejo
+    if (!wholesalePrice || saleType === "retail") {
+      return retailPrice;
+    }
+
+    // Atacado - verifica quantidade mínima
+    if (quantity >= minWholesaleQty) {
+      return wholesalePrice;
+    }
+
+    // Quantidade insuficiente para atacado
+    return retailPrice;
+  };
 
   // Adicionar produto ao carrinho
   const addToCart = (product: typeof products[0]) => {
     const existingItem = cart.find((item) => item.productId === product.id);
     
     if (existingItem) {
-      if (existingItem.quantity >= product.currentStock) {
+      if (existingItem.quantity >= (product.currentStock || 0)) {
         toast.error("Estoque insuficiente!");
         return;
       }
+      const newQuantity = existingItem.quantity + 1;
+      const newPrice = calculatePrice(product, newQuantity);
       setCart(
         cart.map((item) =>
           item.productId === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: newQuantity, unitPrice: newPrice }
             : item
         )
       );
     } else {
-      if (product.currentStock < 1) {
+      if ((product.currentStock || 0) < 1) {
         toast.error("Produto sem estoque!");
         return;
       }
+      const unitPrice = calculatePrice(product, 1);
       setCart([
         ...cart,
         {
-          productId: product.id,
-          name: product.name,
+          productId: product.id || 0,
+          name: product.name || "",
           imei: product.sku || "",
           quantity: 1,
-          unitPrice: product.salePrice,
-          stock: product.currentStock,
+          unitPrice,
+          stock: product.currentStock || 0,
         },
       ]);
     }
@@ -137,6 +161,12 @@ export default function Vendas() {
             if (newQuantity > item.stock) {
               toast.error("Estoque insuficiente!");
               return item;
+            }
+            // Buscar produto para recalcular preço
+            const product = products.find(p => p.id === productId);
+            if (product) {
+              const newPrice = calculatePrice(product, newQuantity);
+              return { ...item, quantity: newQuantity, unitPrice: newPrice };
             }
             return { ...item, quantity: newQuantity };
           }
@@ -309,8 +339,33 @@ export default function Vendas() {
           <h1 className="text-3xl font-bold">Ponto de Venda (PDV)</h1>
           <p className="text-muted-foreground">Sistema integrado de vendas</p>
         </div>
-        <div className="text-sm text-muted-foreground">
-          <p>Atalhos: F2 (Busca) | F3 (Finalizar) | F4 (Cliente) | ESC (Limpar)</p>
+        <div className="flex items-center gap-4">
+          {/* Toggle Varejo/Atacado */}
+          <div className="flex items-center gap-2 bg-accent p-2 rounded-lg">
+            <button
+              onClick={() => setSaleType("retail")}
+              className={`px-4 py-2 rounded-md font-medium transition-all ${
+                saleType === "retail"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              🛒 Varejo
+            </button>
+            <button
+              onClick={() => setSaleType("wholesale")}
+              className={`px-4 py-2 rounded-md font-medium transition-all ${
+                saleType === "wholesale"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              📦 Atacado
+            </button>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <p>Atalhos: F2 (Busca) | F3 (Finalizar) | F4 (Cliente) | ESC (Limpar)</p>
+          </div>
         </div>
       </div>
 
@@ -364,7 +419,7 @@ export default function Vendas() {
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-bold text-primary">
-                            R$ {(product.salePrice / 100).toFixed(2)}
+                            R$ {((product.salePrice || 0) / 100).toFixed(2)}
                           </p>
                         </div>
                       </div>

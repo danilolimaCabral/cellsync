@@ -89,7 +89,7 @@ export default function Estoque() {
   });
 
   const filteredProducts = products?.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.brand?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -183,18 +183,18 @@ export default function Estoque() {
                             <CommandGroup>
                               {products
                                 ?.filter(p => 
-                                  p.name.toLowerCase().includes(modelSearchTerm.toLowerCase()) ||
+                                  p.name?.toLowerCase().includes(modelSearchTerm.toLowerCase()) ||
                                   p.brand?.toLowerCase().includes(modelSearchTerm.toLowerCase())
                                 )
                                 .slice(0, 10)
                                 .map((product) => (
                                   <CommandItem
                                     key={product.id}
-                                    value={product.name}
+                                    value={product.name || ""}
                                     onSelect={() => {
                                       setNewProduct({
                                         ...newProduct,
-                                        name: product.name,
+                                        name: product.name || "",
                                         category: product.category || "",
                                         brand: product.brand || "",
                                         model: product.model || "",
@@ -359,7 +359,7 @@ export default function Estoque() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              R$ {((products?.reduce((sum, p) => sum + p.salePrice, 0) || 0) / 100).toFixed(2)}
+              R$ {((products?.reduce((sum, p) => sum + (p.salePrice || 0), 0) || 0) / 100).toFixed(2)}
             </div>
             <p className="text-xs text-gray-500 mt-1">Valor de venda total</p>
           </CardContent>
@@ -445,10 +445,10 @@ export default function Estoque() {
                     <TableCell>{product.category || "-"}</TableCell>
                     <TableCell>{product.brand || "-"}</TableCell>
                     <TableCell className="text-right">
-                      R$ {(product.costPrice / 100).toFixed(2)}
+                      R$ {((product.costPrice || 0) / 100).toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right font-semibold text-green-600">
-                      R$ {(product.salePrice / 100).toFixed(2)}
+                      R$ {((product.salePrice || 0) / 100).toFixed(2)}
                     </TableCell>
                     <TableCell className="text-center">
                       <span className={isLowStock ? "text-yellow-600 font-semibold" : ""}>
