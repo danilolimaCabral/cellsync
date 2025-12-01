@@ -439,3 +439,10 @@
 - [x] Implementar paginação na página Movimentações
 - [x] Adicionar mesmos controles de paginação
 - [x] Testar navegação entre páginas
+
+
+## Correção de Formatação de Valores
+- [x] Corrigir formatação de moeda na página Estoque (R$ 256496.00 → R$ 2.564,96)
+- [x] Usar Intl.NumberFormat para formatação correta (R$ 1.234,56)
+- [x] Corrigir valores na tabela de produtos
+- [x] Corrigir cálculo de economia no formulário

@@ -314,7 +314,9 @@ export default function Estoque() {
                   )}
                   {newProduct.wholesalePrice && newProduct.salePrice && parseFloat(newProduct.wholesalePrice) < parseFloat(newProduct.salePrice) && (
                     <p className="text-xs text-green-600 mt-1">
-                      Economia: R$ {(parseFloat(newProduct.salePrice) - parseFloat(newProduct.wholesalePrice)).toFixed(2)} por unidade
+                      Economia: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                        parseFloat(newProduct.salePrice) - parseFloat(newProduct.wholesalePrice)
+                      )} por unidade
                     </p>
                   )}
                 </div>
@@ -393,7 +395,9 @@ export default function Estoque() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              R$ {((products?.reduce((sum, p) => sum + (p.salePrice || 0), 0) || 0) / 100).toFixed(2)}
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                (products?.reduce((sum, p) => sum + (p.salePrice || 0), 0) || 0) / 100
+              )}
             </div>
             <p className="text-xs text-gray-500 mt-1">Valor de venda total</p>
           </CardContent>
@@ -479,10 +483,14 @@ export default function Estoque() {
                     <TableCell>{product.category || "-"}</TableCell>
                     <TableCell>{product.brand || "-"}</TableCell>
                     <TableCell className="text-right">
-                      R$ {((product.costPrice || 0) / 100).toFixed(2)}
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                        (product.costPrice || 0) / 100
+                      )}
                     </TableCell>
                     <TableCell className="text-right font-semibold text-green-600">
-                      R$ {((product.salePrice || 0) / 100).toFixed(2)}
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                        (product.salePrice || 0) / 100
+                      )}
                     </TableCell>
                     <TableCell className="text-center">
                       <span className={isLowStock ? "text-yellow-600 font-semibold" : ""}>
