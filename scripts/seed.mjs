@@ -52,35 +52,35 @@ async function seedUsers() {
   
   const usersData = [
     {
-      email: "admin@okcells.com",
+      email: "admin@cellsync.com",
       password: hashedPassword,
       name: "Administrador Sistema",
       role: "admin",
       active: true,
     },
     {
-      email: "joao.vendedor@okcells.com",
+      email: "joao.vendedor@cellsync.com",
       password: hashedPassword,
       name: "João Silva",
       role: "vendedor",
       active: true,
     },
     {
-      email: "maria.vendedora@okcells.com",
+      email: "maria.vendedora@cellsync.com",
       password: hashedPassword,
       name: "Maria Santos",
       role: "vendedor",
       active: true,
     },
     {
-      email: "carlos.tecnico@okcells.com",
+      email: "carlos.tecnico@cellsync.com",
       password: hashedPassword,
       name: "Carlos Oliveira",
       role: "tecnico",
       active: true,
     },
     {
-      email: "ana.gerente@okcells.com",
+      email: "ana.gerente@cellsync.com",
       password: hashedPassword,
       name: "Ana Paula",
       role: "gerente",
@@ -627,7 +627,7 @@ console.log("   - 3 contas a pagar + 2 contas a receber");
 console.log("   - 3 notas fiscais emitidas");
 
 console.log("\n🔐 Credenciais de acesso:");
-console.log("   Email: admin@okcells.com");
+console.log("   Email: admin@cellsync.com");
 console.log("   Senha: senha123\n");
 
 // ============= EXECUTAR SEED =============

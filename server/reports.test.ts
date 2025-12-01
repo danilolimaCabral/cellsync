@@ -8,7 +8,7 @@ function createReportsContext(): { ctx: TrpcContext } {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-user",
-    email: "admin@okcells.com",
+    email: "admin@cellsync.com",
     name: "Admin User",
     loginMethod: "local",
     role: "admin",

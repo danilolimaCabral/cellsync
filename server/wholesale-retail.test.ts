@@ -11,7 +11,7 @@ describe("Sistema Atacado/Varejo", () => {
     // Criar usuário de teste
     const testUser = {
       id: 999,
-      email: "test-wholesale@okcells.com",
+      email: "test-wholesale@cellsync.com",
       name: "Test User Wholesale",
       role: "vendedor" as const,
       active: true,

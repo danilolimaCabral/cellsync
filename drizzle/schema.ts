@@ -1,7 +1,7 @@
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal } from "drizzle-orm/mysql-core";
 
 /**
- * Sistema OkCells - Schema completo do banco de dados
+ * Sistema CellSync - Schema completo do banco de dados
  * Inclui todos os módulos: Usuários, Vendas, Estoque, OS, Financeiro, CRM e BI
  */
 

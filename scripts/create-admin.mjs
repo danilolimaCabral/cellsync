@@ -18,7 +18,7 @@ async function createAdmin() {
     
     // Criar usuário admin
     await db.insert(users).values({
-      email: "admin@okcells.com",
+      email: "admin@cellsync.com",
       password: hashedPassword,
       name: "Administrador",
       role: "admin",
@@ -26,7 +26,7 @@ async function createAdmin() {
     });
     
     console.log("✅ Usuário administrador criado com sucesso!\n");
-    console.log("📧 Email: admin@okcells.com");
+    console.log("📧 Email: admin@cellsync.com");
     console.log("🔑 Senha: admin123\n");
     
     process.exit(0);

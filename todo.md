@@ -659,13 +659,13 @@
 - [x] Definir estratégias de go-to-market
 
 
-## Rebrand: OkCells → CellSync
+## Rebrand: CellSync → CellSync
 - [x] Criar logo profissional do CellSync (cellsync-logo.png, cellsync-icon.png)
 - [x] Pesquisar tendências de cores 2025 (paletas suaves + acentos ousados, gradientes fluidos)
 - [x] Definir paleta de cores moderna (azul #3B82F6, roxo #A855F7, rosa #EC4899)
 - [x] Redesenhar landing page (Home.tsx) com nova identidade visual moderna
 - [x] Atualizar CSS global (index.css) com cores do CellSync
-- [x] Renomear "OkCells" para "CellSync" em todo o código
+- [x] Renomear "CellSync" para "CellSync" em todo o código
 - [x] Atualizar favicon e meta tags (cellsync-icon.png, Google Fonts Inter)
 - [x] Atualizar documentação (todos os .md files)
 - [x] Criar documento de identidade visual (BRAND_IDENTITY.md)
@@ -739,8 +739,8 @@
 - [x] Atualizar fundo com gradiente suave + círculos animados
 - [x] Inputs com focus roxo (border-purple-500)
 
-## Renomear OkCells → CellSync (Completo)
-- [ ] Verificar se ainda existem referências a "OkCells" no código
+## Renomear CellSync → CellSync (Completo)
+- [ ] Verificar se ainda existem referências a "CellSync" no código
 - [ ] Renomear todas as ocorrências restantes
 - [ ] Atualizar variáveis de ambiente via webdev_edit_secrets (VITE_APP_TITLE)
 
@@ -804,3 +804,26 @@
 - [x] Animações Framer Motion no stepper e transições
 - [x] Adicionar/remover itens dinamicamente
 - [ ] Testar emissão completa com dados reais
+
+
+## Criar Usuário Admin para Bruno
+- [ ] Criar script para adicionar usuário Bruno com senha admin
+- [ ] Executar script e validar criação
+- [ ] Testar login com credenciais do Bruno
+
+## Renomeação Completa: CellSync → CellSync
+- [ ] Buscar todas as referências "CellSync" no código
+- [x] Buscar todas as referências "okcells" (minúsculas)
+- [ ] Renomear em arquivos .ts, .tsx, .js, .mjs
+- [ ] Renomear em arquivos de configuração (.json, .env)
+- [ ] Atualizar comentários e documentação
+- [ ] Atualizar credenciais de seed (admin@cellsync.com)
+- [ ] Atualizar variáveis de ambiente via webdev_edit_secrets
+- [ ] Testar sistema completo após renomeação
+
+## Bug Reportado - Login não redireciona
+- [x] Investigar por que login mostra sucesso mas não redireciona para dashboard
+- [x] Verificar se cookie está sendo salvo corretamente
+- [x] Verificar se useAuth está lendo o cookie
+- [x] Ajustar sameSite de "none" para "lax" no cookie
+- [ ] Testar fluxo completo de autenticação com Bruno

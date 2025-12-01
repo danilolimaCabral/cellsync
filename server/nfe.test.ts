@@ -18,7 +18,7 @@ function createAuthContext(): { ctx: TrpcContext } {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-user",
-    email: "admin@okcells.com",
+    email: "admin@cellsync.com",
     name: "Admin User",
     loginMethod: "local",
     role: "admin",
@@ -128,7 +128,7 @@ describe("NF-e - Backend", () => {
 
     const result = await caller.nfe.create({
       emitterCnpj: "11.222.333/0001-81",
-      emitterName: "OkCells Comércio de Celulares LTDA",
+      emitterName: "CellSync Comércio de Celulares LTDA",
       emitterCity: "Goiânia",
       emitterState: "GO",
       recipientDocument: "123.456.789-09",
@@ -215,7 +215,7 @@ describe("NF-e - Integração com PDV", () => {
     const invoice = await caller.nfe.create({
       saleId: sale.saleId,
       emitterCnpj: "11.222.333/0001-81",
-      emitterName: "OkCells",
+      emitterName: "CellSync",
       recipientDocument: "123.456.789-09",
       recipientName: "Maria Santos",
       cfop: "5102",
@@ -253,7 +253,7 @@ describe("NF-e - Integração com PDV", () => {
     // Criar NF-e com documento válido deve funcionar
     const invoice = await caller.nfe.create({
       emitterCnpj: "11.222.333/0001-81",
-      emitterName: "OkCells",
+      emitterName: "CellSync",
       recipientDocument: "123.456.789-09", // CPF válido
       recipientName: "Cliente com Documento",
       cfop: "5102",
@@ -285,7 +285,7 @@ describe("NF-e - Integração com PDV", () => {
 
     const invoice = await caller.nfe.create({
       emitterCnpj: "11.222.333/0001-81",
-      emitterName: "OkCells",
+      emitterName: "CellSync",
       recipientDocument: "123.456.789-09",
       recipientName: "Cliente Teste",
       cfop: "5102",

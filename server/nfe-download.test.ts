@@ -10,7 +10,7 @@ function createAuthContext(): { ctx: TrpcContext } {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-user",
-    email: "admin@okcells.com",
+    email: "admin@cellsync.com",
     name: "Admin User",
     loginMethod: "local",
     role: "admin",
@@ -42,8 +42,8 @@ describe("NF-e - Geração de XML", () => {
       type: "saida" as const,
       status: "emitida" as const,
       emitterCnpj: "11.222.333/0001-81",
-      emitterName: "OkCells Comércio LTDA",
-      emitterFantasyName: "OkCells",
+      emitterName: "CellSync Comércio LTDA",
+      emitterFantasyName: "CellSync",
       emitterAddress: "Rua Exemplo, 123",
       emitterCity: "Goiânia",
       emitterState: "GO",
@@ -154,8 +154,8 @@ describe("NF-e - Geração de DANFE", () => {
       type: "saida" as const,
       status: "emitida" as const,
       emitterCnpj: "11.222.333/0001-81",
-      emitterName: "OkCells Comércio LTDA",
-      emitterFantasyName: "OkCells",
+      emitterName: "CellSync Comércio LTDA",
+      emitterFantasyName: "CellSync",
       emitterAddress: "Rua Exemplo, 123",
       emitterCity: "Goiânia",
       emitterState: "GO",
@@ -244,7 +244,7 @@ describe("NF-e - Endpoints de Download", () => {
     // Criar uma NF-e para testar
     const invoice = await caller.nfe.create({
       emitterCnpj: "11.222.333/0001-81",
-      emitterName: "OkCells",
+      emitterName: "CellSync",
       recipientDocument: "123.456.789-09",
       recipientName: "Cliente Teste",
       cfop: "5102",
@@ -283,7 +283,7 @@ describe("NF-e - Endpoints de Download", () => {
     // Criar uma NF-e para testar
     const invoice = await caller.nfe.create({
       emitterCnpj: "11.222.333/0001-81",
-      emitterName: "OkCells",
+      emitterName: "CellSync",
       recipientDocument: "123.456.789-09",
       recipientName: "Cliente Teste",
       cfop: "5102",

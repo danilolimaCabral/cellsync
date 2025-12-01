@@ -8,7 +8,7 @@ function createAuthContext(): { ctx: TrpcContext } {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "test-user",
-    email: "test@okcells.com",
+    email: "test@cellsync.com",
     name: "Test User",
     loginMethod: "local",
     role: "admin",

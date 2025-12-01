@@ -5,7 +5,7 @@ import * as db from "./db";
 import bcrypt from "bcryptjs";
 
 describe("Autenticação Local", () => {
-  const testEmail = "test@okcells.com";
+  const testEmail = "test@cellsync.com";
   const testPassword = "senha123";
   const testName = "Usuário Teste";
 
@@ -107,7 +107,7 @@ describe("Autenticação Local", () => {
 
       await expect(
         caller.auth.login({
-          email: "naoexiste@okcells.com",
+          email: "naoexiste@cellsync.com",
           password: testPassword,
         })
       ).rejects.toThrow("Email ou senha inválidos");

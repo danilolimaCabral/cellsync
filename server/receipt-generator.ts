@@ -63,7 +63,7 @@ function formatDateTime(date: Date): string {
  * Gera QR Code para consulta da venda
  */
 async function generateQRCode(saleId: string): Promise<string> {
-  const url = `${process.env.VITE_APP_URL || "https://okcells.manus.space"}/vendas/${saleId}`;
+  const url = `${process.env.VITE_APP_URL || "https://cellsync.manus.space"}/vendas/${saleId}`;
   return await QRCode.toDataURL(url, {
     width: 150,
     margin: 1,

@@ -41,9 +41,9 @@
 - ✅ Sessões persistentes
 
 #### Credenciais de Acesso:
-- **Admin:** admin@okcells.com / admin123
-- **Vendedor:** vendedor@okcells.com / vendedor123
-- **Técnico:** tecnico@okcells.com / tecnico123
+- **Admin:** admin@cellsync.com / admin123
+- **Vendedor:** vendedor@cellsync.com / vendedor123
+- **Técnico:** tecnico@cellsync.com / tecnico123
 
 ---
 
