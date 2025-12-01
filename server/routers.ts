@@ -8,6 +8,7 @@ import * as db from "./db";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
+import { analyzeProductWithAI } from "./ai-product-assistant";
 
 // Helper para criar procedimentos protegidos
 const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
@@ -1370,8 +1371,20 @@ export const appRouter = router({
           number: invoice.number,
           series: invoice.series,
         };
+       }),
+  }),
+
+  // ============= IA ASSISTENTE =============
+  ai: router({
+    // Analisar produto com IA
+    analyzeProduct: protectedProcedure
+      .input(z.object({
+        productName: z.string().min(1, "Nome do produto é obrigatório"),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await analyzeProductWithAI(input.productName);
+        return result;
       }),
   }),
 });
-
 export type AppRouter = typeof appRouter;

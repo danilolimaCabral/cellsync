@@ -837,3 +837,14 @@
 - [x] Testar dark mode em todas as páginas principais
 - [x] Garantir contraste adequado em todos os componentes
 - [x] Adicionar transições suaves entre temas
+
+## IA Assistente para Cadastro de Produtos
+- [x] Criar módulo backend ai-product-assistant.ts com função de análise
+- [x] Integrar invokeLLM para análise inteligente de produtos
+- [x] Criar endpoint tRPC ai.analyzeProduct
+- [x] Adicionar botão "Preencher com IA" no formulário de produtos
+- [x] Implementar loading state durante análise
+- [x] Preencher automaticamente marca, modelo e categoria
+- [x] Adicionar feedback visual de sucesso/erro
+- [ ] Testar com diferentes tipos de produtos (iPhone, Samsung, Xiaomi, acessórios)
+- [ ] Criar testes unitários para análise de IA

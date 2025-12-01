@@ -32,6 +32,8 @@ import {
   TrendingDown,
   Edit,
   Barcode,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import {
   Command,
@@ -52,6 +54,7 @@ export default function Estoque() {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showModelSearch, setShowModelSearch] = useState(false);
   const [modelSearchTerm, setModelSearchTerm] = useState("");
+  const [isAnalyzingWithAI, setIsAnalyzingWithAI] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: "",
     category: "",
@@ -97,6 +100,31 @@ export default function Estoque() {
     },
   });
 
+  const analyzeProductMutation = trpc.ai.analyzeProduct.useMutation({
+    onSuccess: (data) => {
+      setNewProduct({
+        ...newProduct,
+        brand: data.brand !== "Não identificado" ? data.brand : newProduct.brand,
+        model: data.model !== "Não identificado" ? data.model : newProduct.model,
+        category: data.category !== "Não identificado" ? data.category : newProduct.category,
+      });
+      
+      if (data.confidence === "high") {
+        toast.success("✨ Produto analisado com alta confiança!");
+      } else if (data.confidence === "medium") {
+        toast.success("✨ Produto analisado! Verifique os campos.");
+      } else {
+        toast.warning("⚠️ Não consegui identificar todos os campos.");
+      }
+      
+      setIsAnalyzingWithAI(false);
+    },
+    onError: (error) => {
+      toast.error("Erro ao analisar produto: " + error.message);
+      setIsAnalyzingWithAI(false);
+    },
+  });
+
   const filteredProducts = products?.filter((p) =>
     p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,6 +135,16 @@ export default function Estoque() {
     const stock = 0; // TODO: Calcular estoque real
     return stock < (p.minStock || 10);
   });
+
+  const handleAnalyzeWithAI = async () => {
+    if (!newProduct.name) {
+      toast.error("Digite o nome do produto primeiro");
+      return;
+    }
+    
+    setIsAnalyzingWithAI(true);
+    analyzeProductMutation.mutate({ productName: newProduct.name });
+  };
 
   const handleSubmitProduct = (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,7 +201,8 @@ export default function Estoque() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label>Nome do Produto *</Label>
-                  <div className="relative">
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
                     <Input
                       value={newProduct.name}
                       onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
@@ -226,6 +265,27 @@ export default function Estoque() {
                         </Command>
                       </PopoverContent>
                     </Popover>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAnalyzeWithAI}
+                      disabled={!newProduct.name || isAnalyzingWithAI}
+                      className="shrink-0 gap-2"
+                    >
+                      {isAnalyzingWithAI ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Analisando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" />
+                          Preencher com IA
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
 
