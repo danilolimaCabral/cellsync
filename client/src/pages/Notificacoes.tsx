@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,15 +10,20 @@ import { toast } from "sonner";
 export default function Notificacoes() {
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const utils = trpc.useUtils();
+  const { user } = useAuth();
 
   // Query para buscar notificações
   const { data: notifications = [], isLoading } = trpc.notifications.list.useQuery({
     unreadOnly: filter === "unread",
     limit: 100,
+  }, {
+    enabled: !!user,
   });
 
   // Query para contador de não lidas
-  const { data: unreadData } = trpc.notifications.unreadCount.useQuery();
+  const { data: unreadData } = trpc.notifications.unreadCount.useQuery(undefined, {
+    enabled: !!user,
+  });
   const unreadCount = unreadData?.count || 0;
 
   // Mutation para marcar como lida

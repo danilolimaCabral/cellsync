@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -48,7 +49,10 @@ export default function Clientes() {
     notes: "",
   });
 
-  const { data: customers, isLoading, refetch } = trpc.customers.list.useQuery();
+  const { user } = useAuth();
+  const { data: customers, isLoading, refetch } = trpc.customers.list.useQuery(undefined, {
+    enabled: !!user,
+  });
 
   const createCustomerMutation = trpc.customers.create.useMutation({
     onSuccess: () => {

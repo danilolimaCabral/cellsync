@@ -717,3 +717,38 @@
 - [x] Melhorar espaçamento e padding dos itens (h-11, space-y-1)
 - [x] Ícone branco em fundo gradiente quando ativo
 - [x] Hover effect com gradiente suave em itens inativos
+
+
+## Bug: Erros de Autenticação em Múltiplas Páginas
+- [x] Corrigir Financeiro (3 queries)
+- [x] Corrigir Clientes (1 query)
+- [x] Corrigir Comissoes (3 queries)
+- [x] Corrigir Estoque (1 query)
+- [x] Corrigir Movimentacoes (3 queries)
+- [x] Corrigir NotasFiscais (2 queries)
+- [x] Corrigir Notificacoes (2 queries)
+- [x] Corrigir RelatorioAvancadoEstoque (3 queries)
+- [x] Corrigir Relatorios (6 queries)
+- [x] Total: 24 queries protegidas com autenticação!
+
+## Modernizar Página de Login
+- [x] Substituir logo "OK" azul pelo logo CellSync com gradiente (/cellsync-icon.png)
+- [x] Aplicar gradientes coloridos (azul→roxo→rosa) no fundo e título
+- [x] Adicionar animações Framer Motion (fade-in, slide-up, scale)
+- [x] Modernizar botão "Entrar" com gradiente vibrante + hover scale
+- [x] Atualizar fundo com gradiente suave + círculos animados
+- [x] Inputs com focus roxo (border-purple-500)
+
+## Renomear OkCells → CellSync (Completo)
+- [ ] Verificar se ainda existem referências a "OkCells" no código
+- [ ] Renomear todas as ocorrências restantes
+- [ ] Atualizar variáveis de ambiente via webdev_edit_secrets (VITE_APP_TITLE)
+
+## Dark Mode Implementation
+- [ ] Criar ThemeContext para gerenciar tema globalmente
+- [ ] Implementar toggle button (Sol/Lua) no DashboardLayout header
+- [ ] Salvar preferência no localStorage
+- [ ] Ajustar paleta de cores para dark mode (slate-900, slate-800)
+- [ ] Ajustar gradientes para versões mais vibrantes em dark
+- [ ] Adicionar transições suaves ao alternar temas
+- [ ] Testar dark mode em todas as páginas

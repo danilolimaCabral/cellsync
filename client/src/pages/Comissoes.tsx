@@ -49,9 +49,15 @@ export default function Comissoes() {
 
   // Queries
   const utils = trpc.useUtils();
-  const { data: users = [] } = trpc.users.list.useQuery({});
-  const { data: commissions = [] } = trpc.commissions.getPending.useQuery();
-  const { data: rules = [] } = trpc.commissions.listRules.useQuery();
+  const { data: users = [] } = trpc.users.list.useQuery({}, {
+    enabled: !!user,
+  });
+  const { data: commissions = [] } = trpc.commissions.getPending.useQuery(undefined, {
+    enabled: !!user,
+  });
+  const { data: rules = [] } = trpc.commissions.listRules.useQuery(undefined, {
+    enabled: !!user,
+  });
 
   // Mutations
   const createRuleMutation = trpc.commissions.createRule.useMutation({

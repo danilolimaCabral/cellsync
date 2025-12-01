@@ -5,6 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import {
   BarChart3,
@@ -51,13 +52,27 @@ export default function Relatorios() {
 
   const { startDate, endDate } = getDateRange(parseInt(period));
 
+  const { user } = useAuth();
+
   // Queries
-  const { data: salesStats } = trpc.reports.salesStats.useQuery({ startDate, endDate });
-  const { data: topProducts } = trpc.reports.topProducts.useQuery({ startDate, endDate, limit: 10 });
-  const { data: sellerPerformance } = trpc.reports.sellerPerformance.useQuery({ startDate, endDate });
-  const { data: serviceOrderStats } = trpc.reports.serviceOrderStats.useQuery({ startDate, endDate });
-  const { data: financialKPIs } = trpc.reports.financialKPIs.useQuery({ startDate, endDate });
-  const { data: inventoryStats } = trpc.reports.inventoryStats.useQuery();
+  const { data: salesStats } = trpc.reports.salesStats.useQuery({ startDate, endDate }, {
+    enabled: !!user,
+  });
+  const { data: topProducts } = trpc.reports.topProducts.useQuery({ startDate, endDate, limit: 10 }, {
+    enabled: !!user,
+  });
+  const { data: sellerPerformance } = trpc.reports.sellerPerformance.useQuery({ startDate, endDate }, {
+    enabled: !!user,
+  });
+  const { data: serviceOrderStats } = trpc.reports.serviceOrderStats.useQuery({ startDate, endDate }, {
+    enabled: !!user,
+  });
+  const { data: financialKPIs } = trpc.reports.financialKPIs.useQuery({ startDate, endDate }, {
+    enabled: !!user,
+  });
+  const { data: inventoryStats } = trpc.reports.inventoryStats.useQuery(undefined, {
+    enabled: !!user,
+  });
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("pt-BR", {

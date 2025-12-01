@@ -31,6 +31,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -74,10 +75,18 @@ export default function Financeiro() {
     notes: "",
   });
 
+  const { user } = useAuth();
+
   // Queries
-  const { data: accountsPayable, refetch: refetchPayable } = trpc.financial.accountsPayable.list.useQuery({});
-  const { data: metrics } = trpc.financial.accountsPayable.metrics.useQuery({});
-  const { data: accountsReceivable, refetch: refetchReceivable } = trpc.financial.accountsReceivable.list.useQuery({});
+  const { data: accountsPayable, refetch: refetchPayable } = trpc.financial.accountsPayable.list.useQuery({}, {
+    enabled: !!user,
+  });
+  const { data: metrics } = trpc.financial.accountsPayable.metrics.useQuery({}, {
+    enabled: !!user,
+  });
+  const { data: accountsReceivable, refetch: refetchReceivable } = trpc.financial.accountsReceivable.list.useQuery({}, {
+    enabled: !!user,
+  });
   const { data: cashFlow } = trpc.financial.cashFlow.get.useQuery({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date(),

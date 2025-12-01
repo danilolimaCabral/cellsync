@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -19,9 +20,7 @@ export default function Login() {
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: async () => {
       toast.success("Login realizado com sucesso!");
-      // Invalidar cache do auth.me para forçar recarregar o usuário
       await utils.auth.me.invalidate();
-      // Pequeno delay para garantir que o cookie foi salvo
       setTimeout(() => {
         setLocation("/dashboard");
       }, 100);
@@ -62,87 +61,135 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-2xl font-bold">OK</span>
-            </div>
-          </div>
-          <CardTitle className="text-2xl text-center">CellSync</CardTitle>
-          <CardDescription className="text-center">
-            {isRegistering 
-              ? "Crie sua conta para começar" 
-              : "Sistema de Gestão para Lojas de Celular"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isRegistering && (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4 relative overflow-hidden">
+      {/* Animated background circles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-400/10 rounded-full blur-3xl animate-pulse delay-500" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10"
+      >
+        <Card className="w-full max-w-md shadow-2xl border-0">
+          <CardHeader className="space-y-4 pb-6">
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="flex justify-center"
+            >
+              <div className="relative">
+                <img 
+                  src="/cellsync-icon.png" 
+                  alt="CellSync" 
+                  className="w-20 h-20 object-contain drop-shadow-2xl"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-xl" />
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <CardTitle className="text-3xl text-center font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                CellSync
+              </CardTitle>
+              <CardDescription className="text-center mt-2 text-base">
+                {isRegistering 
+                  ? "Crie sua conta para começar" 
+                  : "Sistema de Gestão para Lojas de Celular"}
+              </CardDescription>
+            </motion.div>
+          </CardHeader>
+          
+          <CardContent>
+            <motion.form
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              onSubmit={handleSubmit}
+              className="space-y-4"
+            >
+              {isRegistering && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="name">Nome completo</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Seu nome"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required={isRegistering}
+                    className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                  />
+                </motion.div>
+              )}
+              
               <div className="space-y-2">
-                <Label htmlFor="name">Nome completo</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="name"
-                  type="text"
-                  placeholder="Seu nome"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required={isRegistering}
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                 />
               </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                />
+              </div>
 
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={loginMutation.isPending || registerMutation.isPending}
-            >
-              {(loginMutation.isPending || registerMutation.isPending) 
-                ? "Processando..." 
-                : isRegistering 
-                  ? "Criar conta" 
-                  : "Entrar"}
-            </Button>
-
-            <div className="text-center text-sm">
-              <button
-                type="button"
-                onClick={() => setIsRegistering(!isRegistering)}
-                className="text-blue-600 hover:underline"
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white font-semibold py-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+                disabled={loginMutation.isPending || registerMutation.isPending}
               >
-                {isRegistering 
-                  ? "Já tem uma conta? Faça login" 
-                  : "Não tem uma conta? Cadastre-se"}
-              </button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+                {(loginMutation.isPending || registerMutation.isPending) 
+                  ? "Processando..." 
+                  : isRegistering 
+                    ? "Criar conta" 
+                    : "Entrar"}
+              </Button>
+
+              <div className="text-center text-sm pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsRegistering(!isRegistering)}
+                  className="text-purple-600 hover:text-purple-700 font-medium hover:underline transition-colors"
+                >
+                  {isRegistering 
+                    ? "Já tem uma conta? Faça login" 
+                    : "Não tem uma conta? Cadastre-se"}
+                </button>
+              </div>
+            </motion.form>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

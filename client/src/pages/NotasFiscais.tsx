@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +32,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
 import {
   FileText,
   Download,
@@ -45,7 +45,6 @@ import {
 } from "lucide-react";
 
 export default function NotasFiscais() {
-  const { user, loading } = useAuth();
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -56,7 +55,11 @@ export default function NotasFiscais() {
   const [cancelReason, setCancelReason] = useState("");
 
   // Queries
-  const { data: stats } = trpc.nfe.stats.useQuery();
+  const { user, loading } = useAuth();
+
+  const { data: stats } = trpc.nfe.stats.useQuery(undefined, {
+    enabled: !!user,
+  });
   const { data: invoices = [], refetch } = trpc.nfe.list.useQuery({
     status: statusFilter === "todos" ? undefined : statusFilter,
     startDate: startDate ? new Date(startDate) : undefined,

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -61,10 +62,18 @@ export default function RelatorioAvancadoEstoque() {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
+  const { user } = useAuth();
+
   // Queries
-  const { data: stockData = [], isLoading: isLoadingStock } = trpc.reports.advancedStock.useQuery(filters);
-  const { data: metrics, isLoading: isLoadingMetrics } = trpc.reports.stockMetrics.useQuery(filters);
-  const { data: filterOptions } = trpc.reports.filterOptions.useQuery();
+  const { data: stockData = [], isLoading: isLoadingStock } = trpc.reports.advancedStock.useQuery(filters, {
+    enabled: !!user,
+  });
+  const { data: metrics, isLoading: isLoadingMetrics } = trpc.reports.stockMetrics.useQuery(filters, {
+    enabled: !!user,
+  });
+  const { data: filterOptions } = trpc.reports.filterOptions.useQuery(undefined, {
+    enabled: !!user,
+  });
 
   // Formatador de moeda
   const formatCurrency = (value: number) => {

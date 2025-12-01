@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -66,7 +67,10 @@ export default function Estoque() {
     requiresImei: false,
   });
 
-  const { data: products, isLoading, refetch } = trpc.products.list.useQuery();
+  const { user } = useAuth();
+  const { data: products, isLoading, refetch } = trpc.products.list.useQuery(undefined, {
+    enabled: !!user,
+  });
 
   const createProductMutation = trpc.products.create.useMutation({
     onSuccess: () => {

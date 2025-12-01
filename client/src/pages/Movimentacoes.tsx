@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import {
   Plus,
@@ -63,9 +64,16 @@ export default function Movimentacoes() {
 
   const [searchIMEI, setSearchIMEI] = useState("");
 
-  const { data: movementsData, isLoading, refetch } = trpc.stockMovements.list.useQuery(filters);
-  const { data: products } = trpc.products.list.useQuery({ limit: 100 });
-  const { data: inventoryReport } = trpc.stockMovements.inventoryReport.useQuery();
+  const { user } = useAuth();
+  const { data: movementsData, isLoading, refetch } = trpc.stockMovements.list.useQuery(filters, {
+    enabled: !!user,
+  });
+  const { data: products } = trpc.products.list.useQuery({ limit: 100 }, {
+    enabled: !!user,
+  });
+  const { data: inventoryReport } = trpc.stockMovements.inventoryReport.useQuery(undefined, {
+    enabled: !!user,
+  });
   const { data: imeiMovements } = trpc.stockMovements.byIMEI.useQuery(
     { imei: searchIMEI },
     { enabled: searchIMEI.length > 0 }
