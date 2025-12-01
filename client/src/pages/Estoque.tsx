@@ -59,6 +59,8 @@ export default function Estoque() {
     imei: "",
     costPrice: "",
     salePrice: "",
+    wholesalePrice: "",
+    minWholesaleQty: "5",
     minStock: "10",
     requiresImei: false,
   });
@@ -78,6 +80,8 @@ export default function Estoque() {
         imei: "",
         costPrice: "",
         salePrice: "",
+        wholesalePrice: "",
+        minWholesaleQty: "5",
         minStock: "10",
         requiresImei: false,
       });
@@ -285,7 +289,7 @@ export default function Estoque() {
                 </div>
 
                 <div>
-                  <Label>Preço de Venda (R$) *</Label>
+                  <Label>Preço de Venda Varejo (R$) *</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -294,6 +298,36 @@ export default function Estoque() {
                     placeholder="0.00"
                     required
                   />
+                </div>
+
+                <div>
+                  <Label>Preço de Atacado (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={newProduct.wholesalePrice}
+                    onChange={(e) => setNewProduct({ ...newProduct, wholesalePrice: e.target.value })}
+                    placeholder="0.00"
+                  />
+                  {newProduct.wholesalePrice && newProduct.salePrice && parseFloat(newProduct.wholesalePrice) >= parseFloat(newProduct.salePrice) && (
+                    <p className="text-xs text-red-600 mt-1">Preço atacado deve ser menor que varejo</p>
+                  )}
+                  {newProduct.wholesalePrice && newProduct.salePrice && parseFloat(newProduct.wholesalePrice) < parseFloat(newProduct.salePrice) && (
+                    <p className="text-xs text-green-600 mt-1">
+                      Economia: R$ {(parseFloat(newProduct.salePrice) - parseFloat(newProduct.wholesalePrice)).toFixed(2)} por unidade
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label>Quantidade Mínima Atacado</Label>
+                  <Input
+                    type="number"
+                    value={newProduct.minWholesaleQty}
+                    onChange={(e) => setNewProduct({ ...newProduct, minWholesaleQty: e.target.value })}
+                    placeholder="5"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Qtd mínima para aplicar preço de atacado</p>
                 </div>
 
                 <div>

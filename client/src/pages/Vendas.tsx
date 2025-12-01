@@ -185,6 +185,36 @@ export default function Vendas() {
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const total = subtotal - discount;
 
+  // Calcular economia de atacado
+  const savedAmount = cart.reduce((sum, item) => {
+    const product = products.find(p => p.id === item.productId);
+    if (!product) return sum;
+    
+    const retailPrice = product.salePrice || 0;
+    const wholesalePrice = (product as any).wholesalePrice;
+    const minWholesaleQty = (product as any).minWholesaleQty || 5;
+    
+    // Se está usando preço de atacado
+    if (wholesalePrice && saleType === "wholesale" && item.quantity >= minWholesaleQty) {
+      const savings = (retailPrice - wholesalePrice) * item.quantity;
+      return sum + savings;
+    }
+    
+    return sum;
+  }, 0);
+
+  // Verificar produtos próximos do limite de atacado
+  const productsNearWholesale = cart.filter(item => {
+    const product = products.find(p => p.id === item.productId);
+    if (!product) return false;
+    
+    const wholesalePrice = (product as any).wholesalePrice;
+    const minWholesaleQty = (product as any).minWholesaleQty || 5;
+    
+    // Tem preço de atacado mas não atingiu quantidade mínima
+    return wholesalePrice && item.quantity < minWholesaleQty && item.quantity >= minWholesaleQty - 2;
+  });
+
   // Emitir NF-e para venda
   const emitirNFeParaVenda = async (saleId: number, customerId: number) => {
     setEmitindoNFe(true);
@@ -260,6 +290,8 @@ export default function Vendas() {
       totalAmount: subtotal,
       discount,
       paymentMethod,
+      saleType,
+      appliedDiscount: savedAmount,
       items: cart.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -433,9 +465,17 @@ export default function Vendas() {
           {/* Carrinho */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5" />
-                Carrinho ({cart.length} {cart.length === 1 ? "item" : "itens"})
+              <CardTitle className="flex items-center gap-2 justify-between">
+                <div className="flex items-center gap-2">
+                  <ShoppingCart className="h-5 w-5" />
+                  Carrinho ({cart.length} {cart.length === 1 ? "item" : "itens"})
+                </div>
+                {saleType === "wholesale" && savedAmount > 0 && (
+                  <div className="flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium">
+                    <span className="text-green-600">✓</span>
+                    Economia: R$ {(savedAmount / 100).toFixed(2)}
+                  </div>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -447,6 +487,25 @@ export default function Vendas() {
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {/* Alerta de produtos próximos do atacado */}
+                  {productsNearWholesale.length > 0 && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                      <p className="text-sm font-medium text-amber-800 mb-2">
+                        💡 Dica: Adicione mais unidades para ativar preço de atacado!
+                      </p>
+                      {productsNearWholesale.map(item => {
+                        const product = products.find(p => p.id === item.productId);
+                        const minWholesaleQty = (product as any)?.minWholesaleQty || 5;
+                        const remaining = minWholesaleQty - item.quantity;
+                        return (
+                          <p key={item.productId} className="text-xs text-amber-700">
+                            • {item.name}: adicione mais {remaining} {remaining === 1 ? 'unidade' : 'unidades'}
+                          </p>
+                        );
+                      })}
+                    </div>
+                  )}
+
                   {cart.map((item) => (
                     <div
                       key={item.productId}

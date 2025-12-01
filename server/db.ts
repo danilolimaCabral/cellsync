@@ -257,6 +257,8 @@ export async function createSale(data: {
   totalAmount: number;
   discount: number;
   paymentMethod: string;
+  saleType?: "retail" | "wholesale";
+  appliedDiscount?: number;
   items: Array<{
     productId: number;
     quantity: number;
@@ -278,6 +280,8 @@ export async function createSale(data: {
     finalAmount,
     paymentMethod: data.paymentMethod,
     status: "concluida",
+    saleType: data.saleType || "retail",
+    appliedDiscount: data.appliedDiscount || 0,
   });
 
   const saleId = Number(saleResult.insertId);

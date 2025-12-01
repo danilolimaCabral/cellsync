@@ -283,11 +283,11 @@
 - [x] Executar scripts e verificar cadastros (127 produtos cadastrados com sucesso!)
 
 ## Sistema de Venda Atacado e Varejo
-- [ ] Adicionar campo de preço de atacado nos produtos
-- [ ] Criar configuração de quantidade mínima para atacado
-- [ ] Implementar seleção de tipo de venda no PDV (atacado/varejo)
-- [ ] Ajustar cálculo de preço baseado no tipo de venda
-- [ ] Atualizar recibo para mostrar tipo de venda
+- [x] Adicionar campo de preço de atacado nos produtos
+- [x] Criar configuração de quantidade mínima para atacado
+- [x] Implementar seleção de tipo de venda no PDV (atacado/varejo)
+- [x] Ajustar cálculo de preço baseado no tipo de venda
+- [x] Atualizar recibo para mostrar tipo de venda
 - [ ] Criar relatório de vendas por tipo (atacado/varejo)
 
 ## Busca por IMEI no PDV
@@ -318,13 +318,17 @@
 - [x] Implementar lógica de cálculo de preço (atacado vs varejo)
 - [x] Adicionar toggle de tipo de venda no PDV (botões Varejo/Atacado)
 - [x] Implementar cálculo automático no carrinho (recalcula ao adicionar/alterar quantidade)
-- [ ] Adicionar alertas de quantidade mínima (futuro)
-- [ ] Atualizar formulário de produtos com campos de atacado (próxima fase)
-- [ ] Atualizar recibo para mostrar tipo de venda e economia (próxima fase)
+- [x] Adicionar campos "Preço Atacado" e "Quantidade Mínima" no formulário
+- [x] Implementar validação: preço atacado < preço varejo
+- [x] Adicionar pré-visualização de economia
+- [x] Atualizar recibo PDF com badge de tipo de venda
+- [x] Adicionar linha "Você economizou" no recibo
+- [x] Implementar indicador visual de economia no carrinho
+- [x] Adicionar alerta de quantidade mínima para atacado
 - [ ] Criar relatório de vendas por tipo (atacado/varejo) (futuro)
 - [ ] Implementar atualização em massa de preços (futuro)
-- [ ] Criar testes unitários para cálculo de preços (futuro)
-- [ ] Testar fluxo completo de venda atacado/varejo
+- [x] Criar testes unitários para cálculo de preços (6 testes passando)
+- [x] Testar fluxo completo de venda atacado/varejo
 
 ## Importação de Dados dos Arquivos Excel
 - [x] Analisar estrutura do arquivo ClientesTrue.xlsx
@@ -336,3 +340,35 @@
 - [x] Criar script de importação unificado
 - [x] Executar importação e validar dados
 - [x] Importados: 1.100 clientes, 204 produtos, 88 itens de estoque
+
+## Relatório de Estoque Avançado
+- [ ] Criar página de relatório com todos os campos (Data Entrada, IMEI, Produto, QTD, Custo, Varejo, Atacado, Grade, Almoxarifado, Fornecedor, Bateria, Defeito, Apto Venda, Dias em Estoque)
+- [ ] Implementar cálculo automático de "Dias em Estoque"
+- [ ] Adicionar filtros: Data, Fornecedor, Almoxarifado, Grade, Apto Venda, Defeito
+- [ ] Adicionar painel de métricas (Total em estoque, Valor total, Média de dias)
+- [ ] Implementar exportação para Excel/PDF
+- [ ] Adicionar ordenação por colunas
+
+## Comprovante de Venda Completo
+- [ ] Adicionar seção de cabeçalho personalizável (Nome Empresa, CNPJ, Endereço, Logo)
+- [ ] Adicionar tabela de produtos de entrada/troca
+- [ ] Adicionar campos de forma de pagamento detalhada
+- [ ] Adicionar seção de termos e condições
+- [ ] Implementar QR Code para consulta online
+- [ ] Adicionar campo de observações
+
+## Contas a Pagar com Overview
+- [ ] Criar painel com cartões coloridos (Vencidas, Vencendo Hoje, A Vencer, Pagas)
+- [ ] Implementar cálculo de totais (Custo Total, Valor Pago, Saldo em Aberto)
+- [ ] Adicionar filtros por data, fornecedor, status
+- [ ] Implementar pagamento em massa
+- [ ] Adicionar alertas automáticos de vencimento
+- [ ] Implementar anexo de comprovantes
+
+## Gestão de Comissão com Metas
+- [ ] Criar sistema de metas semanais/mensais
+- [ ] Implementar ranking de vendedores
+- [ ] Adicionar painel de performance
+- [ ] Criar fluxo de aprovação (vendedor → gerente → financeiro)
+- [ ] Implementar gamificação com badges
+- [ ] Adicionar gráficos de evolução

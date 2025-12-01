@@ -277,6 +277,8 @@ export const appRouter = router({
         paymentMethod: z.string(),
         totalAmount: z.number().min(0),
         discount: z.number().min(0).default(0),
+        saleType: z.enum(["retail", "wholesale"]).optional(),
+        appliedDiscount: z.number().min(0).default(0),
       }))
       .mutation(async ({ input, ctx }) => {
         const sellerId = ctx.user.id;
@@ -287,6 +289,8 @@ export const appRouter = router({
           paymentMethod: input.paymentMethod,
           totalAmount: input.totalAmount,
           discount: input.discount,
+          saleType: input.saleType,
+          appliedDiscount: input.appliedDiscount,
         });
         return { success: true, saleId };
       }),
@@ -338,6 +342,8 @@ export const appRouter = router({
           total: sale.finalAmount,
           paymentMethod: sale.paymentMethod || "Não informado",
           commission: sale.commission || undefined,
+          saleType: sale.saleType,
+          savedAmount: sale.appliedDiscount || 0,
         };
         
         // Gerar PDF

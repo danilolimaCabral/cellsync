@@ -32,6 +32,8 @@ interface ReceiptData {
   total: number;
   paymentMethod: string;
   commission?: number;
+  saleType?: 'retail' | 'wholesale';
+  savedAmount?: number;
 }
 
 /**
@@ -132,7 +134,26 @@ export async function generateReceipt(data: ReceiptData): Promise<Buffer> {
   doc.setTextColor(37, 99, 235);
   doc.text("RECIBO DE VENDA", pageWidth / 2, yPos, { align: "center" });
 
-  yPos += 10;
+  yPos += 8;
+
+  // Badge de tipo de venda
+  if (data.saleType) {
+    const badgeText = data.saleType === 'wholesale' ? 'VENDA ATACADO' : 'VENDA VAREJO';
+    const badgeColor = data.saleType === 'wholesale' ? [34, 197, 94] : [59, 130, 246]; // green-500 : blue-500
+    
+    doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2]);
+    const badgeWidth = doc.getTextWidth(badgeText) + 8;
+    doc.roundedRect(pageWidth / 2 - badgeWidth / 2, yPos - 3, badgeWidth, 6, 1, 1, "F");
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text(badgeText, pageWidth / 2, yPos + 1, { align: "center" });
+    
+    yPos += 6;
+  }
+
+  yPos += 4;
 
   // Box com informações da venda
   doc.setFillColor(249, 250, 251); // gray-50
@@ -287,6 +308,22 @@ export async function generateReceipt(data: ReceiptData): Promise<Buffer> {
       align: "right",
     });
     yPos += 6;
+  }
+
+  // Economia (se atacado)
+  if (data.savedAmount && data.savedAmount > 0) {
+    doc.setFillColor(240, 253, 244); // green-50
+    doc.roundedRect(pageWidth - margin - 70, yPos - 2, 70, 8, 1, 1, "F");
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(22, 163, 74); // green-600
+    doc.text("✓ Você economizou:", pageWidth - margin - 68, yPos + 3);
+    doc.text(formatCurrency(data.savedAmount), pageWidth - margin - 2, yPos + 3, {
+      align: "right",
+    });
+    
+    yPos += 10;
   }
 
   // Total
