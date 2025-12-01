@@ -25,7 +25,7 @@ const formatCurrency = (cents: number) => {
 };
 
 export default function Vendas() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
@@ -38,6 +38,20 @@ export default function Vendas() {
   const [emitindoNFe, setEmitindoNFe] = useState(false);
   const [saleType, setSaleType] = useState<"retail" | "wholesale">("retail");
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Verificar autenticação
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    window.location.href = "/";
+    return null;
+  }
 
   // Queries
   const { data: products = [] } = trpc.products.list.useQuery();

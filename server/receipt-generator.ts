@@ -13,6 +13,9 @@ interface ReceiptProduct {
   unitPrice: number;
   total: number;
   imei?: string;
+  brand?: string;
+  model?: string;
+  category?: string;
   warranty?: string;
 }
 
@@ -244,15 +247,31 @@ export async function generateReceipt(data: ReceiptData): Promise<Buffer> {
     doc.setFont("helvetica", "bold");
     doc.text(product.name, margin + 2, yPos + 4);
 
-    // SKU
+    // SKU e detalhes do produto
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
-    doc.text(`SKU: ${product.sku}`, margin + 2, yPos + 8);
-
+    
+    let detailsY = yPos + 8;
+    doc.text(`SKU: ${product.sku}`, margin + 2, detailsY);
+    
+    // Marca e Modelo (se houver)
+    if (product.brand || product.model) {
+      detailsY += 3;
+      const brandModel = [product.brand, product.model].filter(Boolean).join(" - ");
+      doc.text(brandModel, margin + 2, detailsY);
+    }
+    
+    // Categoria (se houver)
+    if (product.category) {
+      detailsY += 3;
+      doc.text(`Categoria: ${product.category}`, margin + 2, detailsY);
+    }
+    
     // IMEI (se houver)
     if (product.imei) {
-      doc.text(`IMEI: ${product.imei}`, margin + 2, yPos + 11);
+      detailsY += 3;
+      doc.text(`IMEI: ${product.imei}`, margin + 2, detailsY);
     }
 
     // Valores

@@ -365,6 +365,9 @@ export const appRouter = router({
           products: items.map((item: any) => ({
             name: item.productName,
             sku: item.productSku || "N/A",
+            brand: item.brand,
+            model: item.model,
+            category: item.category,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             total: item.quantity * item.unitPrice,

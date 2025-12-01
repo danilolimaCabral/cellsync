@@ -565,3 +565,15 @@
 - [ ] Implementar paginação na página NF-e
 - [ ] Adicionar controles (10/25/50/100 itens)
 - [ ] Testar navegação em todas as páginas
+
+
+## Correções e Melhorias de Recibo
+- [x] Corrigir erro "Acesso negado" na página de vendas
+- [x] Verificar autenticação na página Vendas (loading state + redirect)
+- [x] Melhorar recibo de venda com dados completos do produto
+- [x] IMEI já estava no recibo
+- [x] Adicionar marca, modelo e categoria no recibo
+- [x] Dados do cliente já estavam no recibo
+- [x] Atualizar getSaleItems para incluir brand, model, category
+- [x] Atualizar interface ReceiptProduct
+- [x] Atualizar renderização do recibo PDF
