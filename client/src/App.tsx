@@ -23,6 +23,7 @@ import Notificacoes from "./pages/Notificacoes";
 import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
 import ImportarProdutos from "./pages/ImportarProdutos";
 import GerarEtiquetas from "./pages/GerarEtiquetas";
+import Planos from "./pages/Planos";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -50,6 +51,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
+      <Route path="/planos" component={Planos} />
       
       {/* Rotas protegidas com DashboardLayout */}
       <Route path="/dashboard">

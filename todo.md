@@ -923,3 +923,27 @@
 - [x] Melhorar visibilidade do QR Code (borda e arredondamento)
 - [x] Ajustar espaçamento e cores (gradientes sutis)
 - [x] Tornar layout mais profissional (caixa de preço destacada)
+
+## Sistema Multi-Tenant + Pagamento Stripe
+- [x] Adicionar feature Stripe ao projeto (webdev_add_feature)
+- [x] Criar tabela tenants (id, nome, subdomínio, plano, status)
+- [x] Criar tabela plans (id, nome, preço, limites)
+- [x] Criar tabela subscriptions (tenant_id, stripe_subscription_id, status)
+- [x] Definir 3 planos baseados em pesquisa:
+  * Básico: R$ 97/mês - 1 usuário, 500 produtos
+  * Profissional: R$ 197/mês - 5 usuários, ilimitado + IA
+  * Empresarial: R$ 397/mês - ilimitado, white-label
+- [x] Popular planos no banco de dados (seed-plans.mjs)
+- [x] Criar integração com Stripe (stripe-integration.ts)
+- [x] Criar endpoints tRPC para listar planos
+- [x] Criar endpoint tRPC para checkout
+- [x] Criar página de planos (/planos) com design moderno
+- [x] Implementar toggle mensal/anual com desconto de 17%
+- [x] Adicionar cards de planos com features e limites
+- [ ] Configurar produtos no Stripe Dashboard
+- [ ] Testar checkout completo com cartão de teste
+- [ ] Adicionar campo tenant_id em todas as tabelas principais (futuro)
+- [ ] Implementar middleware de isolamento de dados por tenant (futuro)
+- [ ] Criar webhooks Stripe para renovação/cancelamento (futuro)
+- [ ] Criar painel administrativo de tenants (futuro)
+- [ ] Implementar métricas de receita MRR, churn (futuro)

@@ -1,9 +1,50 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json } from "drizzle-orm/mysql-core";
 
 /**
  * Sistema CellSync - Schema completo do banco de dados
  * Inclui todos os módulos: Usuários, Vendas, Estoque, OS, Financeiro, CRM e BI
+ * + Sistema Multi-Tenant com Stripe
  */
+
+// ============= MULTI-TENANT (SaaS) =============
+export const tenants = mysqlTable("tenants", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(), // Nome da empresa cliente
+  subdomain: varchar("subdomain", { length: 63 }).notNull().unique(), // cliente.cellsync.com
+  customDomain: varchar("customDomain", { length: 255 }), // domínio personalizado
+  logo: text("logo"), // URL do logo
+  planId: int("plan_id").notNull(), // Referência ao plano
+  status: mysqlEnum("status", ["active", "suspended", "cancelled", "trial"]).default("trial").notNull(),
+  trialEndsAt: timestamp("trial_ends_at"),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }), // ID do cliente no Stripe
+  stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }), // ID da assinatura no Stripe
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Tenant = typeof tenants.$inferSelect;
+export type InsertTenant = typeof tenants.$inferInsert;
+
+export const plans = mysqlTable("plans", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(), // Básico, Profissional, Empresarial
+  slug: varchar("slug", { length: 50 }).notNull().unique(),
+  description: text("description"),
+  priceMonthly: int("price_monthly").notNull(), // Preço em centavos (9700 = R$ 97,00)
+  priceYearly: int("price_yearly"), // Preço anual em centavos (com desconto)
+  stripePriceIdMonthly: varchar("stripe_price_id_monthly", { length: 255 }),
+  stripePriceIdYearly: varchar("stripe_price_id_yearly", { length: 255 }),
+  maxUsers: int("max_users").default(1).notNull(), // Limite de usuários
+  maxProducts: int("max_products").default(500).notNull(), // Limite de produtos
+  maxStorage: int("max_storage").default(1024).notNull(), // Limite de armazenamento em MB
+  features: json("features"), // Array de features: ["ia", "etiquetas", "relatorios"]
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Plan = typeof plans.$inferSelect;
+export type InsertPlan = typeof plans.$inferInsert;
 
 // ============= USUÁRIOS E AUTENTICAÇÃO =============
 export const users = mysqlTable("users", {

@@ -1473,5 +1473,48 @@ export const appRouter = router({
         return { qrcode };
       }),
   }),
+
+  // ============= PLANOS E ASSINATURAS (MULTI-TENANT) =============
+  plans: router({
+    // Listar todos os planos ativos
+    list: publicProcedure.query(async () => {
+      const { getPlans } = await import("./db-plans");
+      const allPlans = await getPlans();
+      return allPlans;
+    }),
+
+    // Criar checkout do Stripe
+    createCheckout: protectedProcedure
+      .input(z.object({
+        planSlug: z.string(),
+        billingPeriod: z.enum(["monthly", "yearly"]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { createCheckoutSession } = await import("./stripe-integration");
+        
+        const origin = ctx.req.headers.origin || "http://localhost:3000";
+        
+        const session = await createCheckoutSession({
+          planSlug: input.planSlug,
+          billingPeriod: input.billingPeriod,
+          customerEmail: ctx.user.email,
+          customerName: ctx.user.name,
+          userId: ctx.user.id,
+          successUrl: `${origin}/assinatura/sucesso?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${origin}/planos`,
+        });
+
+        return {
+          checkoutUrl: session.url,
+          sessionId: session.id,
+        };
+      }),
+
+    // Obter assinatura atual do usuário
+    mySubscription: protectedProcedure.query(async ({ ctx }) => {
+      // TODO: Implementar lógica de buscar assinatura do tenant do usuário
+      return null;
+    }),
+  }),
 });
 export type AppRouter = typeof appRouter;
