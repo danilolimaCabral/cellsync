@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
+import { tenants } from "../drizzle/schema";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -1910,6 +1911,38 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
         }
         // Mock - implementar backup real futuramente
         return { success: true, message: "Backup agendado com sucesso" };
+      }),
+  }),
+
+  // ============= TENANT (ONBOARDING) =============
+  tenant: router({
+    completeOnboarding: protectedProcedure
+      .input(z.object({
+        cnpj: z.string(),
+        razaoSocial: z.string(),
+        nomeFantasia: z.string(),
+        cep: z.string(),
+        logradouro: z.string(),
+        numero: z.string(),
+        complemento: z.string().optional(),
+        bairro: z.string(),
+        cidade: z.string(),
+        estado: z.string(),
+        telefone: z.string(),
+        email: z.string().email(),
+        whatsapp: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Por enquanto, apenas retornar sucesso
+        // TODO: Implementar persistência dos dados do tenant no banco
+        
+        console.log("[Onboarding] Dados recebidos:", {
+          userId: ctx.user.id,
+          nomeFantasia: input.nomeFantasia,
+          cnpj: input.cnpj,
+        });
+
+        return { success: true, message: "Onboarding concluído com sucesso!" };
       }),
   }),
 });

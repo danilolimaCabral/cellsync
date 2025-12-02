@@ -1161,3 +1161,15 @@
 - [x] Redirecionar para login se não autenticado
 - [x] Passar informações do plano via URL
 - [x] Testar fluxo completo
+
+## Processo de Onboarding - Cadastro da Empresa
+- [x] Criar página Onboarding.tsx com wizard multi-etapas
+- [x] Etapa 1: Dados da Empresa (CNPJ, Razão Social, Nome Fantasia)
+- [x] Etapa 2: Endereço (CEP, Rua, Número, Bairro, Cidade, Estado)
+- [x] Etapa 3: Contato (Telefone, Email, WhatsApp)
+- [x] Etapa 4: Configurações Iniciais (Logo, Cores)
+- [x] Adicionar validação de CNPJ
+- [x] Integrar API de CEP para autocompletar endereço
+- [x] Criar endpoint tRPC para salvar dados do tenant
+- [x] Redirecionar para onboarding após login com trial
+- [ ] Bloquear acesso ao dashboard até completar onboarding
