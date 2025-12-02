@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield, FileInput } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -80,6 +80,14 @@ const menuItems = [
     gradient: "from-amber-500 to-yellow-500",
     bgGradient: "from-amber-50 to-yellow-50",
     iconColor: "text-amber-600"
+  },
+  { 
+    icon: FileInput, 
+    label: "Importar XML (NF-e)", 
+    path: "/importar-xml",
+    gradient: "from-orange-500 to-red-500",
+    bgGradient: "from-orange-50 to-red-50",
+    iconColor: "text-orange-600"
   },
   { 
     icon: FileSpreadsheet, 

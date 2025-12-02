@@ -24,6 +24,7 @@ import Notificacoes from "./pages/Notificacoes";
 import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
 import ImportarProdutos from "./pages/ImportarProdutos";
 import GerarEtiquetas from "./pages/GerarEtiquetas";
+import ImportarXML from "./pages/ImportarXML";
 import Planos from "./pages/Planos";
 import AdminMaster from "./pages/AdminMaster";
 import DashboardLayout from "./components/DashboardLayout";
@@ -124,6 +125,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <GerarEtiquetas />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/importar-xml">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <ImportarXML />
               </DashboardLayout>
             )}
           />

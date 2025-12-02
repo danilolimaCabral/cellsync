@@ -1357,3 +1357,19 @@
 1. Finalizar interface de importação XML
 2. Implementar exportação contábil (SPED, DRE, Balancete)
 3. Implementar segurança básica (SSL, criptografia, backups)
+
+
+## Interface de Importação de XML (Frontend)
+- [x] Criar página ImportarXML.tsx
+- [x] Implementar drag-and-drop de múltiplos arquivos
+- [x] Validar extensão .xml
+- [x] Mostrar lista de arquivos selecionados
+- [x] Implementar preview dos produtos antes de importar
+- [x] Mostrar produtos novos vs existentes
+- [x] Opções: criar novos produtos, atualizar preços
+- [x] Implementar importação com loading state
+- [x] Mostrar relatório de sucesso/erros
+- [x] Adicionar rota /importar-xml no App.tsx
+- [x] Adicionar menu "Importar XML (NF-e)" no DashboardLayout
+- [x] Testar interface (drag-and-drop, botão, menu funcionando)
+- [ ] Testar importação completa com XML real de NF-e
