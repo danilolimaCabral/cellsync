@@ -1131,3 +1131,9 @@
 - [x] Adicionar botão para dashboard
 - [x] Adicionar rota /assinatura/sucesso no App.tsx
 - [ ] Testar fluxo completo de checkout
+
+## Correção Layout Página de Planos
+- [x] Corrigir texto do botão Trial Grátis (removendo código Unicode)
+- [x] Ajustar espaçamento e alinhamento dos cards
+- [x] Melhorar legibilidade dos textos
+- [x] Validar responsividade

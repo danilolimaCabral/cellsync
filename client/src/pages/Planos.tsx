@@ -41,7 +41,7 @@ export default function Planos() {
     } catch (error: any) {
       // Se der erro de Price ID n\u00e3o configurado, mostrar mensagem amig\u00e1vel
       if (error.message.includes("Price ID")) {
-        alert("\u26a0\ufe0f Stripe ainda n\u00e3o configurado\n\nPor enquanto, use o bot\u00e3o 'Iniciar Trial Gr\u00e1tis' para testar o sistema por 14 dias.");
+        alert("⚠️ Stripe ainda não configurado\n\nPor enquanto, use o botão 'Iniciar Trial Grátis' para testar o sistema por 14 dias.");
       } else {
         alert(`Erro: ${error.message || "Tente novamente mais tarde"}`);
       }
@@ -186,7 +186,7 @@ export default function Planos() {
                         </>
                       ) : (
                         <>
-                          \ud83c\udf89 Iniciar Trial Gr\u00e1tis (14 dias)
+                          🎉 Iniciar Trial Grátis (14 dias)
                         </>
                       )}
                     </Button>
