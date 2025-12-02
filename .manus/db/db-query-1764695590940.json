@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE users SET role = 'master_admin' WHERE email = 'teste@okcells.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute UPDATE users SET role = 'master_admin' WHERE email = 'teste@okcells.com';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 51
+}

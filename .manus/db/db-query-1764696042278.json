@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, name, subdomain, status FROM tenants LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT id, name, subdomain, status FROM tenants LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "CellSync Master",
+      "subdomain": "master",
+      "status": "active"
+    },
+    {
+      "id": "30002",
+      "name": "alfaCelular",
+      "subdomain": "alfacelular",
+      "status": "trial"
+    },
+    {
+      "id": "60002",
+      "name": "Loja Centro - São Paulo",
+      "subdomain": "loja-centro-sp",
+      "status": "active"
+    },
+    {
+      "id": "60003",
+      "name": "Loja Shopping Iguatemi",
+      "subdomain": "loja-iguatemi",
+      "status": "active"
+    },
+    {
+      "id": "60004",
+      "name": "Assistência Técnica Premium",
+      "subdomain": "assistencia-premium",
+      "status": "active"
+    },
+    {
+      "id": "60005",
+      "name": "Importadora Cell Tech",
+      "subdomain": "importadora-celltech",
+      "status": "trial"
+    },
+    {
+      "id": "60006",
+      "name": "Loja Zona Norte - RJ",
+      "subdomain": "loja-zona-norte-rj",
+      "status": "suspended"
+    },
+    {
+      "id": "60007",
+      "name": "Test Tenant",
+      "subdomain": "test-tenant",
+      "status": "active"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsubdomain\tstatus\n1\tCellSync Master\tmaster\tactive\n30002\talfaCelular\talfacelular\ttrial\n60002\tLoja Centro - São Paulo\tloja-centro-sp\tactive\n60003\tLoja Shopping Iguatemi\tloja-iguatemi\tactive\n60004\tAssistência Técnica Premium\tassistencia-premium\tactive\n60005\tImportadora Cell Tech\timportadora-celltech\ttrial\n60006\tLoja Zona Norte - RJ\tloja-zona-norte-rj\tsuspended\n60007\tTest Tenant\ttest-tenant\tactive\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

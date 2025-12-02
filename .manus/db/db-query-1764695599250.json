@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, email, name, role FROM users;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT id, email, name, role FROM users;",
+  "rows": [
+    {
+      "id": "120031",
+      "email": "admin@okcells.com",
+      "name": "Administrador Sistema",
+      "role": "admin"
+    },
+    {
+      "id": "120032",
+      "email": "joao.vendedor@okcells.com",
+      "name": "João Silva",
+      "role": "vendedor"
+    },
+    {
+      "id": "120033",
+      "email": "maria.vendedora@okcells.com",
+      "name": "Maria Santos",
+      "role": "vendedor"
+    },
+    {
+      "id": "120034",
+      "email": "carlos.tecnico@okcells.com",
+      "name": "Carlos Oliveira",
+      "role": "tecnico"
+    },
+    {
+      "id": "120035",
+      "email": "ana.gerente@okcells.com",
+      "name": "Ana Paula",
+      "role": "gerente"
+    },
+    {
+      "id": "150001",
+      "email": "bruno@cellsync.com",
+      "name": "Bruno",
+      "role": "master_admin"
+    },
+    {
+      "id": "180001",
+      "email": "danilo.rcabral@grupofn.com.br",
+      "name": "Danilo cabral",
+      "role": "admin"
+    },
+    {
+      "id": "210001",
+      "email": "vendor_1764690954091@test.com",
+      "name": "Vendedor Teste",
+      "role": "vendedor"
+    },
+    {
+      "id": "210002",
+      "email": "admin@master.com",
+      "name": "Master Admin",
+      "role": "master_admin"
+    },
+    {
+      "id": "210003",
+      "email": "test-master@test.com",
+      "name": "Test Master Admin",
+      "role": "master_admin"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\trole\n120031\tadmin@okcells.com\tAdministrador Sistema\tadmin\n120032\tjoao.vendedor@okcells.com\tJoão Silva\tvendedor\n120033\tmaria.vendedora@okcells.com\tMaria Santos\tvendedor\n120034\tcarlos.tecnico@okcells.com\tCarlos Oliveira\ttecnico\n120035\tana.gerente@okcells.com\tAna Paula\tgerente\n150001\tbruno@cellsync.com\tBruno\tmaster_admin\n180001\tdanilo.rcabral@grupofn.com.br\tDanilo cabral\tadmin\n210001\tvendor_1764690954091@test.com\tVendedor Teste\tvendedor\n210002\tadmin@master.com\tMaster Admin\tmaster_admin\n210003\ttest-master@test.com\tTest Master Admin\tmaster_admin\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

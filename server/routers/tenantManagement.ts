@@ -3,7 +3,7 @@ import { router, publicProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import { tenants, users } from "../../drizzle/schema";
-import { eq, like, or, desc, asc, count } from "drizzle-orm";
+import { eq, like, or, and, desc, asc, count } from "drizzle-orm";
 
 /**
  * Helper para criar procedimentos protegidos
@@ -31,60 +31,73 @@ export const tenantManagementRouter = router({
    */
   list: masterAdminProcedure
     .input(z.object({
-      page: z.number().int().positive().default(1),
-      limit: z.number().int().min(1).max(100).default(20),
+      page: z.number().int().positive().optional(),
+      limit: z.number().int().min(1).max(100).optional(),
       search: z.string().optional(),
       status: z.enum(["active", "trial", "suspended", "cancelled"]).optional(),
       planId: z.number().int().positive().optional(),
-      sortBy: z.enum(["createdAt", "name", "status"]).default("createdAt"),
-      sortOrder: z.enum(["asc", "desc"]).default("desc"),
-    }))
+      sortBy: z.enum(["createdAt", "name", "status"]).optional(),
+      sortOrder: z.enum(["asc", "desc"]).optional(),
+    }).optional())
     .query(async ({ input }: { input: any }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
-      const offset = (input.page - 1) * input.limit;
+      const page = input?.page || 1;
+      const limit = input?.limit || 20;
+      const sortBy = input?.sortBy || "createdAt";
+      const sortOrder = input?.sortOrder || "desc";
+      
+      const offset = (page - 1) * limit;
 
-      // Construir query com filtros
-      let query = db.select().from(tenants);
+      // Construir array de condições
+      const conditions: any[] = [];
 
       // Filtro de busca (nome ou subdomain)
-      if (input.search) {
-        query = query.where(
+      if (input?.search) {
+        conditions.push(
           or(
-            like(tenants.name, `%${input.search}%`),
-            like(tenants.subdomain, `%${input.search}%`)
+            like(tenants.name, `%${input?.search}%`),
+            like(tenants.subdomain, `%${input?.search}%`)
           )
-        ) as any;
+        );
       }
 
       // Filtro de status
-      if (input.status) {
-        query = query.where(eq(tenants.status, input.status)) as any;
+      if (input?.status) {
+        conditions.push(eq(tenants.status, input?.status));
       }
 
       // Filtro de plano
-      if (input.planId) {
-        query = query.where(eq(tenants.planId, input.planId)) as any;
+      if (input?.planId) {
+        conditions.push(eq(tenants.planId, input?.planId));
+      }
+
+      // Construir query base
+      let query = db.select().from(tenants);
+      
+      // Aplicar condições se existirem
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions)) as any;
       }
 
       // Ordenação
-      if (input.sortBy === "name") {
-        query = input.sortOrder === "asc" 
+      if (sortBy === "name") {
+        query = sortOrder === "asc" 
           ? query.orderBy(asc(tenants.name)) as any
           : query.orderBy(desc(tenants.name)) as any;
-      } else if (input.sortBy === "status") {
-        query = input.sortOrder === "asc"
+      } else if (sortBy === "status") {
+        query = sortOrder === "asc"
           ? query.orderBy(asc(tenants.status)) as any
           : query.orderBy(desc(tenants.status)) as any;
       } else {
-        query = input.sortOrder === "asc"
+        query = sortOrder === "asc"
           ? query.orderBy(asc(tenants.createdAt)) as any
           : query.orderBy(desc(tenants.createdAt)) as any;
       }
 
       // Paginação
-      const results = await query.limit(input.limit).offset(offset);
+      const results = await query.limit(limit).offset(offset);
 
       // Contar total
       const totalResult = await db.select({ count: count() }).from(tenants);
@@ -93,9 +106,9 @@ export const tenantManagementRouter = router({
       return {
         tenants: results,
         total,
-        page: input.page,
-        limit: input.limit,
-        totalPages: Math.ceil(total / input.limit),
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       };
     }),
 

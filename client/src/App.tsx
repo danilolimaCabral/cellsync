@@ -23,6 +23,7 @@ import Notificacoes from "./pages/Notificacoes";
 import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
 import ImportarProdutos from "./pages/ImportarProdutos";
 import GerarEtiquetas from "./pages/GerarEtiquetas";
+import SuporteClientes from "./pages/SuporteClientes";
 import PDVMobile from "./pages/PDVMobile";
 import Planos from "./pages/Planos";
 import DashboardLayout from "./components/DashboardLayout";
@@ -264,6 +265,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <RelatorioAvancadoEstoque />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/suporte-clientes">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <SuporteClientes />
               </DashboardLayout>
             )}
           />

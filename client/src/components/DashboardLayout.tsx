@@ -31,7 +31,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
-import { Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag } from "lucide-react";
+import { Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag, Headphones } from "lucide-react";
 
 const menuItems = [
   { 
@@ -129,6 +129,15 @@ const menuItems = [
     gradient: "from-orange-500 to-amber-500",
     bgGradient: "from-orange-50 to-amber-50",
     iconColor: "text-orange-600"
+  },
+  { 
+    icon: Headphones, 
+    label: "Suporte ao Cliente", 
+    path: "/suporte-clientes",
+    gradient: "from-emerald-500 to-teal-500",
+    bgGradient: "from-emerald-50 to-teal-50",
+    iconColor: "text-emerald-600",
+    masterAdminOnly: true
   },
   { 
     icon: Settings, 
@@ -300,7 +309,9 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1 space-y-1">
-              {menuItems.map((item, index) => {
+              {menuItems
+                .filter(item => !item.masterAdminOnly || user?.role === "master_admin")
+                .map((item, index) => {
                 const isActive = location === item.path;
                 const Icon = item.icon;
                 return (

@@ -992,3 +992,16 @@
 - [x] Adicionar role master_admin ao schema
 - [x] Criar seed de tenants de teste
 - [x] Criar usuário master_admin de teste
+
+## Painel de Suporte ao Cliente (Master Admin)
+- [x] Criar página /suporte-clientes para master_admin
+- [x] Adicionar tabela com lista de todos os tenants
+- [x] Implementar botão "Acessar Remotamente" em cada linha
+- [x] Adicionar cards de estatísticas (total, ativos, trial, suspensos)
+- [x] Implementar filtros por status (ativo, trial, suspenso, cancelado)
+- [x] Adicionar campo de busca por nome/subdomínio
+- [x] Adicionar item "Suporte ao Cliente" no menu lateral
+- [x] Tornar item visível apenas para master_admin
+- [x] Corrigir query tenantManagement.list para retornar dados
+- [x] Testar acesso remoto aos tenants
+- [x] Reiniciar servidor para aplicar novos routers tRPC
