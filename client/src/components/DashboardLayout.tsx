@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield, FileInput, Table } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield, FileInput, Table, Database } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -160,6 +160,15 @@ const menuItems = [
     gradient: "from-red-600 to-pink-600",
     bgGradient: "from-red-50 to-pink-50",
     iconColor: "text-red-700",
+    masterOnly: true // Apenas para master_admin
+  },
+  { 
+    icon: Database, 
+    label: "Gerenciar Backups", 
+    path: "/gerenciar-backups",
+    gradient: "from-indigo-600 to-blue-600",
+    bgGradient: "from-indigo-50 to-blue-50",
+    iconColor: "text-indigo-700",
     masterOnly: true // Apenas para master_admin
   },
 ];

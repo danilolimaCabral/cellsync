@@ -100,3 +100,46 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
     url: await buildDownloadUrl(baseUrl, key, apiKey),
   };
 }
+
+export async function storageList(prefix: string): Promise<Array<{ key: string; size?: number; lastModified?: Date }>> {
+  const { baseUrl, apiKey } = getStorageConfig();
+  const listUrl = new URL("v1/storage/list", ensureTrailingSlash(baseUrl));
+  listUrl.searchParams.set("prefix", normalizeKey(prefix));
+  
+  const response = await fetch(listUrl, {
+    method: "GET",
+    headers: buildAuthHeaders(apiKey),
+  });
+  
+  if (!response.ok) {
+    const message = await response.text().catch(() => response.statusText);
+    throw new Error(
+      `Storage list failed (${response.status} ${response.statusText}): ${message}`
+    );
+  }
+  
+  const data = await response.json();
+  return (data.files || []).map((file: any) => ({
+    key: file.key || file.path,
+    size: file.size,
+    lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
+  }));
+}
+
+export async function storageDelete(relKey: string): Promise<void> {
+  const { baseUrl, apiKey } = getStorageConfig();
+  const deleteUrl = new URL("v1/storage/delete", ensureTrailingSlash(baseUrl));
+  deleteUrl.searchParams.set("path", normalizeKey(relKey));
+  
+  const response = await fetch(deleteUrl, {
+    method: "DELETE",
+    headers: buildAuthHeaders(apiKey),
+  });
+  
+  if (!response.ok) {
+    const message = await response.text().catch(() => response.statusText);
+    throw new Error(
+      `Storage delete failed (${response.status} ${response.statusText}): ${message}`
+    );
+  }
+}

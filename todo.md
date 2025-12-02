@@ -1405,3 +1405,13 @@
 - [ ] Adicionar interface de configuração de regras de comissão
 - [ ] Implementar relatório de comissões por período
 - [ ] Criar testes para cálculo de comissões
+
+## Sistema de Backup Automático
+- [x] Criar módulo server/backup.ts com função de backup do MySQL usando mysqldump
+- [x] Implementar upload de backup para S3 com nome timestamped
+- [x] Criar função de limpeza de backups com mais de 30 dias
+- [x] Implementar notificações por email de sucesso/falha
+- [x] Criar endpoint tRPC backup.runNow para execução manual
+- [x] Configurar cron job para executar às 3h AM diariamente
+- [x] Adicionar página de gerenciamento de backups no Admin Master
+- [x] Testar backup manual e agendado

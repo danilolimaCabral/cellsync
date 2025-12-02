@@ -28,6 +28,7 @@ import ImportarXML from "./pages/ImportarXML";
 import ImportarPlanilha from "./pages/ImportarPlanilha";
 import Planos from "./pages/Planos";
 import AdminMaster from "./pages/AdminMaster";
+import GerenciarBackups from "./pages/GerenciarBackups";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -65,6 +66,19 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <AdminMaster />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+      
+      {/* Rota de Gerenciamento de Backups - Apenas para master_admin */}
+      <Route path="/gerenciar-backups">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <GerenciarBackups />
               </DashboardLayout>
             )}
           />
