@@ -1415,3 +1415,13 @@
 - [x] Configurar cron job para executar às 3h AM diariamente
 - [x] Adicionar página de gerenciamento de backups no Admin Master
 - [x] Testar backup manual e agendado
+
+## Dashboard de Monitoramento de Backups
+- [x] Criar gráfico de linha mostrando tamanho dos backups ao longo do tempo
+- [x] Criar gráfico de barras mostrando frequência de backups por dia
+- [x] Adicionar gráfico de área mostrando crescimento acumulado
+- [x] Implementar cards de estatísticas (total de backups, tamanho total, média)
+- [x] Adicionar indicador de taxa de sucesso vs falha
+- [x] Criar visualização de tendência de crescimento do banco
+- [x] Integrar gráficos na página de Gerenciar Backups
+- [x] Adicionar filtros de período (7 dias, 30 dias, 90 dias)

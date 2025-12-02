@@ -1,14 +1,30 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Database, Download, Play, Clock, HardDrive, Calendar, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Database, Download, Play, Clock, HardDrive, Calendar, CheckCircle2, XCircle, Loader2, TrendingUp, BarChart3, Activity } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 export default function GerenciarBackups() {
   const [isRunning, setIsRunning] = useState(false);
+  const [periodFilter, setPeriodFilter] = useState<7 | 30 | 90>(30);
 
   // Query para listar backups
   const { data: backups, isLoading, refetch } = trpc.backup.list.useQuery();
@@ -43,6 +59,70 @@ export default function GerenciarBackups() {
     });
     runBackup.mutate();
   };
+
+  // Processar dados para gráficos
+  const chartData = useMemo(() => {
+    if (!backups) return { timeline: [], frequency: [], statistics: null };
+
+    // Filtrar por período
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - periodFilter);
+    const filteredBackups = backups.filter(
+      (b) => new Date(b.uploadedAt) >= cutoffDate
+    );
+
+    // Dados para gráfico de linha (tamanho ao longo do tempo)
+    const timeline = filteredBackups
+      .map((backup) => ({
+        date: new Date(backup.uploadedAt).toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+        }),
+        tamanho: (backup.size / 1024 / 1024).toFixed(2),
+        tamanhoNum: backup.size / 1024 / 1024,
+        idade: backup.ageInDays,
+      }))
+      .reverse();
+
+    // Dados para gráfico de barras (frequência por dia)
+    const frequencyMap = new Map<string, number>();
+    filteredBackups.forEach((backup) => {
+      const date = new Date(backup.uploadedAt).toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+      });
+      frequencyMap.set(date, (frequencyMap.get(date) || 0) + 1);
+    });
+
+    const frequency = Array.from(frequencyMap.entries())
+      .map(([date, count]) => ({ date, count }))
+      .reverse();
+
+    // Estatísticas gerais
+    const totalSize = filteredBackups.reduce((sum, b) => sum + b.size, 0);
+    const avgSize = filteredBackups.length > 0 ? totalSize / filteredBackups.length : 0;
+    const maxSize = Math.max(...filteredBackups.map((b) => b.size), 0);
+    const minSize = Math.min(...filteredBackups.map((b) => b.size), 0);
+
+    // Calcular taxa de crescimento (comparando primeiro e último backup)
+    let growthRate = 0;
+    if (timeline.length >= 2) {
+      const firstSize = timeline[0].tamanhoNum;
+      const lastSize = timeline[timeline.length - 1].tamanhoNum;
+      growthRate = ((lastSize - firstSize) / firstSize) * 100;
+    }
+
+    const statistics = {
+      total: filteredBackups.length,
+      totalSize: totalSize / 1024 / 1024, // MB
+      avgSize: avgSize / 1024 / 1024, // MB
+      maxSize: maxSize / 1024 / 1024, // MB
+      minSize: minSize / 1024 / 1024, // MB
+      growthRate,
+    };
+
+    return { timeline, frequency, statistics };
+  }, [backups, periodFilter]);
 
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return "N/A";
@@ -95,7 +175,7 @@ export default function GerenciarBackups() {
         </motion.div>
 
         {/* Cards de Informação */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -108,10 +188,10 @@ export default function GerenciarBackups() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-blue-600">
-                  {backups?.length || 0}
+                  {chartData.statistics?.total || 0}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Armazenados no S3
+                  Últimos {periodFilter} dias
                 </p>
               </CardContent>
             </Card>
@@ -124,15 +204,15 @@ export default function GerenciarBackups() {
           >
             <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Agendamento</CardTitle>
-                <Clock className="h-5 w-5 text-purple-600" />
+                <CardTitle className="text-sm font-medium">Tamanho Total</CardTitle>
+                <HardDrive className="h-5 w-5 text-purple-600" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-purple-600">
-                  3h AM
+                  {chartData.statistics?.totalSize.toFixed(2) || 0} MB
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Diariamente (horário de Brasília)
+                  Armazenados no S3
                 </p>
               </CardContent>
             </Card>
@@ -145,90 +225,290 @@ export default function GerenciarBackups() {
           >
             <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Retenção</CardTitle>
-                <Calendar className="h-5 w-5 text-orange-600" />
+                <CardTitle className="text-sm font-medium">Tamanho Médio</CardTitle>
+                <Activity className="h-5 w-5 text-orange-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-orange-600">
-                  30 dias
+                <div className="text-2xl font-bold text-orange-600">
+                  {chartData.statistics?.avgSize.toFixed(2) || 0} MB
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Limpeza automática
+                  Por backup
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Crescimento</CardTitle>
+                <TrendingUp className="h-5 w-5 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {chartData.statistics?.growthRate.toFixed(1) || 0}%
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tendência de crescimento
                 </p>
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
-        {/* Lista de Backups */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <HardDrive className="h-5 w-5" />
-              Backups Disponíveis
-            </CardTitle>
-            <CardDescription>
-              Histórico de backups armazenados no S3
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : backups && backups.length > 0 ? (
-              <div className="space-y-3">
-                {backups.map((backup, index) => (
-                  <motion.div
-                    key={backup.key}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 rounded-full bg-blue-100">
-                        <Database className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{backup.filename}</p>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {formatDate(backup.uploadedAt)}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <HardDrive className="h-3 w-3" />
-                            {formatFileSize(backup.size)}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {backup.ageInDays} {backup.ageInDays === 1 ? "dia" : "dias"}
-                          </span>
+        {/* Filtro de Período */}
+        <div className="flex justify-end gap-2">
+          <Button
+            variant={periodFilter === 7 ? "default" : "outline"}
+            size="sm"
+            onClick={() => setPeriodFilter(7)}
+          >
+            7 dias
+          </Button>
+          <Button
+            variant={periodFilter === 30 ? "default" : "outline"}
+            size="sm"
+            onClick={() => setPeriodFilter(30)}
+          >
+            30 dias
+          </Button>
+          <Button
+            variant={periodFilter === 90 ? "default" : "outline"}
+            size="sm"
+            onClick={() => setPeriodFilter(90)}
+          >
+            90 dias
+          </Button>
+        </div>
+
+        {/* Tabs com Gráficos e Lista */}
+        <Tabs defaultValue="graficos" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="graficos">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Gráficos
+            </TabsTrigger>
+            <TabsTrigger value="lista">
+              <Database className="mr-2 h-4 w-4" />
+              Lista de Backups
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="graficos" className="space-y-6">
+            {/* Gráfico de Linha - Tamanho ao Longo do Tempo */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Tamanho dos Backups ao Longo do Tempo
+                </CardTitle>
+                <CardDescription>
+                  Evolução do tamanho dos backups nos últimos {periodFilter} dias
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : chartData.timeline.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={chartData.timeline}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis label={{ value: "Tamanho (MB)", angle: -90, position: "insideLeft" }} />
+                      <Tooltip
+                        formatter={(value: any) => [`${value} MB`, "Tamanho"]}
+                        labelStyle={{ color: "#000" }}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="tamanho"
+                        stroke="#8b5cf6"
+                        strokeWidth={2}
+                        dot={{ fill: "#8b5cf6", r: 4 }}
+                        activeDot={{ r: 6 }}
+                        name="Tamanho (MB)"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    Nenhum dado disponível para o período selecionado
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Gráfico de Barras - Frequência por Dia */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Frequência de Backups por Dia
+                </CardTitle>
+                <CardDescription>
+                  Quantidade de backups realizados por dia
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : chartData.frequency.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={chartData.frequency}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis label={{ value: "Quantidade", angle: -90, position: "insideLeft" }} />
+                      <Tooltip
+                        formatter={(value: any) => [`${value}`, "Backups"]}
+                        labelStyle={{ color: "#000" }}
+                      />
+                      <Legend />
+                      <Bar dataKey="count" fill="#3b82f6" name="Backups" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    Nenhum dado disponível para o período selecionado
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Gráfico de Área - Crescimento Acumulado */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Crescimento Acumulado
+                </CardTitle>
+                <CardDescription>
+                  Volume total acumulado de backups ao longo do tempo
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : chartData.timeline.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart
+                      data={chartData.timeline.map((item, index, arr) => ({
+                        ...item,
+                        acumulado: arr
+                          .slice(0, index + 1)
+                          .reduce((sum, b) => sum + parseFloat(b.tamanho), 0)
+                          .toFixed(2),
+                      }))}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis label={{ value: "Total Acumulado (MB)", angle: -90, position: "insideLeft" }} />
+                      <Tooltip
+                        formatter={(value: any) => [`${value} MB`, "Acumulado"]}
+                        labelStyle={{ color: "#000" }}
+                      />
+                      <Legend />
+                      <Area
+                        type="monotone"
+                        dataKey="acumulado"
+                        stroke="#10b981"
+                        fill="#10b981"
+                        fillOpacity={0.3}
+                        name="Total Acumulado (MB)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    Nenhum dado disponível para o período selecionado
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="lista">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HardDrive className="h-5 w-5" />
+                  Backups Disponíveis
+                </CardTitle>
+                <CardDescription>
+                  Histórico de backups armazenados no S3
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : backups && backups.length > 0 ? (
+                  <div className="space-y-3">
+                    {backups.map((backup, index) => (
+                      <motion.div
+                        key={backup.key}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="p-2 rounded-full bg-blue-100">
+                            <Database className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{backup.filename}</p>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(backup.uploadedAt)}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <HardDrive className="h-3 w-3" />
+                                {formatFileSize(backup.size)}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {backup.ageInDays} {backup.ageInDays === 1 ? "dia" : "dias"}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    {backup.ageInDays <= 30 ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-orange-600" />
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Nenhum backup encontrado
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Execute o primeiro backup clicando no botão acima
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                        {backup.ageInDays <= 30 ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-orange-600" />
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      Nenhum backup encontrado
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Execute o primeiro backup clicando no botão acima
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Informações Adicionais */}
         <Card className="border-blue-200 bg-gradient-to-br from-blue-50/50 to-white">
@@ -249,7 +529,7 @@ export default function GerenciarBackups() {
               <strong>Armazenamento:</strong> Todos os backups são armazenados de forma segura no S3 com criptografia.
             </p>
             <p>
-              <strong>Restauração:</strong> Para restaurar um backup, entre em contato com o suporte técnico.
+              <strong>Monitoramento:</strong> Use os gráficos acima para acompanhar tendências de crescimento e identificar anomalias.
             </p>
           </CardContent>
         </Card>
