@@ -1443,3 +1443,8 @@
 - [x] Testar endpoint tRPC backup.list
 - [x] Garantir que dados do banco estão sendo retornados
 - [x] Sistema pronto - backups aparecerão após primeira execução
+
+## Correção de WebSocket Vite HMR
+- [x] Configurar Vite HMR para funcionar em ambiente proxy
+- [x] Ajustar configuração de server.hmr no vite.config.ts
+- [x] Testar hot reload após correção
