@@ -1494,3 +1494,4 @@
 - [x] Corrigir problema de login de clientes novos (investigar fluxo de cadastro e autenticação) - RESOLVIDO: Fluxo completo testado e funcionando
 - [x] Melhorar interface do Assistente de IA com barra de progresso, tempo estimado e etapas visíveis
 - [x] Ajustar Assistente de IA para permitir seleção visível e editável do tipo de dados (Produtos, Clientes, etc.)
+- [x] Corrigir chatbot flutuante que está cobrindo o conteúdo do Dashboard (transformar em modal acionado por clique)

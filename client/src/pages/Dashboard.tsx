@@ -12,7 +12,7 @@ import {
   Wrench,
   AlertCircle
 } from "lucide-react";
-import { SalesChatbot } from "@/components/SalesChatbot";
+
 
 // Função auxiliar para formatação de moeda
 const formatCurrency = (cents: number) => {
@@ -261,8 +261,7 @@ export default function Dashboard() {
         </Card>
       </motion.div>
 
-      {/* Chatbot de Vendas */}
-      <SalesChatbot />
+
     </div>
   );
 }
