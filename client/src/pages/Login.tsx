@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -17,6 +17,13 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState("");
+
+  // Se vier com parâmetro trial, ativar modo de cadastro automaticamente
+  useEffect(() => {
+    if (trialPlan) {
+      setIsRegistering(true);
+    }
+  }, [trialPlan]);
 
   const utils = trpc.useUtils();
 
@@ -41,11 +48,17 @@ export default function Login() {
   });
 
   const registerMutation = trpc.auth.register.useMutation({
-    onSuccess: () => {
-      toast.success("Cadastro realizado com sucesso! Faça login para continuar.");
-      setIsRegistering(false);
-      setName("");
-      setPassword("");
+    onSuccess: async () => {
+      // Se vier de trial, fazer login automático
+      if (trialPlan) {
+        toast.success("Cadastro realizado! Fazendo login...");
+        loginMutation.mutate({ email, password });
+      } else {
+        toast.success("Cadastro realizado com sucesso! Faça login para continuar.");
+        setIsRegistering(false);
+        setName("");
+        setPassword("");
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Erro ao fazer cadastro");

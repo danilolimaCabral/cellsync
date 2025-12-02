@@ -1202,3 +1202,9 @@
 - [x] Garantir que Enterprise mostre R$ 599 (não R$ 397)
 - [x] Garantir que Enterprise NÃO mostre botão de trial
 - [x] Corrigir preço anual do Enterprise (com desconto de 17%)
+
+## Ajuste Fluxo Trial - Ir Direto para Cadastro
+- [x] Modificar Login.tsx para detectar parâmetro trial e ativar modo cadastro automaticamente
+- [x] Garantir que parâmetros redirect e trial sejam preservados
+- [x] Fazer login automático após cadastro quando vier de trial
+- [x] Testar fluxo: Planos → Trial → Cadastro → Onboarding → Dashboard

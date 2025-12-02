@@ -14,7 +14,7 @@ export default function Planos() {
 
 
   const handleStartTrial = async (planSlug: string) => {
-    // Redirecionar para login, que depois redireciona para onboarding
+    // Redirecionar para login com parâmetro trial (ativa modo cadastro automaticamente)
     window.location.href = `/login?redirect=/onboarding&trial=${planSlug}`;
   };
 
