@@ -33,6 +33,7 @@ import DashboardBI from "./pages/DashboardBI";
 import ControleComissoes from "./pages/ControleComissoes";
 import GerenciarModulos from "./pages/GerenciarModulos";
 import CompanySettings from "./pages/CompanySettings";
+import Vendors from "./pages/Vendors";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -309,6 +310,14 @@ function Router() {
         {() => (
           <DashboardLayout>
             <CompanySettings />
+          </DashboardLayout>
+        )}
+      </Route>
+
+      <Route path="/vendedores">
+        {() => (
+          <DashboardLayout>
+            <Vendors />
           </DashboardLayout>
         )}
       </Route>

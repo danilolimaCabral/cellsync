@@ -30,6 +30,7 @@ export default function Vendas() {
   const [searchTerm, setSearchTerm] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
+  const [selectedVendorId, setSelectedVendorId] = useState<number | null>(user?.id || null); // Vendedor padrão = usuário logado
   const [paymentMethod, setPaymentMethod] = useState("dinheiro");
   const [discount, setDiscount] = useState(0);
   const [showNewCustomer, setShowNewCustomer] = useState(false);
@@ -61,6 +62,10 @@ export default function Vendas() {
   const { data: customers = [] } = trpc.customers.list.useQuery(undefined, {
     enabled: !!user,
   });
+  const { data: vendors = [] } = trpc.vendors.list.useQuery(
+    { active: true },
+    { enabled: !!user }
+  );
 
   // Mutations
   const createSaleMutation = trpc.sales.create.useMutation({
@@ -304,6 +309,10 @@ export default function Vendas() {
       toast.error("Selecione um cliente!");
       return;
     }
+    if (!selectedVendorId) {
+      toast.error("Selecione um vendedor!");
+      return;
+    }
     if (!user) {
       toast.error("Usuário não autenticado!");
       return;
@@ -311,6 +320,7 @@ export default function Vendas() {
 
     createSaleMutation.mutate({
       customerId: selectedCustomerId,
+      sellerId: selectedVendorId, // Vendedor selecionado
       totalAmount: subtotal,
       discount,
       paymentMethod,
@@ -728,6 +738,25 @@ export default function Vendas() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
+                <Label>Vendedor</Label>
+                <Select 
+                  value={selectedVendorId?.toString() || ""} 
+                  onValueChange={(value) => setSelectedVendorId(Number(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o vendedor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {vendors.map((vendor) => (
+                      <SelectItem key={vendor.id} value={vendor.id.toString()}>
+                        {vendor.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <Label>Forma de Pagamento</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                   <SelectTrigger>
@@ -799,7 +828,7 @@ export default function Vendas() {
             size="lg"
             className="w-full text-lg h-14"
             onClick={finalizeSale}
-            disabled={cart.length === 0 || !selectedCustomerId || createSaleMutation.isPending}
+            disabled={cart.length === 0 || !selectedCustomerId || !selectedVendorId || createSaleMutation.isPending}
           >
             <Receipt className="h-5 w-5 mr-2" />
             {createSaleMutation.isPending ? "Processando..." : "Finalizar Venda (F3)"}

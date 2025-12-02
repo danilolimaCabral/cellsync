@@ -12,6 +12,7 @@ import { backupRouter } from "./routers/backup";
 import { dashboardRouter } from "./routers/dashboard";
 import { commissionsRouter as commissionsManagementRouter } from "./routers/commissions";
 import { modulesRouter } from "./routers/modules";
+import { vendorsRouter } from "./routers/vendors";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import bcrypt from "bcryptjs";
@@ -428,6 +429,7 @@ export const appRouter = router({
     create: protectedProcedure
       .input(z.object({
         customerId: z.number(),
+        sellerId: z.number().optional(), // Vendedor (opcional, padrão = usuário logado)
         items: z.array(z.object({
           productId: z.number(),
           quantity: z.number().min(1),
@@ -441,7 +443,7 @@ export const appRouter = router({
         appliedDiscount: z.number().min(0).default(0),
       }))
       .mutation(async ({ input, ctx }) => {
-        const sellerId = ctx.user.id;
+        const sellerId = input.sellerId || ctx.user.id; // Usar vendedor selecionado ou usuário logado
         const saleId = await db.createSale({
           customerId: input.customerId,
           sellerId,
@@ -1735,5 +1737,8 @@ export const appRouter = router({
         };
       }),
   }),
+
+  // Vendedores
+  vendors: vendorsRouter,
 });
 export type AppRouter = typeof appRouter;

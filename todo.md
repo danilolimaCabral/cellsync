@@ -1555,3 +1555,17 @@
 - [x] Adicionar indicadores de performance (KPIs) destacados
 - [x] Implementar modo responsivo para mobile
 - [ ] Adicionar exportação de relatórios em PDF/Excel
+
+
+## Sistema de Gestão de Vendedores e Comissões
+- [x] Adicionar campos de comissão no schema de users (vendedores)
+- [x] Criar endpoints de cadastro e edição de vendedores
+- [x] Criar página de cadastro/listagem de vendedores
+- [x] Adicionar seleção de vendedor no PDV
+- [ ] Criar PDV mobile responsivo (para usar no celular)
+- [ ] Criar relatório de vendas por vendedor com filtros avançados
+- [ ] Implementar gráfico de produtos vendidos por vendedor
+- [ ] Implementar gráfico de vendas vs garantias por vendedor
+- [ ] Integrar cálculo automático de comissões nas vendas
+- [ ] Adicionar histórico de comissões por vendedor
+- [ ] Testar fluxo completo de venda com comissão

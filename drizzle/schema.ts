@@ -67,6 +67,14 @@ export const users = mysqlTable("users", {
   name: text("name").notNull(),
   role: mysqlEnum("role", ["master_admin", "admin", "vendedor", "tecnico", "gerente"]).default("vendedor").notNull(),
   active: boolean("active").default(true).notNull(),
+  
+  // Campos de vendedor
+  cpf: varchar("cpf", { length: 14 }), // CPF do vendedor
+  phone: varchar("phone", { length: 20 }), // Telefone do vendedor
+  commissionPercentage: int("commission_percentage").default(0), // Percentual de comissão em centésimos (500 = 5%)
+  commissionType: mysqlEnum("commission_type", ["percentual", "fixo", "misto"]).default("percentual"), // Tipo de comissão
+  fixedCommissionAmount: int("fixed_commission_amount").default(0), // Valor fixo de comissão em centavos (se tipo = fixo)
+  
   openId: varchar("openId", { length: 64 }), // Mantido para compatibilidade com SDK
   loginMethod: varchar("loginMethod", { length: 64 }), // Mantido para compatibilidade com SDK
   createdAt: timestamp("createdAt").defaultNow().notNull(),
