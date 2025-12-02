@@ -8,6 +8,22 @@ import { trpc } from "../lib/trpc";
 import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import {
   Users,
   DollarSign,
@@ -17,74 +33,115 @@ import {
   XCircle,
   Ban,
   Activity,
+  Search,
+  Eye,
+  RefreshCw,
+  Calendar,
+  Store,
 } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { toast } from "sonner";
 
 export default function AdminMaster() {
-  const [selectedTenant, setSelectedTenant] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | undefined>();
+  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
 
   // Queries
-  const { data: metrics, isLoading: metricsLoading } = trpc.adminMaster.getMetrics.useQuery();
-  const { data: tenants, isLoading: tenantsLoading, refetch: refetchTenants } = trpc.adminMaster.getTenants.useQuery();
-  const { data: clientGrowth } = trpc.adminMaster.getClientGrowth.useQuery();
-  const { data: monthlyRevenue } = trpc.adminMaster.getMonthlyRevenue.useQuery();
+  const { data: stats, isLoading: statsLoading } = trpc.tenantManagement.stats.useQuery();
+  const { data: tenantsData, isLoading: tenantsLoading, refetch } = trpc.tenantManagement.list.useQuery({
+    page,
+    limit: 20,
+    search: search || undefined,
+    status: statusFilter as any,
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  });
+
+  const { data: tenantDetails } = trpc.tenantManagement.getById.useQuery(
+    { id: selectedTenantId! },
+    { enabled: !!selectedTenantId }
+  );
 
   // Mutations
-  const activateMutation = trpc.adminMaster.activateTenant.useMutation({
+  const suspendMutation = trpc.tenantManagement.suspend.useMutation({
     onSuccess: () => {
-      refetchTenants();
-      alert("Tenant ativado com sucesso!");
+      toast.success("Tenant suspenso com sucesso!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Erro ao suspender tenant", { description: error.message });
     },
   });
 
-  const deactivateMutation = trpc.adminMaster.deactivateTenant.useMutation({
+  const reactivateMutation = trpc.tenantManagement.reactivate.useMutation({
     onSuccess: () => {
-      refetchTenants();
-      alert("Tenant desativado com sucesso!");
+      toast.success("Tenant reativado com sucesso!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Erro ao reativar tenant", { description: error.message });
     },
   });
 
-  const cancelMutation = trpc.adminMaster.cancelTenant.useMutation({
+  const updateStatusMutation = trpc.tenantManagement.updateStatus.useMutation({
     onSuccess: () => {
-      refetchTenants();
-      alert("Tenant cancelado com sucesso!");
+      toast.success("Status atualizado com sucesso!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Erro ao atualizar status", { description: error.message });
     },
   });
 
-  const handleActivate = (tenantId: number) => {
-    if (confirm("Tem certeza que deseja ativar este tenant?")) {
-      activateMutation.mutate({ tenantId });
-    }
-  };
-
-  const handleDeactivate = (tenantId: number) => {
+  const handleSuspend = (tenantId: number) => {
     if (confirm("Tem certeza que deseja suspender este tenant?")) {
-      deactivateMutation.mutate({ tenantId });
+      suspendMutation.mutate({ id: tenantId });
     }
   };
 
-  const handleCancel = (tenantId: number) => {
-    if (confirm("Tem certeza que deseja cancelar este tenant? Esta ação não pode ser desfeita.")) {
-      cancelMutation.mutate({ tenantId });
+  const handleReactivate = (tenantId: number) => {
+    if (confirm("Tem certeza que deseja reativar este tenant?")) {
+      reactivateMutation.mutate({ id: tenantId });
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, daysUntilTrialEnd?: number | null) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" /> Ativo</Badge>;
+        return (
+          <Badge className="bg-green-500 text-white">
+            <CheckCircle className="w-3 h-3 mr-1" /> Ativo
+          </Badge>
+        );
       case "trial":
-        return <Badge className="bg-blue-500"><Activity className="w-3 h-3 mr-1" /> Trial</Badge>;
+        const isExpiring = daysUntilTrialEnd !== null && daysUntilTrialEnd !== undefined && daysUntilTrialEnd <= 3;
+        return (
+          <Badge className={`${isExpiring ? "bg-orange-500" : "bg-blue-500"} text-white`}>
+            <Activity className="w-3 h-3 mr-1" /> Trial
+            {daysUntilTrialEnd !== null && daysUntilTrialEnd !== undefined && (
+              <span className="ml-1">({daysUntilTrialEnd}d)</span>
+            )}
+          </Badge>
+        );
       case "suspended":
-        return <Badge className="bg-yellow-500"><AlertCircle className="w-3 h-3 mr-1" /> Suspenso</Badge>;
+        return (
+          <Badge className="bg-yellow-500 text-white">
+            <AlertCircle className="w-3 h-3 mr-1" /> Suspenso
+          </Badge>
+        );
       case "cancelled":
-        return <Badge className="bg-red-500"><XCircle className="w-3 h-3 mr-1" /> Cancelado</Badge>;
+        return (
+          <Badge className="bg-red-500 text-white">
+            <XCircle className="w-3 h-3 mr-1" /> Cancelado
+          </Badge>
+        );
       default:
         return <Badge>{status}</Badge>;
     }
   };
 
-  if (metricsLoading || tenantsLoading) {
+  if (statsLoading || tenantsLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -107,15 +164,19 @@ export default function AdminMaster() {
             Gerenciamento completo de todos os clientes (tenants) do sistema
           </p>
         </div>
+        <Button onClick={() => refetch()} variant="outline">
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Atualizar
+        </Button>
       </div>
 
-      {/* Métricas */}
+      {/* Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total de Clientes</p>
-              <p className="text-3xl font-bold mt-1">{metrics?.totalClients || 0}</p>
+              <p className="text-sm text-muted-foreground">Total de Tenants</p>
+              <p className="text-3xl font-bold mt-1">{stats?.total || 0}</p>
             </div>
             <Users className="w-10 h-10 text-blue-500" />
           </div>
@@ -124,8 +185,10 @@ export default function AdminMaster() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Clientes Ativos</p>
-              <p className="text-3xl font-bold mt-1 text-green-600">{metrics?.activeClients || 0}</p>
+              <p className="text-sm text-muted-foreground">Ativos</p>
+              <p className="text-3xl font-bold mt-1 text-green-600">
+                {stats?.byStatus.find(s => s.status === "active")?.count || 0}
+              </p>
             </div>
             <CheckCircle className="w-10 h-10 text-green-500" />
           </div>
@@ -134,61 +197,109 @@ export default function AdminMaster() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">MRR (Receita Mensal)</p>
-              <p className="text-3xl font-bold mt-1 text-emerald-600">
-                R$ {metrics?.mrr.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) || "0,00"}
+              <p className="text-sm text-muted-foreground">Em Trial</p>
+              <p className="text-3xl font-bold mt-1 text-blue-600">
+                {stats?.byStatus.find(s => s.status === "trial")?.count || 0}
               </p>
             </div>
-            <DollarSign className="w-10 h-10 text-emerald-500" />
+            <Activity className="w-10 h-10 text-blue-500" />
           </div>
         </Card>
 
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Novos este Mês</p>
-              <p className="text-3xl font-bold mt-1 text-purple-600">{metrics?.newThisMonth || 0}</p>
+              <p className="text-sm text-muted-foreground">Trials Expirando</p>
+              <p className="text-3xl font-bold mt-1 text-orange-600">
+                {stats?.expiringTrials || 0}
+              </p>
             </div>
-            <TrendingUp className="w-10 h-10 text-purple-500" />
+            <AlertCircle className="w-10 h-10 text-orange-500" />
           </div>
+          <p className="text-xs text-muted-foreground mt-2">Próximos 7 dias</p>
         </Card>
       </div>
 
-      {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Crescimento de Clientes */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Crescimento de Clientes (Últimos 6 Meses)</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={clientGrowth || []}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="count" stroke="#8b5cf6" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
+      {/* Distribuição por Plano */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Distribuição por Plano</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {stats?.byPlan.map((plan) => (
+            <div key={plan.planId} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <div>
+                <p className="font-medium">{plan.planName}</p>
+                <p className="text-2xl font-bold text-purple-600">{plan.count}</p>
+              </div>
+              <DollarSign className="w-8 h-8 text-purple-500" />
+            </div>
+          ))}
+        </div>
+      </Card>
 
-        {/* Receita Mensal */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Receita Mensal (Últimos 6 Meses)</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={monthlyRevenue || []}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="revenue" fill="#10b981" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-      </div>
+      {/* Filtros e Busca */}
+      <Card className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="search">Buscar</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="search"
+                placeholder="Nome ou subdomínio..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="status">Status</Label>
+            <Select
+              value={statusFilter || "all"}
+              onValueChange={(value) => {
+                setStatusFilter(value === "all" ? undefined : value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="active">Ativo</SelectItem>
+                <SelectItem value="trial">Trial</SelectItem>
+                <SelectItem value="suspended">Suspenso</SelectItem>
+                <SelectItem value="cancelled">Cancelado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearch("");
+                setStatusFilter(undefined);
+                setPage(1);
+              }}
+              className="w-full"
+            >
+              Limpar Filtros
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       {/* Lista de Tenants */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Todos os Clientes (Tenants)</h3>
-        
+        <h3 className="text-lg font-semibold mb-4">
+          Todos os Tenants ({tenantsData?.pagination.total || 0})
+        </h3>
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -198,105 +309,178 @@ export default function AdminMaster() {
                 <th className="text-left p-3">Subdomínio</th>
                 <th className="text-left p-3">Plano</th>
                 <th className="text-left p-3">Status</th>
+                <th className="text-left p-3">Usuários</th>
                 <th className="text-left p-3">Criado em</th>
                 <th className="text-right p-3">Ações</th>
               </tr>
             </thead>
             <tbody>
-              {tenants && tenants.length > 0 ? (
-                tenants.map((tenant) => (
+              {tenantsData && tenantsData.tenants.length > 0 ? (
+                tenantsData.tenants.map((tenant) => (
                   <tr key={tenant.id} className="border-b hover:bg-muted/50">
                     <td className="p-3">{tenant.id}</td>
                     <td className="p-3 font-medium">{tenant.name}</td>
                     <td className="p-3 text-sm text-muted-foreground">
-                      {tenant.subdomain}.cellsync.com
+                      {tenant.subdomain}
                     </td>
                     <td className="p-3">
                       <Badge variant="outline">{tenant.planName}</Badge>
                     </td>
-                    <td className="p-3">{getStatusBadge(tenant.status)}</td>
+                    <td className="p-3">
+                      {getStatusBadge(tenant.status, tenant.daysUntilTrialEnd)}
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-4 h-4 text-muted-foreground" />
+                        <span>{tenant.userCount}</span>
+                      </div>
+                    </td>
                     <td className="p-3 text-sm text-muted-foreground">
                       {new Date(tenant.createdAt).toLocaleDateString("pt-BR")}
                     </td>
                     <td className="p-3">
                       <div className="flex gap-2 justify-end">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedTenantId(tenant.id)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+
                         {tenant.status === "suspended" || tenant.status === "cancelled" ? (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleActivate(tenant.id)}
-                            disabled={activateMutation.isPending}
+                            onClick={() => handleReactivate(tenant.id)}
+                            disabled={reactivateMutation.isPending}
                           >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Ativar
+                            <CheckCircle className="w-4 h-4" />
                           </Button>
-                        ) : null}
-                        
-                        {tenant.status === "active" || tenant.status === "trial" ? (
+                        ) : (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleDeactivate(tenant.id)}
-                            disabled={deactivateMutation.isPending}
+                            onClick={() => handleSuspend(tenant.id)}
+                            disabled={suspendMutation.isPending}
                           >
-                            <Ban className="w-4 h-4 mr-1" />
-                            Suspender
+                            <Ban className="w-4 h-4" />
                           </Button>
-                        ) : null}
-                        
-                        {tenant.status !== "cancelled" ? (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleCancel(tenant.id)}
-                            disabled={cancelMutation.isPending}
-                          >
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Cancelar
-                          </Button>
-                        ) : null}
+                        )}
                       </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
-                    Nenhum cliente cadastrado ainda.
+                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                    Nenhum tenant encontrado.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Paginação */}
+        {tenantsData && tenantsData.pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6">
+            <p className="text-sm text-muted-foreground">
+              Página {tenantsData.pagination.page} de {tenantsData.pagination.totalPages}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= tenantsData.pagination.totalPages}
+              >
+                Próxima
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
-      {/* Informações Adicionais */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6">
-          <h4 className="font-semibold mb-2">ARR (Receita Anual)</h4>
-          <p className="text-2xl font-bold text-green-600">
-            R$ {metrics?.arr.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) || "0,00"}
-          </p>
-        </Card>
+      {/* Dialog de Detalhes do Tenant */}
+      <Dialog open={!!selectedTenantId} onOpenChange={() => setSelectedTenantId(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Tenant</DialogTitle>
+            <DialogDescription>
+              Informações completas sobre o tenant selecionado
+            </DialogDescription>
+          </DialogHeader>
 
-        <Card className="p-6">
-          <h4 className="font-semibold mb-2">Taxa de Churn</h4>
-          <p className="text-2xl font-bold text-red-600">{metrics?.churnRate || 0}%</p>
-        </Card>
+          {tenantDetails && (
+            <div className="space-y-6">
+              {/* Informações Básicas */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Nome</Label>
+                  <p className="font-medium">{tenantDetails.name}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Subdomínio</Label>
+                  <p className="font-medium">{tenantDetails.subdomain}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Plano</Label>
+                  <Badge variant="outline">{tenantDetails.planName}</Badge>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Status</Label>
+                  <div>{getStatusBadge(tenantDetails.status)}</div>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Criado em</Label>
+                  <p>{new Date(tenantDetails.createdAt).toLocaleString("pt-BR")}</p>
+                </div>
+                {tenantDetails.trialEndsAt && (
+                  <div>
+                    <Label className="text-muted-foreground">Trial termina em</Label>
+                    <p>{new Date(tenantDetails.trialEndsAt).toLocaleString("pt-BR")}</p>
+                  </div>
+                )}
+              </div>
 
-        <Card className="p-6">
-          <h4 className="font-semibold mb-2">Ticket Médio</h4>
-          <p className="text-2xl font-bold text-blue-600">
-            R${" "}
-            {metrics && metrics.activeClients > 0
-              ? (metrics.mrr / metrics.activeClients).toLocaleString("pt-BR", {
-                  minimumFractionDigits: 2,
-                })
-              : "0,00"}
-          </p>
-        </Card>
-      </div>
+              {/* Usuários */}
+              <div>
+                <h4 className="font-semibold mb-3">Usuários ({tenantDetails.users.length})</h4>
+                <div className="space-y-2">
+                  {tenantDetails.users.map((user) => (
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">{user.name}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={user.role === "admin" ? "default" : "secondary"}>
+                          {user.role}
+                        </Badge>
+                        {user.active ? (
+                          <Badge className="bg-green-500">Ativo</Badge>
+                        ) : (
+                          <Badge className="bg-gray-500">Inativo</Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1042,3 +1042,16 @@
 - [x] Stepper visual com progresso
 - [x] Botão "Criar Conta Grátis" na Home
 - [ ] Testar fluxo completo de cadastro
+
+## Painel de Gerenciamento de Tenants (Admin Master)
+- [x] Criar procedures tRPC para listar tenants (tenant-management.ts)
+- [x] Adicionar filtros (status, plano, data de criação)
+- [x] Implementar busca por nome/subdomain
+- [x] Criar tabela com informações dos tenants
+- [x] Adicionar badges de status (trial, active, suspended, cancelled)
+- [x] Mostrar dias restantes de trial
+- [x] Adicionar ações: visualizar detalhes, suspender, reativar
+- [x] Implementar paginação
+- [x] Adicionar estatísticas (total de tenants, por status, por plano)
+- [x] Dialog de detalhes com lista de usuários
+- [x] Testar todas as funcionalidades

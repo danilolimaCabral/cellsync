@@ -4,6 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { onboardingRouter } from "./onboarding";
+import { tenantManagementRouter } from "./tenant-management";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import bcrypt from "bcryptjs";
@@ -32,6 +33,7 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 export const appRouter = router({
   system: systemRouter,
   onboarding: onboardingRouter,
+  tenantManagement: tenantManagementRouter,
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
