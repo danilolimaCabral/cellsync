@@ -1,0 +1,37 @@
+{
+  "query": "SELECT id, name, slug, price_monthly, price_yearly, max_users, max_products FROM plans;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT id, name, slug, price_monthly, price_yearly, max_users, max_products FROM plans;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Plano Básico",
+      "slug": "basico",
+      "price_monthly": "9700",
+      "price_yearly": "970000",
+      "max_users": "1",
+      "max_products": "500"
+    },
+    {
+      "id": "2",
+      "name": "Plano Profissional",
+      "slug": "profissional",
+      "price_monthly": "19700",
+      "price_yearly": "1970000",
+      "max_users": "5",
+      "max_products": "999999"
+    },
+    {
+      "id": "3",
+      "name": "Plano Empresarial",
+      "slug": "empresarial",
+      "price_monthly": "39700",
+      "price_yearly": "3970000",
+      "max_users": "999999",
+      "max_products": "999999"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\tprice_monthly\tprice_yearly\tmax_users\tmax_products\n1\tPlano Básico\tbasico\t9700\t970000\t1\t500\n2\tPlano Profissional\tprofissional\t19700\t1970000\t5\t999999\n3\tPlano Empresarial\tempresarial\t39700\t3970000\t999999\t999999\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

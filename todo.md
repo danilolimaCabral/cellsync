@@ -1146,3 +1146,12 @@
 - [x] Tornar responsivo para mobile
 - [x] Adicionar ícones de check/x para recursos
 - [x] Integrar na página de Planos
+
+## Correções Críticas Página de Planos
+- [x] Remover tabela comparativa externa
+- [ ] Integrar comparação dentro dos cards
+- [x] Padronizar nomes dos planos (Básico, Profissional, Enterprise)
+- [x] Corrigir preços anuais (dividir por 100)
+- [x] Corrigir cálculo de economia (deve ser positivo)
+- [x] Corrigir erro "Usuário não autenticado" no trial
+- [x] Padronizar limites entre tabela e cards
