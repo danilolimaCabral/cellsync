@@ -699,3 +699,36 @@ export const planModules = mysqlTable("planModules", {
 
 export type PlanModule = typeof planModules.$inferSelect;
 export type InsertPlanModule = typeof planModules.$inferInsert;
+
+
+// ============= METAS DE VENDAS =============
+/**
+ * Metas de vendas por vendedor, produto ou loja
+ */
+export const salesGoals = mysqlTable("salesGoals", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
+  name: varchar("name", { length: 255 }).notNull(), // Nome da meta
+  type: mysqlEnum("type", ["vendedor", "produto", "loja", "geral"]).notNull(),
+  
+  // Referências (opcional dependendo do tipo)
+  userId: int("userId"), // Se meta for por vendedor
+  productId: int("productId"), // Se meta for por produto
+  
+  // Período da meta
+  startDate: timestamp("startDate").notNull(),
+  endDate: timestamp("endDate").notNull(),
+  
+  // Valores da meta
+  targetAmount: int("targetAmount").notNull(), // Meta em centavos (valor monetário)
+  targetQuantity: int("targetQuantity"), // Meta em quantidade de produtos (opcional)
+  
+  // Status
+  active: boolean("active").default(true).notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SalesGoal = typeof salesGoals.$inferSelect;
+export type InsertSalesGoal = typeof salesGoals.$inferInsert;

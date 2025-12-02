@@ -297,4 +297,56 @@ export const dashboardRouter = router({
         totalRevenue: Number(p.totalRevenue),
       }));
     }),
+
+  /**
+   * Obtém ranking de vendedores por performance
+   */
+  topVendors: protectedProcedure
+    .input(z.object({
+      startDate: z.string(),
+      endDate: z.string(),
+      limit: z.number().min(1).max(50).default(10),
+      tenantId: z.number().optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const user = ctx.user;
+      const targetTenantId = (user.role === "master_admin" && input.tenantId) 
+        ? input.tenantId 
+        : user.tenantId;
+
+      const startDate = new Date(input.startDate);
+      const endDate = new Date(input.endDate);
+
+      // Buscar vendas agrupadas por vendedor
+      const topVendors = await db
+        .select({
+          userId: sales.sellerId,
+          userName: sql<string>`COALESCE((SELECT name FROM users WHERE id = ${sales.sellerId}), 'Vendedor Desconhecido')`,
+          totalSales: sql<number>`COUNT(*)`,
+          totalRevenue: sql<number>`COALESCE(SUM(${sales.totalAmount}), 0)`,
+          avgTicket: sql<number>`COALESCE(AVG(${sales.totalAmount}), 0)`,
+        })
+        .from(sales)
+        .where(
+          and(
+            eq(sales.tenantId, targetTenantId),
+            gte(sales.saleDate, startDate),
+            lte(sales.saleDate, endDate)
+          )
+        )
+        .groupBy(sales.sellerId)
+        .orderBy(desc(sql`SUM(${sales.totalAmount})`)) // Ordenar por faturamento
+        .limit(input.limit);
+
+      return topVendors.map(v => ({
+        userId: v.userId,
+        userName: v.userName,
+        totalSales: Number(v.totalSales),
+        totalRevenue: Number(v.totalRevenue),
+        avgTicket: Number(v.avgTicket),
+      }));
+    }),
 });
