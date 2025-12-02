@@ -37,6 +37,7 @@ import ImportarPlanilha from "./pages/ImportarPlanilha";
 import LiberacaoModulos from "./pages/LiberacaoModulos";
 import AssinaturaSucesso from "./pages/AssinaturaSucesso";
 import Onboarding from "./pages/Onboarding";
+import CriarConta from "./pages/CriarConta";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -66,9 +67,8 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/planos" component={Planos} />
       <Route path="/assinatura/sucesso" component={AssinaturaSucesso} />
-      <Route path="/onboarding">
-        {() => <ProtectedRoute component={Onboarding} />}
-      </Route>
+      <Route path="/onboarding" component={Onboarding} />
+      <Route path="/criar-conta" component={CriarConta} />
       
       {/* Rotas protegidas com DashboardLayout */}
       <Route path="/dashboard">

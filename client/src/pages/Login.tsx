@@ -49,16 +49,10 @@ export default function Login() {
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: async () => {
-      // Se vier de trial, fazer login automático
-      if (trialPlan) {
-        toast.success("Cadastro realizado! Fazendo login...");
-        loginMutation.mutate({ email, password });
-      } else {
-        toast.success("Cadastro realizado com sucesso! Faça login para continuar.");
-        setIsRegistering(false);
-        setName("");
-        setPassword("");
-      }
+      toast.success("Cadastro realizado com sucesso! Agora faça login para continuar.");
+      setIsRegistering(false);
+      setName("");
+      setPassword("");
     },
     onError: (error) => {
       toast.error(error.message || "Erro ao fazer cadastro");

@@ -1,12 +1,14 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { sql, eq } from "drizzle-orm";
-import { tenants } from "../drizzle/schema";
+import { tenants, users, plans } from "../drizzle/schema";
+import { getDb } from "./db";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
+import { getUserByEmail } from "./db";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
@@ -111,8 +113,10 @@ export const appRouter = router({
         // Hash da senha
         const hashedPassword = await bcrypt.hash(input.password, 10);
 
-        // Criar usuário
+        // Criar usuário (com tenantId padrão 1 para registro direto)
+        // TODO: Criar tenant automático ou remover registro direto
         await db.createUser({
+          tenantId: 1, // Tenant padrão para registros diretos
           email: input.email,
           password: hashedPassword,
           name: input.name,
@@ -1936,6 +1940,108 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
 
   // ============= TENANT (ONBOARDING) =============
   tenant: router({
+    // Criar tenant + usuário (sem autenticação - pós onboarding)
+    createWithUser: publicProcedure
+      .input(z.object({
+        tenantData: z.object({
+          cnpj: z.string(),
+          razaoSocial: z.string(),
+          nomeFantasia: z.string(),
+          cep: z.string(),
+          logradouro: z.string(),
+          numero: z.string(),
+          complemento: z.string().optional(),
+          bairro: z.string(),
+          cidade: z.string(),
+          estado: z.string(),
+          telefone: z.string(),
+          email: z.string().email(),
+          whatsapp: z.string().optional(),
+          planSlug: z.string(),
+        }),
+        userData: z.object({
+          name: z.string(),
+          email: z.string().email(),
+          password: z.string().min(6),
+        }),
+      }))
+      .mutation(async ({ input }) => {
+        const { tenantData, userData } = input;
+        const db = await getDb();
+        
+        if (!db) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Banco de dados não disponível",
+          });
+        }
+
+        // Buscar plano pelo slug
+        const plansResult = await db.select().from(plans).where(eq(plans.slug, tenantData.planSlug)).limit(1);
+        const plan = plansResult[0];
+
+        if (!plan) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Plano não encontrado",
+          });
+        }
+
+        // Verificar se email já existe
+        const existingUser = await getUserByEmail(userData.email);
+
+        if (existingUser) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Email já cadastrado",
+          });
+        }
+
+        // Criar tenant
+        const subdomain = tenantData.nomeFantasia
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "")
+          .substring(0, 63);
+
+        const trialEndsAt = new Date();
+        trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14 dias de trial
+
+        const [newTenant] = await db.insert(tenants).values({
+          name: tenantData.nomeFantasia,
+          subdomain,
+          planId: plan.id,
+          status: "trial",
+          trialEndsAt,
+        });
+
+        // Criar usuário
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
+        const [newUser] = await db.insert(users).values({
+          name: userData.name,
+          email: userData.email,
+          password: hashedPassword,
+          tenantId: newTenant.insertId,
+          role: "admin", // Primeiro usuário é admin
+        });
+
+        console.log("[Tenant] Criado:", {
+          tenantId: newTenant.insertId,
+          userId: newUser.insertId,
+          nomeFantasia: tenantData.nomeFantasia,
+          email: userData.email,
+        });
+
+        return {
+          success: true,
+          tenantId: newTenant.insertId,
+          userId: newUser.insertId,
+        };
+      }),
+
     completeOnboarding: protectedProcedure
       .input(z.object({
         cnpj: z.string(),

@@ -49,6 +49,7 @@ export type InsertPlan = typeof plans.$inferInsert;
 // ============= USUÁRIOS E AUTENTICAÇÃO =============
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull(), // Referência ao tenant (campo já existe no banco)
   email: varchar("email", { length: 320 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(), // Hash bcrypt
   name: text("name").notNull(),

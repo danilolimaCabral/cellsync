@@ -1208,3 +1208,25 @@
 - [x] Garantir que parâmetros redirect e trial sejam preservados
 - [x] Fazer login automático após cadastro quando vier de trial
 - [x] Testar fluxo: Planos → Trial → Cadastro → Onboarding → Dashboard
+
+## Persistência de Dados do Onboarding
+- [ ] Criar tabela `tenants` no schema do banco de dados
+- [ ] Adicionar campos: cnpj, razao_social, nome_fantasia, endereço completo, telefone, email, whatsapp
+- [ ] Criar procedure tRPC `tenant.create` para salvar dados do onboarding
+- [ ] Atualizar Onboarding.tsx para chamar procedure ao finalizar
+- [ ] Redirecionar para dashboard após salvar com sucesso
+- [ ] Testar fluxo completo: Trial → Cadastro → Onboarding → Salvar → Dashboard
+
+## Separar Cadastro e Login do Onboarding
+- [ ] Remover login automático após cadastro (mesmo vindo de trial)
+- [ ] Usuário deve fazer login manualmente após cadastrar
+- [ ] Após login, redirecionar para onboarding se vier de trial
+- [ ] Testar: Cadastro → Login → Onboarding → Dashboard
+
+## NOVO FLUXO: Onboarding → Cadastro → Login
+- [x] Passo 1: Clicar "Iniciar Trial" → Ir para onboarding SEM autenticação
+- [x] Passo 2: Onboarding coleta CNPJ e dados da empresa (3 passos)
+- [x] Passo 3: Após onboarding, ir para página de criação de usuário/senha
+- [x] Passo 4: Salvar tenant + criar usuário no banco
+- [x] Passo 5: Redirecionar para login
+- [x] Passo 6: Implementação completa do fluxo

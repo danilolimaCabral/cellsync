@@ -42,7 +42,6 @@ export default function Onboarding() {
     whatsapp: "",
   });
 
-  const completeOnboarding = trpc.tenant.completeOnboarding.useMutation();
   const lookupCNPJ = trpc.cnpj.lookup.useMutation();
 
   const handleInputChange = (field: string, value: string) => {
@@ -133,13 +132,15 @@ export default function Onboarding() {
 
     setLoading(true);
     try {
-      await completeOnboarding.mutateAsync(formData);
-      toast.success("Cadastro concluído! Bem-vindo ao CellSync!");
+      // Salvar dados do onboarding no localStorage
+      localStorage.setItem('onboarding_data', JSON.stringify(formData));
+      toast.success("Dados salvos! Agora crie seu usuário e senha.");
       setTimeout(() => {
-        setLocation("/dashboard");
-      }, 1500);
+        // Redirecionar para página de criação de conta
+        setLocation("/criar-conta");
+      }, 1000);
     } catch (error: any) {
-      toast.error(error.message || "Erro ao completar cadastro");
+      toast.error(error.message || "Erro ao salvar dados");
     } finally {
       setLoading(false);
     }

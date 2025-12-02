@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `tenant_id` int NOT NULL;
