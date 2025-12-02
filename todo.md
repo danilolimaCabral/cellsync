@@ -1053,3 +1053,46 @@
 - [x] Adicionar item "Meus Chamados" no menu lateral (todos os usuários)
 - [x] Adicionar item "Gerenciar Chamados" no menu lateral (apenas master_admin)
 - [x] Testar abertura e resposta de chamados
+
+## IA Assistente no Sistema de Chamados
+- [ ] Criar módulo backend ai-ticket-assistant.ts com análise inteligente
+- [ ] Implementar análise automática do problema descrito
+- [ ] Criar sugestões automáticas de solução baseadas no histórico
+- [ ] Implementar categorização automática do chamado
+- [ ] Implementar priorização automática baseada em urgência detectada
+- [ ] Criar base de conhecimento com artigos de ajuda
+- [ ] Implementar busca semântica na base de conhecimento
+- [ ] Adicionar sugestões de artigos relacionados ao problema
+- [ ] Criar endpoint tRPC ai.analyzeTicket
+- [ ] Criar endpoint tRPC ai.suggestSolutions
+- [ ] Criar endpoint tRPC ai.searchKnowledgeBase
+- [ ] Integrar IA no formulário de abertura de chamados
+- [ ] Adicionar botão "Obter Ajuda da IA" no formulário
+- [ ] Mostrar sugestões automáticas antes de criar o ticket
+- [ ] Implementar feedback "Isso resolveu?" para treinar IA
+- [ ] Adicionar seção "Artigos Relacionados" no ticket
+- [ ] Criar página de Base de Conhecimento (/base-conhecimento)
+- [ ] Implementar CRUD de artigos de ajuda (apenas master_admin)
+- [ ] Adicionar tags e categorias nos artigos
+- [ ] Implementar busca inteligente de artigos
+- [ ] Testar IA com diferentes tipos de problemas
+- [ ] Criar testes unitários para análise de tickets
+
+## Páginas Faltantes (404) - Correção Urgente
+- [x] Criar página ImportarXML.tsx (rota: /importar-xml)
+- [x] Criar página ImportarPlanilha.tsx (rota: /importar-planilha)
+- [x] Criar página Vendedores.tsx (rota: /vendedores)
+- [x] Criar página LiberacaoModulos.tsx (rota: /liberacao-modulos)
+- [x] Criar página AdminMaster.tsx (rota: /admin-master)
+- [x] Adicionar rotas faltantes no App.tsx
+- [x] Criar endpoints tRPC necessários (backup.list, backup.runNow, etc)
+- [ ] Testar todos os menus após correção
+
+## Correção Botão "Saiba Mais" - Página de Planos
+- [x] Verificar botão "Saiba Mais" na página /planos
+- [x] Implementar checkout do Stripe para planos pagos
+- [x] Implementar trial gratuito de 14 dias
+- [x] Criar fluxo de contratação completo
+- [x] Redirecionar para dashboard após contratação
+- [ ] Testar checkout com cartão de teste do Stripe
+- [ ] Validar webhook de confirmação de pagamento

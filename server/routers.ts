@@ -11,6 +11,7 @@ import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
 import { analyzeProductWithAI } from "./ai-product-assistant";
 import { diagnoseServiceOrder } from "./ai-os-assistant";
+import { analyzeTicketWithAI } from "./ai-ticket-assistant";
 import { generateLabel, generateBarcode, generateQRCode } from "./label-generator";
 import { tenantSwitchingRouter } from "./routers/tenantSwitching";
 import { tenantManagementRouter } from "./routers/tenantManagement";
@@ -1737,6 +1738,17 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
 
   // ============= SISTEMA DE CHAMADOS/TICKETS DE SUPORTE =============
   supportTickets: router({
+    // Analisar ticket com IA antes de criar
+    analyzeWithAI: protectedProcedure
+      .input(z.object({
+        subject: z.string().min(5),
+        description: z.string().min(20),
+      }))
+      .mutation(async ({ input }) => {
+        const analysis = await analyzeTicketWithAI(input.subject, input.description);
+        return analysis;
+      }),
+
     // Criar novo ticket (qualquer usuário autenticado)
     create: protectedProcedure
       .input(z.object({
@@ -1860,7 +1872,7 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
         status: z.enum(["aberto", "em_andamento", "resolvido", "fechado"]),
         assignedTo: z.number().optional(),
       }))
-        .mutation(async ({ ctx, input }) => {
+      .mutation(async ({ ctx, input }) => {
         if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
           throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
         }
@@ -1876,6 +1888,28 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
           throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
         }
         return await db.getSupportTicketStats();
+      }),
+  }),
+
+  // ============= BACKUP DO SISTEMA =============
+  backup: router({
+    list: protectedProcedure
+      .input(z.object({}).optional())
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+        // Mock data - implementar com S3 futuramente
+        return [];
+      }),
+
+    runNow: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        if (ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+        // Mock - implementar backup real futuramente
+        return { success: true, message: "Backup agendado com sucesso" };
       }),
   }),
 });

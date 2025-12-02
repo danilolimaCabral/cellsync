@@ -81,6 +81,11 @@ export default function MeusChamados() {
   const [priority, setPriority] = useState("media");
   const [description, setDescription] = useState("");
   const [newMessage, setNewMessage] = useState("");
+  
+  // IA Assistant state
+  const [showAISuggestions, setShowAISuggestions] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<any>(null);
+  const [analyzingWithAI, setAnalyzingWithAI] = useState(false);
 
   // Queries
   const { data: tickets, isLoading, refetch } = trpc.supportTickets.myTickets.useQuery();
@@ -106,6 +111,30 @@ export default function MeusChamados() {
     },
   });
 
+  // IA Analysis mutation
+  const analyzeWithAIMutation = trpc.supportTickets.analyzeWithAI.useMutation({
+    onSuccess: (data) => {
+      setAiAnalysis(data);
+      setShowAISuggestions(true);
+      setAnalyzingWithAI(false);
+      
+      // Auto-preencher categoria e prioridade sugeridas
+      if (data.confidence === "high" || data.confidence === "medium") {
+        setCategory(data.suggestedCategory);
+        setPriority(data.suggestedPriority);
+        toast.success("Análise da IA concluída!", {
+          description: `Categoria e prioridade sugeridas foram preenchidas automaticamente.`,
+        });
+      }
+    },
+    onError: () => {
+      setAnalyzingWithAI(false);
+      toast.error("Erro ao analisar com IA", {
+        description: "Tente novamente ou preencha manualmente.",
+      });
+    },
+  });
+
   const addMessageMutation = trpc.supportTickets.addMessage.useMutation({
     onSuccess: () => {
       toast.success("Mensagem enviada!");
@@ -119,6 +148,20 @@ export default function MeusChamados() {
     setCategory("");
     setPriority("media");
     setDescription("");
+    setShowAISuggestions(false);
+    setAiAnalysis(null);
+  };
+
+  const handleAnalyzeWithAI = () => {
+    if (!subject || !description || subject.length < 5 || description.length < 20) {
+      toast.error("Campos insuficientes", {
+        description: "Preencha o assunto (mínimo 5 caracteres) e descrição (mínimo 20 caracteres) para análise.",
+      });
+      return;
+    }
+
+    setAnalyzingWithAI(true);
+    analyzeWithAIMutation.mutate({ subject, description });
   };
 
   const handleCreateTicket = () => {

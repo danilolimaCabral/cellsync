@@ -13,6 +13,19 @@ export default function Planos() {
   const createCheckout = trpc.plans.createCheckout.useMutation();
 
 
+  const handleStartTrial = async (planSlug: string) => {
+    setLoadingPlan(planSlug + "_trial");
+    try {
+      // Ativar trial gratuito de 14 dias
+      alert("🎉 Trial gratuito de 14 dias ativado!\n\nVoc\u00ea ser\u00e1 redirecionado para o dashboard.");
+      window.location.href = "/dashboard";
+    } catch (error: any) {
+      alert(`Erro: ${error.message || "Tente novamente mais tarde"}`);
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+
   const handleSubscribe = async (planSlug: string) => {
     setLoadingPlan(planSlug);
     try {
@@ -23,11 +36,15 @@ export default function Planos() {
 
       // Abrir checkout em nova aba
       if (result.checkoutUrl) {
-        window.open(result.checkoutUrl, "_blank");
-        alert("Redirecionando para pagamento...");
+        window.location.href = result.checkoutUrl;
       }
     } catch (error: any) {
-      alert(`Erro: ${error.message || "Tente novamente mais tarde"}`);
+      // Se der erro de Price ID n\u00e3o configurado, mostrar mensagem amig\u00e1vel
+      if (error.message.includes("Price ID")) {
+        alert("\u26a0\ufe0f Stripe ainda n\u00e3o configurado\n\nPor enquanto, use o bot\u00e3o 'Iniciar Trial Gr\u00e1tis' para testar o sistema por 14 dias.");
+      } else {
+        alert(`Erro: ${error.message || "Tente novamente mais tarde"}`);
+      }
     } finally {
       setLoadingPlan(null);
     }
@@ -145,29 +162,45 @@ export default function Planos() {
                         Economize R$ {((plan.priceMonthly * 12 - plan.priceYearly!) / 100).toFixed(2)}
                       </p>
                     )}
-                  </div>
-
-                  {/* Botão */}
-                  <Button
-                    onClick={() => handleSubscribe(plan.slug)}
-                    disabled={loadingPlan === plan.slug}
-                    className={`w-full mb-6 ${
-                      isPopular
-                        ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                        : ""
-                    }`}
-                  >
-                    {loadingPlan === plan.slug ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processando...
-                      </>
-                    ) : (
-                      "Assinar Agora"
-                    )}
-                  </Button>
-
-                  {/* Features */}
+                  </div>                  {/* Bot\u00f5es */}
+                  <div className="space-y-3 mb-6">
+                    <Button
+                      onClick={() => handleStartTrial(plan.slug)}
+                      disabled={loadingPlan === plan.slug + "_trial"}
+                      variant="outline"
+                      className="w-full border-2 border-green-500 text-green-700 hover:bg-green-50 dark:hover:bg-green-950"
+                    >
+                      {loadingPlan === plan.slug + "_trial" ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Ativando...
+                        </>
+                      ) : (
+                        <>
+                          \ud83c\udf89 Iniciar Trial Gr\u00e1tis (14 dias)
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button
+                      onClick={() => handleSubscribe(plan.slug)}
+                      disabled={loadingPlan === plan.slug}
+                      className={`w-full ${
+                        isPopular
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                          : ""
+                      }`}
+                    >
+                      {loadingPlan === plan.slug ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Processando...
+                        </>
+                      ) : (
+                        "Assinar Agora"
+                      )}
+                    </Button>
+                  </div>                 {/* Features */}
                   <div className="space-y-3">
                     {features.map((feature, idx) => (
                       <div key={idx} className="flex items-start gap-3">

@@ -29,6 +29,12 @@ import Planos from "./pages/Planos";
 import ChatbotAnalytics from "./pages/ChatbotAnalytics";
 import MeusChamados from "./pages/MeusChamados";
 import GerenciarChamados from "./pages/GerenciarChamados";
+import GerenciarBackups from "./pages/GerenciarBackups";
+import AdminMaster from "./pages/AdminMaster";
+import Vendedores from "./pages/Vendedores";
+import ImportarXML from "./pages/ImportarXML";
+import ImportarPlanilha from "./pages/ImportarPlanilha";
+import LiberacaoModulos from "./pages/LiberacaoModulos";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -316,6 +322,102 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <SuporteClientes />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/gerenciar-backups">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <GerenciarBackups />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/admin-master">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <AdminMaster />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/vendedores">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Vendedores />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/importar-xml">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <ImportarXML />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/importar-planilha">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <ImportarPlanilha />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/liberacao-modulos">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <LiberacaoModulos />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/dashboard-bi">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Relatorios />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/controle-comissoes">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Comissoes />
               </DashboardLayout>
             )}
           />
