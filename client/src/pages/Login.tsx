@@ -4,12 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 export default function Login() {
   const [, setLocation] = useLocation();
+  const searchParams = new URLSearchParams(useSearch());
+  const redirectTo = searchParams.get('redirect');
+  const trialPlan = searchParams.get('trial');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
@@ -24,7 +27,12 @@ export default function Login() {
       await utils.auth.me.invalidate();
       // Usar window.location para garantir redirecionamento no mobile
       setTimeout(() => {
-        window.location.href = "/dashboard";
+        // Se houver parâmetro redirect, redirecionar para lá
+        if (redirectTo) {
+          window.location.href = redirectTo;
+        } else {
+          window.location.href = "/dashboard";
+        }
       }, 500);
     },
     onError: (error) => {

@@ -1173,3 +1173,20 @@
 - [x] Criar endpoint tRPC para salvar dados do tenant
 - [x] Redirecionar para onboarding após login com trial
 - [ ] Bloquear acesso ao dashboard até completar onboarding
+
+## Correção do Fluxo de Trial - URGENTE
+- [ ] Atualizar Login.tsx para capturar parâmetros ?trial=X e ?redirect=/onboarding da URL
+- [ ] Modificar lógica de redirecionamento após login para verificar parâmetro redirect
+- [ ] Se houver parâmetro trial, criar tenant trial automaticamente após registro
+- [ ] Redirecionar para /onboarding após login quando parâmetro redirect estiver presente
+- [ ] Testar fluxo completo: Planos → Clicar Trial → Login/Registro → Onboarding → Dashboard
+- [ ] Garantir que dados do onboarding sejam salvos no tenant correto
+
+## Integração CNPJ no Onboarding
+- [x] Criar endpoint tRPC cnpj.lookup
+- [x] Adicionar botão "Buscar CNPJ" no formulário de onboarding
+- [x] Preencher automaticamente Razão Social, Nome Fantasia e Endereço completo
+- [x] Reduzir de 4 para 3 passos (remover etapa de endereço separada)
+- [x] Adicionar loading state durante consulta
+- [x] Tratar erros de CNPJ inválido ou não encontrado
+- [ ] Testar com CNPJ real

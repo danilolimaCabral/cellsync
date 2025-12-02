@@ -1914,6 +1914,26 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
       }),
   }),
 
+  // ============= CNPJ LOOKUP =============
+  cnpj: router({
+    lookup: publicProcedure
+      .input(z.object({
+        cnpj: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const { lookupCNPJ } = await import('./cnpj-lookup');
+        try {
+          const data = await lookupCNPJ(input.cnpj);
+          return { success: true, data };
+        } catch (error) {
+          if (error instanceof Error) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: error.message });
+          }
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao consultar CNPJ" });
+        }
+      }),
+  }),
+
   // ============= TENANT (ONBOARDING) =============
   tenant: router({
     completeOnboarding: protectedProcedure

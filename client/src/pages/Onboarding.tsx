@@ -7,13 +7,12 @@ import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
 import { 
   Building2, 
-  MapPin, 
   Phone, 
-  Settings, 
   CheckCircle2, 
   Loader2,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  Search
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,15 +20,14 @@ export default function Onboarding() {
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [searchingCNPJ, setSearchingCNPJ] = useState(false);
 
   // Dados do formulário
   const [formData, setFormData] = useState({
-    // Etapa 1: Dados da Empresa
+    // Etapa 1: Dados da Empresa (preenchido automaticamente via CNPJ)
     cnpj: "",
     razaoSocial: "",
     nomeFantasia: "",
-    
-    // Etapa 2: Endereço
     cep: "",
     logradouro: "",
     numero: "",
@@ -38,37 +36,53 @@ export default function Onboarding() {
     cidade: "",
     estado: "",
     
-    // Etapa 3: Contato
+    // Etapa 2: Contato
     telefone: "",
     email: "",
     whatsapp: "",
   });
 
   const completeOnboarding = trpc.tenant.completeOnboarding.useMutation();
+  const lookupCNPJ = trpc.cnpj.lookup.useMutation();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleCepBlur = async () => {
-    const cep = formData.cep.replace(/\D/g, "");
-    if (cep.length === 8) {
-      try {
-        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-        const data = await response.json();
-        if (!data.erro) {
-          setFormData(prev => ({
-            ...prev,
-            logradouro: data.logradouro,
-            bairro: data.bairro,
-            cidade: data.localidade,
-            estado: data.uf,
-          }));
-          toast.success("CEP encontrado!");
-        }
-      } catch (error) {
-        toast.error("Erro ao buscar CEP");
+  const handleSearchCNPJ = async () => {
+    const cnpj = formData.cnpj.replace(/\D/g, "");
+    
+    if (cnpj.length !== 14) {
+      toast.error("Digite um CNPJ válido com 14 dígitos");
+      return;
+    }
+
+    setSearchingCNPJ(true);
+    try {
+      const result = await lookupCNPJ.mutateAsync({ cnpj });
+      
+      if (result.success && result.data) {
+        setFormData(prev => ({
+          ...prev,
+          cnpj: result.data.cnpj,
+          razaoSocial: result.data.razaoSocial,
+          nomeFantasia: result.data.nomeFantasia,
+          cep: result.data.cep,
+          logradouro: result.data.logradouro,
+          numero: result.data.numero,
+          complemento: result.data.complemento,
+          bairro: result.data.bairro,
+          cidade: result.data.municipio,
+          estado: result.data.uf,
+          telefone: result.data.telefone || "",
+          email: result.data.email || "",
+        }));
+        toast.success("Dados da empresa encontrados!");
       }
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao buscar CNPJ");
+    } finally {
+      setSearchingCNPJ(false);
     }
   };
 
@@ -79,29 +93,21 @@ export default function Onboarding() {
           toast.error("Preencha todos os campos obrigatórios");
           return false;
         }
-        // Validação básica de CNPJ (14 dígitos)
-        const cnpj = formData.cnpj.replace(/\D/g, "");
-        if (cnpj.length !== 14) {
-          toast.error("CNPJ inválido");
+        if (!formData.cep || !formData.logradouro || !formData.numero || 
+            !formData.bairro || !formData.cidade || !formData.estado) {
+          toast.error("Preencha o endereço completo");
           return false;
         }
         return true;
       
       case 2:
-        if (!formData.cep || !formData.logradouro || !formData.numero || 
-            !formData.bairro || !formData.cidade || !formData.estado) {
-          toast.error("Preencha todos os campos obrigatórios");
-          return false;
-        }
-        return true;
-      
-      case 3:
         if (!formData.telefone || !formData.email) {
           toast.error("Preencha todos os campos obrigatórios");
           return false;
         }
-        // Validação básica de email
-        if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        // Validação de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
           toast.error("Email inválido");
           return false;
         }
@@ -122,13 +128,13 @@ export default function Onboarding() {
     setCurrentStep(prev => prev - 1);
   };
 
-  const handleComplete = async () => {
-    if (!validateStep(3)) return;
-    
+  const handleSubmit = async () => {
+    if (!validateStep(currentStep)) return;
+
     setLoading(true);
     try {
       await completeOnboarding.mutateAsync(formData);
-      toast.success("🎉 Cadastro concluído com sucesso!");
+      toast.success("Cadastro concluído! Bem-vindo ao CellSync!");
       setTimeout(() => {
         setLocation("/dashboard");
       }, 1500);
@@ -139,245 +145,284 @@ export default function Onboarding() {
     }
   };
 
-  const steps = [
-    { id: 1, title: "Dados da Empresa", icon: Building2 },
-    { id: 2, title: "Endereço", icon: MapPin },
-    { id: 3, title: "Contato", icon: Phone },
-    { id: 4, title: "Confirmação", icon: CheckCircle2 },
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <Card className="w-full max-w-3xl p-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Bem-vindo ao CellSync! 🎉
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Vamos configurar sua conta em poucos passos
-          </p>
-        </div>
-
-        {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-8">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            const isActive = currentStep === step.id;
-            const isCompleted = currentStep > step.id;
-            
-            return (
-              <div key={step.id} className="flex items-center flex-1">
-                <div className="flex flex-col items-center flex-1">
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                      isCompleted
-                        ? "bg-green-500 text-white"
-                        : isActive
-                        ? "bg-purple-500 text-white"
-                        : "bg-gray-200 dark:bg-gray-700 text-gray-400"
-                    }`}
-                  >
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <span
-                    className={`text-xs mt-2 font-medium ${
-                      isActive ? "text-purple-600 dark:text-purple-400" : "text-gray-500"
-                    }`}
-                  >
-                    {step.title}
-                  </span>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`h-1 flex-1 mx-2 rounded ${
-                      isCompleted ? "bg-green-500" : "bg-gray-200 dark:bg-gray-700"
-                    }`}
-                  />
-                )}
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+                <Building2 className="w-6 h-6 text-white" />
               </div>
-            );
-          })}
-        </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Dados da Empresa</h2>
+                <p className="text-gray-600">Busque pelo CNPJ para preencher automaticamente</p>
+              </div>
+            </div>
 
-        {/* Form Content */}
-        <div className="space-y-6">
-          {/* Etapa 1: Dados da Empresa */}
-          {currentStep === 1 && (
             <div className="space-y-4">
               <div>
                 <Label htmlFor="cnpj">CNPJ *</Label>
-                <Input
-                  id="cnpj"
-                  placeholder="00.000.000/0000-00"
-                  value={formData.cnpj}
-                  onChange={(e) => handleInputChange("cnpj", e.target.value)}
-                  maxLength={18}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="cnpj"
+                    placeholder="00.000.000/0000-00"
+                    value={formData.cnpj}
+                    onChange={(e) => handleInputChange("cnpj", e.target.value)}
+                    maxLength={18}
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleSearchCNPJ}
+                    disabled={searchingCNPJ}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    {searchingCNPJ ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Digite o CNPJ e clique na lupa para buscar automaticamente
+                </p>
               </div>
+
               <div>
                 <Label htmlFor="razaoSocial">Razão Social *</Label>
                 <Input
                   id="razaoSocial"
-                  placeholder="Empresa LTDA"
+                  placeholder="Nome registrado na Receita Federal"
                   value={formData.razaoSocial}
                   onChange={(e) => handleInputChange("razaoSocial", e.target.value)}
                 />
               </div>
+
               <div>
                 <Label htmlFor="nomeFantasia">Nome Fantasia *</Label>
                 <Input
                   id="nomeFantasia"
-                  placeholder="Minha Loja"
+                  placeholder="Nome comercial da sua loja"
                   value={formData.nomeFantasia}
                   onChange={(e) => handleInputChange("nomeFantasia", e.target.value)}
                 />
               </div>
-            </div>
-          )}
 
-          {/* Etapa 2: Endereço */}
-          {currentStep === 2 && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="cep">CEP *</Label>
-                <Input
-                  id="cep"
-                  placeholder="00000-000"
-                  value={formData.cep}
-                  onChange={(e) => handleInputChange("cep", e.target.value)}
-                  onBlur={handleCepBlur}
-                  maxLength={9}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="col-span-2">
-                  <Label htmlFor="logradouro">Logradouro *</Label>
-                  <Input
-                    id="logradouro"
-                    placeholder="Rua, Avenida..."
-                    value={formData.logradouro}
-                    onChange={(e) => handleInputChange("logradouro", e.target.value)}
-                  />
+              <div className="border-t pt-4 mt-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Endereço</h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2 sm:col-span-1">
+                    <Label htmlFor="cep">CEP *</Label>
+                    <Input
+                      id="cep"
+                      placeholder="00000-000"
+                      value={formData.cep}
+                      onChange={(e) => handleInputChange("cep", e.target.value)}
+                      maxLength={9}
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <Label htmlFor="logradouro">Logradouro *</Label>
+                    <Input
+                      id="logradouro"
+                      placeholder="Rua, Avenida, etc"
+                      value={formData.logradouro}
+                      onChange={(e) => handleInputChange("logradouro", e.target.value)}
+                    />
+                  </div>
+
+                  <div className="col-span-2 sm:col-span-1">
+                    <Label htmlFor="numero">Número *</Label>
+                    <Input
+                      id="numero"
+                      placeholder="123"
+                      value={formData.numero}
+                      onChange={(e) => handleInputChange("numero", e.target.value)}
+                    />
+                  </div>
+
+                  <div className="col-span-2 sm:col-span-1">
+                    <Label htmlFor="complemento">Complemento</Label>
+                    <Input
+                      id="complemento"
+                      placeholder="Sala, Andar, etc"
+                      value={formData.complemento}
+                      onChange={(e) => handleInputChange("complemento", e.target.value)}
+                    />
+                  </div>
+
+                  <div className="col-span-2 sm:col-span-1">
+                    <Label htmlFor="bairro">Bairro *</Label>
+                    <Input
+                      id="bairro"
+                      placeholder="Nome do bairro"
+                      value={formData.bairro}
+                      onChange={(e) => handleInputChange("bairro", e.target.value)}
+                    />
+                  </div>
+
+                  <div className="col-span-2 sm:col-span-1">
+                    <Label htmlFor="cidade">Cidade *</Label>
+                    <Input
+                      id="cidade"
+                      placeholder="Nome da cidade"
+                      value={formData.cidade}
+                      onChange={(e) => handleInputChange("cidade", e.target.value)}
+                    />
+                  </div>
+
+                  <div className="col-span-2 sm:col-span-1">
+                    <Label htmlFor="estado">Estado *</Label>
+                    <Input
+                      id="estado"
+                      placeholder="UF"
+                      value={formData.estado}
+                      onChange={(e) => handleInputChange("estado", e.target.value)}
+                      maxLength={2}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="numero">Número *</Label>
-                  <Input
-                    id="numero"
-                    placeholder="123"
-                    value={formData.numero}
-                    onChange={(e) => handleInputChange("numero", e.target.value)}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="complemento">Complemento</Label>
-                <Input
-                  id="complemento"
-                  placeholder="Sala, Andar..."
-                  value={formData.complemento}
-                  onChange={(e) => handleInputChange("complemento", e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="bairro">Bairro *</Label>
-                  <Input
-                    id="bairro"
-                    placeholder="Centro"
-                    value={formData.bairro}
-                    onChange={(e) => handleInputChange("bairro", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cidade">Cidade *</Label>
-                  <Input
-                    id="cidade"
-                    placeholder="São Paulo"
-                    value={formData.cidade}
-                    onChange={(e) => handleInputChange("cidade", e.target.value)}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="estado">Estado *</Label>
-                <Input
-                  id="estado"
-                  placeholder="SP"
-                  value={formData.estado}
-                  onChange={(e) => handleInputChange("estado", e.target.value)}
-                  maxLength={2}
-                />
               </div>
             </div>
-          )}
+          </div>
+        );
 
-          {/* Etapa 3: Contato */}
-          {currentStep === 3 && (
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
+                <Phone className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Contato</h2>
+                <p className="text-gray-600">Como podemos entrar em contato?</p>
+              </div>
+            </div>
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="telefone">Telefone *</Label>
                 <Input
                   id="telefone"
-                  placeholder="(00) 0000-0000"
+                  type="tel"
+                  placeholder="(00) 00000-0000"
                   value={formData.telefone}
                   onChange={(e) => handleInputChange("telefone", e.target.value)}
                 />
               </div>
+
               <div>
                 <Label htmlFor="email">Email *</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="contato@empresa.com"
+                  placeholder="contato@suaempresa.com"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                 />
               </div>
+
               <div>
                 <Label htmlFor="whatsapp">WhatsApp</Label>
                 <Input
                   id="whatsapp"
+                  type="tel"
                   placeholder="(00) 00000-0000"
                   value={formData.whatsapp}
                   onChange={(e) => handleInputChange("whatsapp", e.target.value)}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Opcional - para receber notificações
+                </p>
               </div>
             </div>
-          )}
+          </div>
+        );
 
-          {/* Etapa 4: Confirmação */}
-          {currentStep === 4 && (
-            <div className="text-center py-8">
-              <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Tudo Pronto!
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Revise suas informações e clique em "Concluir" para começar a usar o CellSync.
-              </p>
-              
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-left space-y-3">
-                <div>
-                  <span className="font-semibold">Empresa:</span> {formData.nomeFantasia}
-                </div>
-                <div>
-                  <span className="font-semibold">CNPJ:</span> {formData.cnpj}
-                </div>
-                <div>
-                  <span className="font-semibold">Endereço:</span> {formData.logradouro}, {formData.numero} - {formData.bairro}, {formData.cidade}/{formData.estado}
-                </div>
-                <div>
-                  <span className="font-semibold">Contato:</span> {formData.telefone} | {formData.email}
-                </div>
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
+                <CheckCircle2 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Confirmação</h2>
+                <p className="text-gray-600">Revise seus dados antes de finalizar</p>
               </div>
             </div>
-          )}
+
+            <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+              <div>
+                <h3 className="font-semibold text-gray-700 mb-2">Empresa</h3>
+                <p className="text-sm text-gray-600">CNPJ: {formData.cnpj}</p>
+                <p className="text-sm text-gray-600">Razão Social: {formData.razaoSocial}</p>
+                <p className="text-sm text-gray-600">Nome Fantasia: {formData.nomeFantasia}</p>
+              </div>
+
+              <div className="border-t pt-4">
+                <h3 className="font-semibold text-gray-700 mb-2">Endereço</h3>
+                <p className="text-sm text-gray-600">
+                  {formData.logradouro}, {formData.numero}
+                  {formData.complemento && ` - ${formData.complemento}`}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {formData.bairro} - {formData.cidade}/{formData.estado}
+                </p>
+                <p className="text-sm text-gray-600">CEP: {formData.cep}</p>
+              </div>
+
+              <div className="border-t pt-4">
+                <h3 className="font-semibold text-gray-700 mb-2">Contato</h3>
+                <p className="text-sm text-gray-600">Telefone: {formData.telefone}</p>
+                <p className="text-sm text-gray-600">Email: {formData.email}</p>
+                {formData.whatsapp && (
+                  <p className="text-sm text-gray-600">WhatsApp: {formData.whatsapp}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const totalSteps = 3;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl p-8">
+        {/* Progress indicator */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-2">
+            {[1, 2, 3].map((step) => (
+              <div
+                key={step}
+                className={`flex-1 h-2 rounded-full mx-1 transition-all ${
+                  step <= currentStep
+                    ? "bg-gradient-to-r from-blue-600 to-purple-600"
+                    : "bg-gray-200"
+                }`}
+              />
+            ))}
+          </div>
+          <p className="text-sm text-gray-600 text-center">
+            Passo {currentStep} de {totalSteps}
+          </p>
         </div>
 
-        {/* Navigation Buttons */}
+        {/* Step content */}
+        {renderStep()}
+
+        {/* Navigation buttons */}
         <div className="flex justify-between mt-8">
-          {currentStep > 1 && currentStep < 4 && (
+          {currentStep > 1 ? (
             <Button
               variant="outline"
               onClick={handleBack}
@@ -386,43 +431,37 @@ export default function Onboarding() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>
+          ) : (
+            <div />
           )}
-          
-          <div className="ml-auto">
-            {currentStep < 3 && (
-              <Button onClick={handleNext}>
-                Próximo
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
-            
-            {currentStep === 3 && (
-              <Button onClick={() => setCurrentStep(4)}>
-                Revisar
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
-            
-            {currentStep === 4 && (
-              <Button
-                onClick={handleComplete}
-                disabled={loading}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Concluindo...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Concluir Cadastro
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
+
+          {currentStep < totalSteps ? (
+            <Button
+              onClick={handleNext}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              Próximo
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Finalizando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  Finalizar Cadastro
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </Card>
     </div>
