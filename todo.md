@@ -1011,3 +1011,20 @@
 - [x] Adicionar botões "Cancelar" e "Confirmar Contratação"
 - [x] Integrar com função handleConfirmSubscribe
 - [x] Testar fluxo completo de confirmação
+
+## Substituir Alert por Toast Elegante
+- [x] Remover alert() da função handleConfirmSubscribe
+- [x] Adicionar toast do sonner
+- [x] Implementar toast de sucesso ao redirecionar para Stripe
+- [x] Implementar toast de erro em caso de falha
+- [x] Toasts implementados com título e descrição
+
+## Email de Boas-vindas Automático
+- [x] Criar template HTML de email de boas-vindas (email-templates.ts)
+- [x] Incluir credenciais de acesso (email + senha temporária)
+- [x] Adicionar tutorial rápido (5 passos com ícones numerados)
+- [x] Incluir link para suporte
+- [x] Implementar função sendWelcomeEmail no backend (email.ts)
+- [x] Criar função generateTemporaryPassword
+- [ ] Integrar com criação de novo usuário (futuro)
+- [ ] Testar envio de email real

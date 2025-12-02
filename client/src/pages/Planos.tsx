@@ -2,6 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
 import { Check, Loader2, Sparkles, Zap, Crown, ShoppingCart } from "lucide-react";
 import {
   Dialog,
@@ -49,9 +50,14 @@ export default function Planos() {
       // Abrir checkout em nova aba
       if (result.checkoutUrl) {
         window.open(result.checkoutUrl, "_blank");
+        toast.success("Redirecionando para pagamento", {
+          description: "Uma nova aba foi aberta com o checkout seguro do Stripe.",
+        });
       }
     } catch (error: any) {
-      alert(`Erro: ${error.message || "Tente novamente mais tarde"}`);
+      toast.error("Erro ao processar contratação", {
+        description: error.message || "Tente novamente mais tarde.",
+      });
     } finally {
       setLoadingPlan(null);
     }
