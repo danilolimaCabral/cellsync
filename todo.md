@@ -1155,3 +1155,9 @@
 - [x] Corrigir cálculo de economia (deve ser positivo)
 - [x] Corrigir erro "Usuário não autenticado" no trial
 - [x] Padronizar limites entre tabela e cards
+
+## Correção Botão "Assinar Agora"
+- [x] Verificar se usuário está autenticado antes de criar checkout
+- [x] Redirecionar para login se não autenticado
+- [x] Passar informações do plano via URL
+- [x] Testar fluxo completo

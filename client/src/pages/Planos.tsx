@@ -31,7 +31,13 @@ export default function Planos() {
         window.location.href = result.checkoutUrl;
       }
     } catch (error: any) {
-      // Se der erro de Price ID n\u00e3o configurado, mostrar mensagem amig\u00e1vel
+      // Se usuário não autenticado, redirecionar para login
+      if (error.message.includes("não autenticado") || error.message.includes("UNAUTHORIZED")) {
+        window.location.href = `/login?plan=${planSlug}&billing=${billingPeriod}`;
+        return;
+      }
+      
+      // Se der erro de Price ID não configurado, mostrar mensagem amigável
       if (error.message.includes("Price ID")) {
         alert("⚠️ Stripe ainda não configurado\n\nPor enquanto, use o botão 'Iniciar Trial Grátis' para testar o sistema por 14 dias.");
       } else {
