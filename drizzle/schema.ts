@@ -592,3 +592,98 @@ export const backupHistory = mysqlTable("backupHistory", {
 
 export type BackupHistory = typeof backupHistory.$inferSelect;
 export type InsertBackupHistory = typeof backupHistory.$inferInsert;
+
+// ============= SISTEMA DE MÓDULOS E PERMISSÕES =============
+
+/**
+ * Módulos disponíveis no sistema
+ */
+export const modules = mysqlTable("modules", {
+  id: int("id").autoincrement().primaryKey(),
+  code: varchar("code", { length: 50 }).notNull().unique(), // pdv, estoque, os, financeiro, etc
+  name: varchar("name", { length: 100 }).notNull(), // Nome amigável
+  description: text("description"), // Descrição do módulo
+  icon: varchar("icon", { length: 50 }), // Nome do ícone Lucide
+  routePath: varchar("route_path", { length: 100 }), // Rota principal do módulo
+  active: boolean("active").default(true).notNull(), // Se o módulo está disponível
+  sortOrder: int("sort_order").default(0).notNull(), // Ordem de exibição
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Module = typeof modules.$inferSelect;
+export type InsertModule = typeof modules.$inferInsert;
+
+/**
+ * Módulos contratados por tenant
+ */
+export const tenantModules = mysqlTable("tenantModules", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull(),
+  moduleId: int("module_id").notNull(),
+  enabled: boolean("enabled").default(true).notNull(), // Se está ativo para este tenant
+  expiresAt: timestamp("expiresAt"), // Data de expiração (null = sem expiração)
+  maxUsers: int("max_users"), // Limite de usuários (null = ilimitado)
+  notes: text("notes"), // Observações sobre a contratação
+  activatedAt: timestamp("activatedAt").defaultNow().notNull(),
+  activatedBy: int("activated_by"), // ID do usuário que ativou
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type TenantModule = typeof tenantModules.$inferSelect;
+export type InsertTenantModule = typeof tenantModules.$inferInsert;
+
+/**
+ * Permissões por role dentro de cada módulo
+ */
+export const modulePermissions = mysqlTable("modulePermissions", {
+  id: int("id").autoincrement().primaryKey(),
+  moduleId: int("module_id").notNull(),
+  role: mysqlEnum("role", ["master_admin", "admin", "gerente", "vendedor", "tecnico", "financeiro"]).notNull(),
+  canView: boolean("can_view").default(false).notNull(), // Pode visualizar
+  canCreate: boolean("can_create").default(false).notNull(), // Pode criar
+  canEdit: boolean("can_edit").default(false).notNull(), // Pode editar
+  canDelete: boolean("can_delete").default(false).notNull(), // Pode excluir
+  canApprove: boolean("can_approve").default(false).notNull(), // Pode aprovar (para workflows)
+  customPermissions: json("custom_permissions"), // Permissões específicas do módulo
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type ModulePermission = typeof modulePermissions.$inferSelect;
+export type InsertModulePermission = typeof modulePermissions.$inferInsert;
+
+/**
+ * Planos pré-configurados
+ */
+export const subscriptionPlans = mysqlTable("subscriptionPlans", {
+  id: int("id").autoincrement().primaryKey(),
+  code: varchar("code", { length: 50 }).notNull().unique(), // basico, profissional, enterprise
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  monthlyPrice: int("monthly_price").notNull(), // Preço em centavos
+  maxUsers: int("max_users"), // Limite de usuários (null = ilimitado)
+  maxStorage: int("max_storage"), // Limite de armazenamento em MB (null = ilimitado)
+  features: json("features"), // Lista de features incluídas
+  active: boolean("active").default(true).notNull(),
+  sortOrder: int("sort_order").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
+
+/**
+ * Módulos incluídos em cada plano
+ */
+export const planModules = mysqlTable("planModules", {
+  id: int("id").autoincrement().primaryKey(),
+  planId: int("plan_id").notNull(),
+  moduleId: int("module_id").notNull(),
+  included: boolean("included").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PlanModule = typeof planModules.$inferSelect;
+export type InsertPlanModule = typeof planModules.$inferInsert;

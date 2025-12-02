@@ -78,6 +78,13 @@
       "when": 1764680657657,
       "tag": "0010_fixed_paper_doll",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1764684001300,
+      "tag": "0011_careful_bastion",
+      "breakpoints": true
     }
   ]
 }

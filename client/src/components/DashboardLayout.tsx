@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useModuleAccess, ROUTE_MODULE_MAP } from "@/hooks/useModuleAccess";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -21,7 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield, FileInput, Table, Database, Wallet } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield, FileInput, Table, Database, Wallet, Layers } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -180,6 +181,15 @@ const menuItems = [
     iconColor: "text-indigo-700",
     masterOnly: true // Apenas para master_admin
   },
+  { 
+    icon: Layers, 
+    label: "Gerenciar Módulos", 
+    path: "/gerenciar-modulos",
+    gradient: "from-violet-600 to-purple-600",
+    bgGradient: "from-violet-50 to-purple-50",
+    iconColor: "text-violet-700",
+    masterOnly: true // Apenas para master_admin
+  },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -263,6 +273,7 @@ function DashboardLayoutContent({
   setSidebarWidth,
 }: DashboardLayoutContentProps) {
   const { user } = useAuth();
+  const { hasAccess } = useModuleAccess();
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
       window.location.href = "/login";
@@ -274,7 +285,26 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
+  
+  // Filtrar menu items baseado em permissões e módulos contratados
+  const filteredMenuItems = menuItems.filter(item => {
+    // Master admin tem acesso a tudo
+    if (user?.role === "master_admin") return true;
+    
+    // Filtrar items master-only
+    if (item.masterOnly) return false;
+    
+    // Verificar se requer módulo específico
+    const moduleCode = ROUTE_MODULE_MAP[item.path];
+    if (moduleCode && !hasAccess(moduleCode)) return false;
+    
+    // Filtrar por role se especificado
+    if (item.roles && user?.role && !item.roles.includes(user.role)) return false;
+    
+    return true;
+  });
+  
+  const activeMenuItem = filteredMenuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -342,9 +372,7 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1 space-y-1">
-              {menuItems
-                .filter(item => !item.masterOnly || user?.role === "master_admin")
-                .map((item, index) => {
+              {filteredMenuItems.map((item, index) => {
                 const isActive = location === item.path;
                 const Icon = item.icon;
                 return (

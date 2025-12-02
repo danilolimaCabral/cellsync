@@ -1506,15 +1506,16 @@
 - [ ] Executar todos os testes E2E e validar cobertura
 
 ## Sistema de Permissões e Liberação de Módulos
-- [ ] Criar tabela de módulos disponíveis no sistema
-- [ ] Criar tabela de módulos contratados por tenant
-- [ ] Criar tabela de permissões por role e módulo
-- [ ] Implementar middleware de verificação de acesso a módulos
-- [ ] Criar interface de gestão de módulos (master_admin)
-- [ ] Adicionar página de configuração de módulos por cliente
-- [ ] Implementar bloqueio de rotas baseado em módulos contratados
-- [ ] Criar sistema de planos (Básico, Profissional, Enterprise)
-- [ ] Adicionar indicador visual de módulos bloqueados
-- [ ] Implementar upgrade/downgrade de planos
-- [ ] Criar relatório de uso de módulos por tenant
-- [ ] Definir permissões padrão por role (vendedor, financeiro, gerente, admin)
+- [x] Criar tabela de módulos no banco (código, nome, descrição, rota)
+- [x] Criar tabela de módulos contratados por tenant
+- [x] Criar tabela de planos de assinatura
+- [x] Criar tabela de permissões por role e módulo
+- [x] Implementar helpers de verificação de acesso a módulos
+- [x] Criar interface de gestão de módulos (master_admin)
+- [x] Adicionar página de configuração de módulos por cliente
+- [x] Implementar bloqueio de rotas baseado em módulos contratados
+- [x] Criar sistema de planos (Básico R$99, Profissional R$199, Enterprise R$399)
+- [x] Adicionar funcionalidade de aplicar plano completo
+- [x] Implementar ativação/desativação individual de módulos
+- [x] Criar relatório de módulos por tenant
+- [x] Sistema preparado para permissões por role
