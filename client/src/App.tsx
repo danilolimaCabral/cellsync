@@ -29,6 +29,7 @@ import ImportarPlanilha from "./pages/ImportarPlanilha";
 import Planos from "./pages/Planos";
 import AdminMaster from "./pages/AdminMaster";
 import GerenciarBackups from "./pages/GerenciarBackups";
+import DashboardBI from "./pages/DashboardBI";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -79,6 +80,19 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <GerenciarBackups />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+      
+      {/* Rota de Dashboard BI */}
+      <Route path="/dashboard-bi">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <DashboardBI />
               </DashboardLayout>
             )}
           />

@@ -139,8 +139,8 @@ const menuItems = [
   },
   { 
     icon: TrendingUp, 
-    label: "Relatórios (BI)", 
-    path: "/relatorios",
+    label: "Dashboard BI", 
+    path: "/dashboard-bi",
     gradient: "from-orange-500 to-amber-500",
     bgGradient: "from-orange-50 to-amber-50",
     iconColor: "text-orange-600"

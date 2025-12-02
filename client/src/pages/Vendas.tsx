@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import PageHeader from "@/components/PageHeader";
-import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X } from "lucide-react";
+import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X, Printer } from "lucide-react";
 
 interface CartItem {
   productId: number;
@@ -355,6 +355,35 @@ export default function Vendas() {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [cart, selectedCustomerId]);
 
+  // Mutation para gerar cupom fiscal
+  const generateFiscalReceiptMutation = trpc.sales.generateFiscalReceipt.useMutation({
+    onSuccess: (result) => {
+      // Converter base64 para bytes
+      const byteCharacters = atob(result.escPosBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/octet-stream" });
+      
+      // Criar link para download
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `cupom-fiscal-${lastSaleId}.prn`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success("Cupom fiscal gerado! Envie o arquivo .prn para a impressora térmica.");
+    },
+    onError: (error) => {
+      toast.error(`Erro ao gerar cupom fiscal: ${error.message}`);
+    },
+  });
+
   // Mutation para gerar recibo
   const generateReceiptMutation = trpc.sales.generateReceipt.useMutation({
     onSuccess: (result) => {
@@ -386,6 +415,19 @@ export default function Vendas() {
     }
     
     generateReceiptMutation.mutate({ saleId: lastSaleId });
+  };
+
+  const printFiscalReceipt = () => {
+    if (!lastSaleId) {
+      toast.error("Nenhuma venda selecionada");
+      return;
+    }
+    
+    generateFiscalReceiptMutation.mutate({ 
+      saleId: lastSaleId,
+      paperWidth: "80",
+      includeQRCode: true,
+    });
   };
 
   return (
@@ -793,18 +835,29 @@ export default function Vendas() {
               <p className="text-3xl font-bold text-primary mt-2">
                 {formatCurrency(total)}</p>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={printReceipt} className="flex-1">
-                <Receipt className="h-4 w-4 mr-2" />
-                Imprimir
-              </Button>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Button onClick={printReceipt} className="flex-1" disabled={generateReceiptMutation.isPending}>
+                  <Receipt className="h-4 w-4 mr-2" />
+                  {generateReceiptMutation.isPending ? "Gerando..." : "Recibo PDF"}
+                </Button>
+                <Button 
+                  onClick={printFiscalReceipt} 
+                  className="flex-1"
+                  variant="secondary"
+                  disabled={generateFiscalReceiptMutation.isPending}
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  {generateFiscalReceiptMutation.isPending ? "Gerando..." : "Cupom Fiscal"}
+                </Button>
+              </div>
               <Button
                 variant="outline"
                 onClick={() => {
                   setShowReceipt(false);
                   setLastSaleId(null);
                 }}
-                className="flex-1"
+                className="w-full"
               >
                 Fechar
               </Button>

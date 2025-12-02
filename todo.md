@@ -1448,3 +1448,31 @@
 - [x] Configurar Vite HMR para funcionar em ambiente proxy
 - [x] Ajustar configuração de server.hmr no vite.config.ts
 - [x] Testar hot reload após correção
+
+## Dashboard BI e Relatórios
+- [x] Criar procedures tRPC para KPIs de vendas (total, média, crescimento)
+- [x] Criar procedures tRPC para KPIs de estoque (valor total, itens disponíveis, defeitos)
+- [x] Criar procedures tRPC para KPIs financeiros (receita, despesas, lucro)
+- [x] Implementar página Dashboard BI com cards de KPIs
+- [x] Adicionar gráfico de vendas por período (linha)
+- [x] Adicionar gráfico de produtos mais vendidos (barras)
+- [x] Adicionar gráfico de receita vs despesas (barras)
+- [x] Implementar filtros de período (hoje, semana, mês, ano)
+- [x] Adicionar comparativo com período anterior
+- [ ] Criar função de exportação para Excel
+- [ ] Criar função de exportação para PDF
+- [ ] Adicionar relatório de vendas detalhado
+- [ ] Adicionar relatório de estoque detalhado
+- [ ] Adicionar relatório financeiro detalhado
+
+## Emissão de Cupom Fiscal
+- [x] Criar template de cupom fiscal com dados da venda
+- [x] Implementar formatação ESC/POS para impressoras térmicas
+- [x] Adicionar suporte para impressoras Epson, Bematech, Daruma
+- [x] Criar endpoint tRPC para gerar cupom fiscal
+- [x] Implementar download de arquivo .prn para impressão
+- [x] Adicionar botão "Cupom Fiscal" na tela de vendas
+- [x] Configurar largura do papel (58mm ou 80mm)
+- [x] Estrutura para logo da empresa no cabeçalho
+- [x] Incluir QR Code com dados da venda
+- [x] Sistema pronto para impressão em impressoras térmicas padrão

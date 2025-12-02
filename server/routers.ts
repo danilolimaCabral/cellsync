@@ -8,6 +8,7 @@ import { tenantManagementRouter } from "./tenant-management";
 import { xmlImportRouter } from "./xml-import";
 import { csvImportRouter } from "./csv-import";
 import { backupRouter } from "./routers/backup";
+import { dashboardRouter } from "./routers/dashboard";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import bcrypt from "bcryptjs";
@@ -40,6 +41,7 @@ export const appRouter = router({
   xmlImport: xmlImportRouter,
   csvImport: csvImportRouter,
   backup: backupRouter,
+  dashboardBI: dashboardRouter,
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
@@ -508,6 +510,66 @@ export const appRouter = router({
         return {
           success: true,
           pdf: pdfBuffer.toString("base64"),
+        };
+      }),
+
+    generateFiscalReceipt: protectedProcedure
+      .input(z.object({
+        saleId: z.number(),
+        paperWidth: z.enum(["58", "80"]).default("80"),
+        includeQRCode: z.boolean().default(true),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { generateFiscalReceipt, escPosToBase64 } = await import("./fiscal-printer");
+        
+        // Buscar dados da venda
+        const sale = await db.getSaleById(input.saleId);
+        if (!sale) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Venda não encontrada" });
+        }
+        
+        // Buscar dados do cliente
+        const customer = sale.customerId ? await db.getCustomerById(sale.customerId) : null;
+        
+        // Buscar dados do vendedor
+        const seller = await db.getUserById(sale.sellerId);
+        
+        // Buscar itens da venda
+        const items = await db.getSaleItems(input.saleId);
+        
+        // Preparar dados para o cupom fiscal
+        const fiscalData = {
+          id: sale.id,
+          saleDate: sale.createdAt,
+          items: items.map((item: any) => ({
+            productName: item.productName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.quantity * item.unitPrice,
+          })),
+          subtotal: sale.totalAmount,
+          discount: sale.discountAmount || 0,
+          totalAmount: sale.finalAmount,
+          paymentMethod: sale.paymentMethod || "dinheiro",
+          customerName: customer?.name,
+          customerDocument: customer?.cpf || customer?.cnpj || undefined,
+          sellerName: seller?.name,
+          tenantName: "LOJA DE CELULAR", // TODO: Buscar do banco de dados
+        };
+        
+        // Gerar cupom fiscal ESC/POS
+        const escPosData = generateFiscalReceipt(fiscalData, {
+          paperWidth: parseInt(input.paperWidth) as 58 | 80,
+          includeQRCode: input.includeQRCode,
+        });
+        
+        // Converter para Base64 para envio via web
+        const base64Data = escPosToBase64(escPosData);
+        
+        return {
+          success: true,
+          escPosBase64: base64Data,
+          rawData: escPosData,
         };
       }),
   }),
