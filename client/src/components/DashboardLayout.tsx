@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield, FileInput, Table, Database } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield, FileInput, Table, Database, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -136,6 +136,15 @@ const menuItems = [
     gradient: "from-yellow-500 to-orange-400",
     bgGradient: "from-yellow-50 to-orange-50",
     iconColor: "text-yellow-600"
+  },
+  { 
+    icon: Wallet, 
+    label: "Controle de Comissões", 
+    path: "/controle-comissoes",
+    gradient: "from-purple-500 to-pink-500",
+    bgGradient: "from-purple-50 to-pink-50",
+    iconColor: "text-purple-600",
+    roles: ["gerente", "admin", "master_admin"]
   },
   { 
     icon: TrendingUp, 

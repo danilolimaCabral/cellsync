@@ -1476,3 +1476,45 @@
 - [x] Estrutura para logo da empresa no cabeçalho
 - [x] Incluir QR Code com dados da venda
 - [x] Sistema pronto para impressão em impressoras térmicas padrão
+
+## Sistema de Controle de Comissões
+- [x] Criar procedures tRPC para listar comissões por status
+- [x] Criar procedure para aprovar comissões (apenas gerentes)
+- [x] Criar procedure para registrar pagamento de comissões
+- [x] Criar procedure para obter estatísticas de comissões por vendedor
+- [x] Implementar página de Controle de Comissões
+- [x] Adicionar tabela de comissões pendentes com botão de aprovar
+- [x] Adicionar tabela de comissões aprovadas com botão de pagar
+- [x] Adicionar histórico de comissões pagas
+- [x] Criar dashboard de comissões por vendedor
+- [x] Adicionar filtros por período, vendedor e status
+- [x] Implementar cards com totais (pendente, aprovado, pago)
+- [ ] Adicionar gráfico de comissões ao longo do tempo
+- [x] Integrar com sistema financeiro (contas a pagar)
+
+## Testes Automatizados End-to-End (E2E)
+- [ ] Configurar Playwright para testes E2E
+- [ ] Criar teste de fluxo completo de cadastro e onboarding
+- [ ] Criar teste de fluxo de vendas (adicionar produto, cliente, finalizar)
+- [ ] Criar teste de fluxo de estoque (entrada, movimentação, baixa)
+- [ ] Criar teste de fluxo de ordem de serviço (criar, atualizar, finalizar)
+- [ ] Criar teste de fluxo financeiro (contas a pagar/receber)
+- [ ] Criar teste de fluxo de comissões (gerar, aprovar, pagar)
+- [ ] Criar teste de backup automático
+- [ ] Criar teste de relatórios e dashboard BI
+- [ ] Criar teste de emissão de cupom fiscal
+- [ ] Executar todos os testes E2E e validar cobertura
+
+## Sistema de Permissões e Liberação de Módulos
+- [ ] Criar tabela de módulos disponíveis no sistema
+- [ ] Criar tabela de módulos contratados por tenant
+- [ ] Criar tabela de permissões por role e módulo
+- [ ] Implementar middleware de verificação de acesso a módulos
+- [ ] Criar interface de gestão de módulos (master_admin)
+- [ ] Adicionar página de configuração de módulos por cliente
+- [ ] Implementar bloqueio de rotas baseado em módulos contratados
+- [ ] Criar sistema de planos (Básico, Profissional, Enterprise)
+- [ ] Adicionar indicador visual de módulos bloqueados
+- [ ] Implementar upgrade/downgrade de planos
+- [ ] Criar relatório de uso de módulos por tenant
+- [ ] Definir permissões padrão por role (vendedor, financeiro, gerente, admin)

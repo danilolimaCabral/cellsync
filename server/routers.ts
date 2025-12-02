@@ -9,6 +9,7 @@ import { xmlImportRouter } from "./xml-import";
 import { csvImportRouter } from "./csv-import";
 import { backupRouter } from "./routers/backup";
 import { dashboardRouter } from "./routers/dashboard";
+import { commissionsRouter as commissionsManagementRouter } from "./routers/commissions";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import bcrypt from "bcryptjs";
@@ -42,6 +43,7 @@ export const appRouter = router({
   csvImport: csvImportRouter,
   backup: backupRouter,
   dashboardBI: dashboardRouter,
+  commissionsManagement: commissionsManagementRouter,
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({

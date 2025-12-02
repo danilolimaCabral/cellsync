@@ -30,6 +30,7 @@ import Planos from "./pages/Planos";
 import AdminMaster from "./pages/AdminMaster";
 import GerenciarBackups from "./pages/GerenciarBackups";
 import DashboardBI from "./pages/DashboardBI";
+import ControleComissoes from "./pages/ControleComissoes";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -86,6 +87,19 @@ function Router() {
         )}
       </Route>
       
+      {/* Rota de Controle de Comissões */}
+      <Route path="/controle-comissoes">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <ControleComissoes />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
       {/* Rota de Dashboard BI */}
       <Route path="/dashboard-bi">
         {() => (
