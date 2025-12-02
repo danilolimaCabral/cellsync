@@ -1110,3 +1110,9 @@
 - [x] Atualizar banco de dados com Price IDs
 - [ ] Testar checkout com cartão de teste
 - [ ] Validar webhook de confirmação
+
+## Correção Botão "Saiba Mais" - Página Inicial
+- [x] Verificar botão "Saiba Mais" na página inicial (Home.tsx)
+- [x] Corrigir link/ação do botão
+- [x] Testar redirecionamento para página de planos
+- [x] Validar funcionamento completo

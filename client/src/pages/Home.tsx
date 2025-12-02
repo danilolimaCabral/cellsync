@@ -214,6 +214,7 @@ export default function Home() {
                   size="lg" 
                   variant="outline"
                   className="text-lg px-10 py-7 border-2 border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400 transition-all duration-300"
+                  onClick={() => setLocation("/planos")}
                 >
                   <Sparkles className="mr-2 h-5 w-5" />
                   Saiba Mais
