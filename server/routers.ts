@@ -3,6 +3,7 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { onboardingRouter } from "./onboarding";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import bcrypt from "bcryptjs";
@@ -30,6 +31,7 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 export const appRouter = router({
   system: systemRouter,
+  onboarding: onboardingRouter,
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({

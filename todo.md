@@ -1028,3 +1028,17 @@
 - [x] Criar função generateTemporaryPassword
 - [ ] Integrar com criação de novo usuário (futuro)
 - [ ] Testar envio de email real
+
+## Página de Onboarding Self-Service
+- [x] Criar página /cadastro pública (sem autenticação)
+- [x] Formulário multi-step (dados pessoais → dados da loja → escolha de plano)
+- [x] Validação de email único (checkEmail query)
+- [x] Criar tenant automaticamente (onboarding.ts)
+- [x] Criar usuário admin do tenant
+- [x] Gerar senha temporária (generateTemporaryPassword)
+- [x] Enviar email de boas-vindas (sendWelcomeEmail)
+- [x] Redirecionar para login após cadastro
+- [x] Adicionar trial de 14 dias automático
+- [x] Stepper visual com progresso
+- [x] Botão "Criar Conta Grátis" na Home
+- [ ] Testar fluxo completo de cadastro
