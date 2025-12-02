@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -136,6 +136,15 @@ const menuItems = [
     gradient: "from-slate-500 to-gray-500",
     bgGradient: "from-slate-50 to-gray-50",
     iconColor: "text-slate-600"
+  },
+  { 
+    icon: Shield, 
+    label: "Admin Master", 
+    path: "/admin-master",
+    gradient: "from-red-600 to-pink-600",
+    bgGradient: "from-red-50 to-pink-50",
+    iconColor: "text-red-700",
+    masterOnly: true // Apenas para master_admin
   },
 ];
 
@@ -299,7 +308,9 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1 space-y-1">
-              {menuItems.map((item, index) => {
+              {menuItems
+                .filter(item => !item.masterOnly || user?.role === "master_admin")
+                .map((item, index) => {
                 const isActive = location === item.path;
                 const Icon = item.icon;
                 return (

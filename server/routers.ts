@@ -1516,5 +1516,92 @@ export const appRouter = router({
       return null;
     }),
   }),
+
+  // ============= ADMIN MASTER (GERENCIAR TODOS OS TENANTS) =============
+  adminMaster: router({
+    // Listar todos os tenants
+    getTenants: protectedProcedure.query(async ({ ctx }) => {
+      // Verificar se é master_admin
+      if (ctx.user.role !== "master_admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado. Apenas master_admin pode acessar." });
+      }
+      
+      const { getAllTenants } = await import("./admin-master");
+      const tenants = await getAllTenants();
+      return tenants;
+    }),
+
+    // Obter métricas do painel admin
+    getMetrics: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "master_admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado. Apenas master_admin pode acessar." });
+      }
+      
+      const { getAdminMetrics } = await import("./admin-master");
+      const metrics = await getAdminMetrics();
+      return metrics;
+    }),
+
+    // Obter crescimento de clientes
+    getClientGrowth: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "master_admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado." });
+      }
+      
+      const { getClientGrowth } = await import("./admin-master");
+      const growth = await getClientGrowth();
+      return growth;
+    }),
+
+    // Obter receita mensal
+    getMonthlyRevenue: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "master_admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado." });
+      }
+      
+      const { getMonthlyRevenue } = await import("./admin-master");
+      const revenue = await getMonthlyRevenue();
+      return revenue;
+    }),
+
+    // Ativar tenant
+    activateTenant: protectedProcedure
+      .input(z.object({ tenantId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado." });
+        }
+        
+        const { activateTenant } = await import("./admin-master");
+        const result = await activateTenant(input.tenantId);
+        return result;
+      }),
+
+    // Desativar tenant
+    deactivateTenant: protectedProcedure
+      .input(z.object({ tenantId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado." });
+        }
+        
+        const { deactivateTenant } = await import("./admin-master");
+        const result = await deactivateTenant(input.tenantId);
+        return result;
+      }),
+
+    // Cancelar tenant
+    cancelTenant: protectedProcedure
+      .input(z.object({ tenantId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado." });
+        }
+        
+        const { cancelTenant } = await import("./admin-master");
+        const result = await cancelTenant(input.tenantId);
+        return result;
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

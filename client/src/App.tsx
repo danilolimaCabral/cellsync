@@ -24,6 +24,7 @@ import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
 import ImportarProdutos from "./pages/ImportarProdutos";
 import GerarEtiquetas from "./pages/GerarEtiquetas";
 import Planos from "./pages/Planos";
+import AdminMaster from "./pages/AdminMaster";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -52,6 +53,19 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/planos" component={Planos} />
+      
+      {/* Rota Admin Master - Apenas para master_admin */}
+      <Route path="/admin-master">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <AdminMaster />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
       
       {/* Rotas protegidas com DashboardLayout */}
       <Route path="/dashboard">

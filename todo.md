@@ -954,3 +954,45 @@
 - [x] Corrigir db-plans.ts para usar getDb() ao invés de import direto
 - [x] Testar endpoint novamente (funcionando!)
 - [x] Validar exibição dos planos
+
+## Revisão Completa do Módulo de Comissões
+- [ ] Verificar se página de comissões está acessível
+- [ ] Testar cálculo automático de comissões nas vendas
+- [ ] Verificar relatório de comissões por vendedor
+- [ ] Testar aprovação de comissões
+- [ ] Verificar integração com financeiro
+- [ ] Validar dashboard de ranking de vendedores
+- [ ] Corrigir problemas encontrados
+
+## Painel Admin Master (Multi-Tenant)
+- [ ] Criar role "master_admin" no schema de usuários
+- [ ] Criar endpoints tRPC para admin master
+- [ ] Endpoint: admin.getTenants (listar todos os clientes)
+- [ ] Endpoint: admin.getMetrics (MRR, ARR, churn, total clientes)
+- [ ] Endpoint: admin.activateTenant / deactivateTenant
+- [ ] Endpoint: admin.getSubscriptions (status de pagamentos)
+- [ ] Criar página AdminMaster.tsx com dashboard
+- [ ] Adicionar métricas: Total clientes, MRR, Novos este mês, Churn
+- [ ] Adicionar gráfico de crescimento de clientes
+- [ ] Adicionar gráfico de receita mensal
+- [ ] Criar tabela de clientes com filtros
+- [ ] Adicionar ações: Ativar, Desativar, Editar, Ver detalhes
+- [ ] Criar middleware de proteção (apenas master_admin)
+- [ ] Adicionar rota /admin-master no App.tsx
+- [ ] Testar acesso restrito
+
+## Arquitetura Multi-Tenant Robusta e Escalável
+- [x] Adicionar campo tenantId em TODAS as tabelas principais
+- [x] Criar índices compostos (tenantId + id) para performance
+- [x] Criar middleware de isolamento automático de dados
+- [ ] Implementar identificação de tenant por subdomínio/URL
+- [ ] Adicionar validação de limites por plano (usuários, produtos, storage)
+- [ ] Criar sistema de onboarding self-service
+- [ ] Implementar trial automático de 14 dias
+- [ ] Adicionar row-level security no banco
+- [ ] Criar logs de auditoria por tenant
+- [ ] Implementar rate limiting por tenant
+- [ ] Adicionar cache por tenant (Redis-ready)
+- [x] Finalizar painel AdminMaster com rota protegida
+- [x] Promover usuário Bruno para master_admin
+- [ ] Testar isolamento completo de dados
