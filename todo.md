@@ -1425,3 +1425,21 @@
 - [x] Criar visualização de tendência de crescimento do banco
 - [x] Integrar gráficos na página de Gerenciar Backups
 - [x] Adicionar filtros de período (7 dias, 30 dias, 90 dias)
+
+## Adaptação Multi-Tenant do Sistema de Backup
+- [x] Criar tabela backupHistory no schema para registrar histórico de backups
+- [x] Adicionar campo tenantId na estrutura de backups
+- [x] Modificar nomenclatura de arquivos S3 para incluir tenantId (backups/tenant-{tenantId}/backup-{timestamp}.sql)
+- [x] Backup completo do banco (todos os tenants) com registro por tenant
+- [x] Criar procedures tRPC para listar backups filtrados por tenantId
+- [x] Atualizar frontend para mostrar backups do tenant atual
+- [x] Master_admin pode visualizar backups de todos os tenants
+- [x] Adicionar registro de histórico no banco após cada backup
+- [x] Sistema preparado para isolamento entre tenants
+- [x] Testar funcionamento do sistema multi-tenant
+
+## Correção de Visualização de Backups
+- [x] Verificar se backups estão sendo listados corretamente no painel Admin Master
+- [x] Testar endpoint tRPC backup.list
+- [x] Garantir que dados do banco estão sendo retornados
+- [x] Sistema pronto - backups aparecerão após primeira execução

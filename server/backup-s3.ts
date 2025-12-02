@@ -87,7 +87,7 @@ export async function listBackupsFromS3(): Promise<BackupInfo[]> {
 /**
  * Remove backups com mais de 30 dias
  */
-export async function cleanupOldBackups(): Promise<{
+export async function cleanupOldBackups(tenantId?: number): Promise<{
   success: boolean;
   deletedCount: number;
   errors: string[];

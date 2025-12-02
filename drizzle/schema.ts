@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json, index } from "drizzle-orm/mysql-core";
 
 /**
  * Sistema CellSync - Schema completo do banco de dados
@@ -571,3 +571,24 @@ export const invoiceItems = mysqlTable("invoiceItems", {
 
 export type InvoiceItem = typeof invoiceItems.$inferSelect;
 export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
+
+// ============= HISTÓRICO DE BACKUPS =============
+export const backupHistory = mysqlTable("backupHistory", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master para backup global)
+  filename: varchar("filename", { length: 255 }).notNull(), // Nome do arquivo no S3
+  s3Key: varchar("s3_key", { length: 500 }).notNull(), // Caminho completo no S3
+  s3Url: text("s3_url"), // URL de acesso ao backup
+  fileSize: int("file_size").notNull(), // Tamanho em bytes
+  status: mysqlEnum("status", ["success", "failed", "in_progress"]).default("in_progress").notNull(),
+  errorMessage: text("error_message"), // Mensagem de erro caso falhe
+  duration: int("duration"), // Duração em milissegundos
+  backupType: mysqlEnum("backup_type", ["manual", "scheduled"]).default("scheduled").notNull(),
+  deletedCount: int("deleted_count").default(0), // Quantidade de backups antigos removidos
+  triggeredBy: int("triggered_by"), // ID do usuário que executou (null para agendado)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+
+export type BackupHistory = typeof backupHistory.$inferSelect;
+export type InsertBackupHistory = typeof backupHistory.$inferInsert;

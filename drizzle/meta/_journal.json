@@ -71,6 +71,13 @@
       "when": 1764670566813,
       "tag": "0009_nappy_killmonger",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1764680657657,
+      "tag": "0010_fixed_paper_doll",
+      "breakpoints": true
     }
   ]
 }

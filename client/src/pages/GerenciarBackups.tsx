@@ -68,26 +68,29 @@ export default function GerenciarBackups() {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - periodFilter);
     const filteredBackups = backups.filter(
-      (b) => new Date(b.uploadedAt) >= cutoffDate
+      (b) => new Date(b.createdAt) >= cutoffDate
     );
 
     // Dados para gráfico de linha (tamanho ao longo do tempo)
     const timeline = filteredBackups
-      .map((backup) => ({
-        date: new Date(backup.uploadedAt).toLocaleDateString("pt-BR", {
-          day: "2-digit",
-          month: "2-digit",
-        }),
-        tamanho: (backup.size / 1024 / 1024).toFixed(2),
-        tamanhoNum: backup.size / 1024 / 1024,
-        idade: backup.ageInDays,
-      }))
+      .map((backup) => {
+        const ageInDays = Math.floor((Date.now() - new Date(backup.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+        return {
+          date: new Date(backup.createdAt).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+          }),
+          tamanho: (backup.fileSize / 1024 / 1024).toFixed(2),
+          tamanhoNum: backup.fileSize / 1024 / 1024,
+          idade: ageInDays,
+        };
+      })
       .reverse();
 
     // Dados para gráfico de barras (frequência por dia)
     const frequencyMap = new Map<string, number>();
     filteredBackups.forEach((backup) => {
-      const date = new Date(backup.uploadedAt).toLocaleDateString("pt-BR", {
+      const date = new Date(backup.createdAt).toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
       });
@@ -99,10 +102,10 @@ export default function GerenciarBackups() {
       .reverse();
 
     // Estatísticas gerais
-    const totalSize = filteredBackups.reduce((sum, b) => sum + b.size, 0);
+    const totalSize = filteredBackups.reduce((sum, b) => sum + b.fileSize, 0);
     const avgSize = filteredBackups.length > 0 ? totalSize / filteredBackups.length : 0;
-    const maxSize = Math.max(...filteredBackups.map((b) => b.size), 0);
-    const minSize = Math.min(...filteredBackups.map((b) => b.size), 0);
+    const maxSize = Math.max(...filteredBackups.map((b) => b.fileSize), 0);
+    const minSize = Math.min(...filteredBackups.map((b) => b.fileSize), 0);
 
     // Calcular taxa de crescimento (comparando primeiro e último backup)
     let growthRate = 0;
@@ -458,7 +461,7 @@ export default function GerenciarBackups() {
                   <div className="space-y-3">
                     {backups.map((backup, index) => (
                       <motion.div
-                        key={backup.key}
+                        key={backup.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
@@ -473,20 +476,20 @@ export default function GerenciarBackups() {
                             <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
-                                {formatDate(backup.uploadedAt)}
+                                {formatDate(backup.createdAt)}
                               </span>
                               <span className="flex items-center gap-1">
                                 <HardDrive className="h-3 w-3" />
-                                {formatFileSize(backup.size)}
+                                {formatFileSize(backup.fileSize)}
                               </span>
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                {backup.ageInDays} {backup.ageInDays === 1 ? "dia" : "dias"}
+                                {Math.floor((Date.now() - new Date(backup.createdAt).getTime()) / (1000 * 60 * 60 * 24))} dias
                               </span>
                             </div>
                           </div>
                         </div>
-                        {backup.ageInDays <= 30 ? (
+                        {Math.floor((Date.now() - new Date(backup.createdAt).getTime()) / (1000 * 60 * 60 * 24)) <= 30 ? (
                           <CheckCircle2 className="h-5 w-5 text-green-600" />
                         ) : (
                           <XCircle className="h-5 w-5 text-orange-600" />

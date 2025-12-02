@@ -23,7 +23,11 @@ export function setupBackupScheduler() {
       );
 
       try {
-        const result = await executeBackup();
+        // Backup do tenant master (id=1) - contém todos os dados
+        const result = await executeBackup({
+          tenantId: 1,
+          backupType: "scheduled",
+        });
 
         if (result.success) {
           console.log(

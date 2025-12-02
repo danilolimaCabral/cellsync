@@ -9,6 +9,7 @@ export interface BackupNotificationData {
   error?: string;
   timestamp: number;
   duration?: number;
+  tenantId?: number;
 }
 
 /**
