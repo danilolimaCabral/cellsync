@@ -1005,3 +1005,13 @@
 - [x] Corrigir query tenantManagement.list para retornar dados
 - [x] Testar acesso remoto aos tenants
 - [x] Reiniciar servidor para aplicar novos routers tRPC
+
+## Chatbot Inteligente com Gemini - Landing Page
+- [x] Criar componente SalesChatbot com interface moderna
+- [x] Integrar Gemini API para respostas inteligentes
+- [x] Configurar prompt com informações da plataforma CellSync
+- [x] Adicionar comparações com concorrentes (Bling, Tiny ERP, Omie)
+- [x] Implementar botão flutuante na página inicial
+- [x] Adicionar animações de digitação e transições suaves
+- [x] Testar conversas e ajustar respostas
+- [ ] Criar testes para integração com Gemini

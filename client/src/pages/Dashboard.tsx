@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import PageHeader from "@/components/PageHeader";
@@ -11,6 +12,7 @@ import {
   Wrench,
   AlertCircle
 } from "lucide-react";
+import { SalesChatbot } from "@/components/SalesChatbot";
 
 // Função auxiliar para formatação de moeda
 const formatCurrency = (cents: number) => {
@@ -258,6 +260,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Chatbot de Vendas */}
+      <SalesChatbot />
     </div>
   );
 }

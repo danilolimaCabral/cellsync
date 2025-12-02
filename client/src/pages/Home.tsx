@@ -15,6 +15,7 @@ import {
   BarChart3,
   Sparkles
 } from "lucide-react";
+import { SalesChatbot } from "@/components/SalesChatbot";
 
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
@@ -434,6 +435,9 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Chatbot de Vendas */}
+      <SalesChatbot />
     </div>
   );
 }
