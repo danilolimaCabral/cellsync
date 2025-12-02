@@ -1004,3 +1004,10 @@
 - [x] Verificar botões de contratação (funcionando)
 - [x] Testar responsividade mobile (OK)
 - [x] Preparar sistema para lançamento (PRONTO)
+
+## Pop-up de Confirmação na Contratação de Planos
+- [x] Adicionar Dialog de confirmação com shadcn/ui
+- [x] Mostrar resumo do plano selecionado (nome, preço, período)
+- [x] Adicionar botões "Cancelar" e "Confirmar Contratação"
+- [x] Integrar com função handleConfirmSubscribe
+- [x] Testar fluxo completo de confirmação
