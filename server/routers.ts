@@ -11,6 +11,8 @@ import { ENV } from "./_core/env";
 import { analyzeProductWithAI } from "./ai-product-assistant";
 import { diagnoseServiceOrder } from "./ai-os-assistant";
 import { generateLabel, generateBarcode, generateQRCode } from "./label-generator";
+import { tenantSwitchingRouter } from "./routers/tenantSwitching";
+import { tenantManagementRouter } from "./routers/tenantManagement";
 
 // Helper para criar procedimentos protegidos
 const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
@@ -1516,5 +1518,11 @@ export const appRouter = router({
       return null;
     }),
   }),
+
+  // ============= TENANT SWITCHING (MANUTENÇÃO REMOTA) =============
+  tenantSwitching: tenantSwitchingRouter,
+  
+  // ============= TENANT MANAGEMENT (GERENCIAMENTO DE CLIENTES) =============
+  tenantManagement: tenantManagementRouter,
 });
 export type AppRouter = typeof appRouter;

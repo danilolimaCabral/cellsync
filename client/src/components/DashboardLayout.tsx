@@ -24,6 +24,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
+import { TenantSwitcher } from "./TenantSwitcher";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -407,6 +408,7 @@ function DashboardLayoutContent({
       </div>
 
       <SidebarInset>
+        {/* Header Mobile */}
         {isMobile && (
           <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-2">
@@ -420,11 +422,29 @@ function DashboardLayoutContent({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <TenantSwitcher />
               <NotificationBell />
               <ThemeToggle />
             </div>
           </div>
         )}
+        
+        {/* Header Desktop */}
+        {!isMobile && (
+          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-muted-foreground">
+                {activeMenuItem?.label ?? "Dashboard"}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <TenantSwitcher />
+              <NotificationBell />
+              <ThemeToggle />
+            </div>
+          </div>
+        )}
+        
         <main className="flex-1 p-4">{children}</main>
       </SidebarInset>
     </>

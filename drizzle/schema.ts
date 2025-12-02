@@ -52,7 +52,7 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(), // Hash bcrypt
   name: text("name").notNull(),
-  role: mysqlEnum("role", ["admin", "vendedor", "tecnico", "gerente"]).default("vendedor").notNull(),
+  role: mysqlEnum("role", ["admin", "vendedor", "tecnico", "gerente", "master_admin"]).default("vendedor").notNull(),
   active: boolean("active").default(true).notNull(),
   openId: varchar("openId", { length: 64 }), // Mantido para compatibilidade com SDK
   loginMethod: varchar("loginMethod", { length: 64 }), // Mantido para compatibilidade com SDK

@@ -976,3 +976,19 @@
 - [x] Criar carrinho de compras mobile com gestos
 - [x] Implementar finalização de venda rápida
 - [x] Adicionar suporte a pagamentos mobile
+
+## Interface Multi-Tenant para Manutenção Remota
+- [x] Criar hook useActiveTenant para gerenciar tenant ativo
+- [x] Criar componente TenantSwitcher com dropdown de seleção
+- [x] Adicionar badge "Modo Manutenção" quando acessando outro tenant
+- [x] Implementar botão "Voltar ao Meu Tenant"
+- [x] Integrar TenantSwitcher no header do DashboardLayout
+- [x] Adicionar ícone de prédio (Building2) no dropdown
+- [x] Mostrar lista de todos os tenants para master_admin
+- [x] Adicionar indicador visual do tenant próprio (ícone 🏠)
+- [x] Implementar recarregamento automático após troca
+- [x] Criar backend tenantSwitching router
+- [x] Criar backend tenantManagement router
+- [x] Adicionar role master_admin ao schema
+- [x] Criar seed de tenants de teste
+- [x] Criar usuário master_admin de teste
