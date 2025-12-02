@@ -2,7 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, Loader2, Sparkles, Zap, Crown } from "lucide-react";
+import { Check, Loader2, Sparkles, Zap, Crown, X } from "lucide-react";
 
 
 export default function Planos() {
@@ -107,6 +107,220 @@ export default function Planos() {
                 -17%
               </span>
             </button>
+          </div>
+        </div>
+
+        {/* Tabela Comparativa */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">
+            Compare os Planos
+          </h2>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+              <thead>
+                <tr className="border-b-2 border-gray-200 dark:border-gray-700">
+                  <th className="p-4 text-left font-semibold text-gray-900 dark:text-white">Recursos</th>
+                  <th className="p-4 text-center font-semibold text-gray-900 dark:text-white">
+                    <div className="flex flex-col items-center">
+                      <span>Básico</span>
+                      <span className="text-sm font-normal text-gray-500">R$ 99/mês</span>
+                    </div>
+                  </th>
+                  <th className="p-4 text-center font-semibold text-gray-900 dark:text-white bg-purple-50 dark:bg-purple-900/20">
+                    <div className="flex flex-col items-center">
+                      <span className="flex items-center gap-2">
+                        Profissional
+                        <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full">POPULAR</span>
+                      </span>
+                      <span className="text-sm font-normal text-gray-500">R$ 199/mês</span>
+                    </div>
+                  </th>
+                  <th className="p-4 text-center font-semibold text-gray-900 dark:text-white">
+                    <div className="flex flex-col items-center">
+                      <span>Enterprise</span>
+                      <span className="text-sm font-normal text-gray-500">R$ 399/mês</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Limites */}
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                  <td colSpan={4} className="p-3 font-semibold text-gray-700 dark:text-gray-300">
+                    📊 Limites de Uso
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">👥 Usuários</td>
+                  <td className="p-4 text-center text-gray-900 dark:text-white">Até 3</td>
+                  <td className="p-4 text-center text-gray-900 dark:text-white bg-purple-50 dark:bg-purple-900/10">Até 10</td>
+                  <td className="p-4 text-center text-gray-900 dark:text-white">Ilimitado</td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">📦 Produtos</td>
+                  <td className="p-4 text-center text-gray-900 dark:text-white">Até 500</td>
+                  <td className="p-4 text-center text-gray-900 dark:text-white bg-purple-50 dark:bg-purple-900/10">Até 5.000</td>
+                  <td className="p-4 text-center text-gray-900 dark:text-white">Ilimitado</td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">💾 Armazenamento</td>
+                  <td className="p-4 text-center text-gray-900 dark:text-white">5GB</td>
+                  <td className="p-4 text-center text-gray-900 dark:text-white bg-purple-50 dark:bg-purple-900/10">20GB</td>
+                  <td className="p-4 text-center text-gray-900 dark:text-white">100GB</td>
+                </tr>
+
+                {/* Vendas */}
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                  <td colSpan={4} className="p-3 font-semibold text-gray-700 dark:text-gray-300">
+                    🛒 Vendas & PDV
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">PDV Completo</td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Emissão de NF-e</td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Controle de Comissões</td>
+                  <td className="p-4 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+
+                {/* Estoque */}
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                  <td colSpan={4} className="p-3 font-semibold text-gray-700 dark:text-gray-300">
+                    📦 Estoque & IMEI
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Rastreamento IMEI</td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Alertas de Estoque Baixo</td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Múltiplos Depósitos</td>
+                  <td className="p-4 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+
+                {/* Assistência Técnica */}
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                  <td colSpan={4} className="p-3 font-semibold text-gray-700 dark:text-gray-300">
+                    🔧 Assistência Técnica
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Ordem de Serviço</td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Notificações Automáticas</td>
+                  <td className="p-4 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Diagnóstico Inteligente (IA)</td>
+                  <td className="p-4 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+
+                {/* Financeiro */}
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                  <td colSpan={4} className="p-3 font-semibold text-gray-700 dark:text-gray-300">
+                    💰 Financeiro
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Fluxo de Caixa</td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Contas a Pagar/Receber</td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Análise de Rentabilidade</td>
+                  <td className="p-4 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+
+                {/* Relatórios */}
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                  <td colSpan={4} className="p-3 font-semibold text-gray-700 dark:text-gray-300">
+                    📊 Relatórios & BI
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Relatórios Básicos</td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Dashboards Avançados</td>
+                  <td className="p-4 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Análise Preditiva (IA)</td>
+                  <td className="p-4 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+
+                {/* Suporte */}
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                  <td colSpan={4} className="p-3 font-semibold text-gray-700 dark:text-gray-300">
+                    🎧 Suporte
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Suporte por Email</td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Suporte Prioritário</td>
+                  <td className="p-4 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="p-4 text-gray-600 dark:text-gray-400">Gerente de Conta Dedicado</td>
+                  <td className="p-4 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center bg-purple-50 dark:bg-purple-900/10"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                  <td className="p-4 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 

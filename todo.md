@@ -1137,3 +1137,12 @@
 - [x] Ajustar espaçamento e alinhamento dos cards
 - [x] Melhorar legibilidade dos textos
 - [x] Validar responsividade
+
+## Tabela Comparativa de Planos
+- [x] Criar componente de tabela comparativa
+- [x] Adicionar recursos por categoria
+- [x] Mostrar limites de cada plano
+- [x] Destacar funcionalidades exclusivas
+- [x] Tornar responsivo para mobile
+- [x] Adicionar ícones de check/x para recursos
+- [x] Integrar na página de Planos
