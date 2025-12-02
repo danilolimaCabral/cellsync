@@ -1116,3 +1116,9 @@
 - [x] Corrigir link/ação do botão
 - [x] Testar redirecionamento para página de planos
 - [x] Validar funcionamento completo
+
+## Correção Erro JSON.parse - Página Planos
+- [x] Investigar erro "Unexpected token 'G'" no JSON.parse
+- [x] Corrigir parsing do campo features
+- [x] Testar página /planos sem erros
+- [x] Validar todos os planos carregam corretamente

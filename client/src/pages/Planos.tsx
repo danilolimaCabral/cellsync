@@ -113,7 +113,16 @@ export default function Planos() {
         {/* Planos */}
         <div className="grid md:grid-cols-3 gap-8">
           {plans?.map((plan: any) => {
-            const features = JSON.parse(plan.features as string) as string[];
+            let features: string[] = [];
+            try {
+              features = typeof plan.features === 'string' 
+                ? JSON.parse(plan.features) 
+                : Array.isArray(plan.features) 
+                  ? plan.features 
+                  : [];            } catch (e) {
+              console.error('Erro ao parsear features:', e);
+              features = [];
+            }
             const price = billingPeriod === "monthly" ? plan.priceMonthly : plan.priceYearly;
             const priceDisplay = (price / 100).toFixed(2);
             const isPopular = plan.slug === "profissional";
