@@ -1373,3 +1373,23 @@
 - [x] Adicionar menu "Importar XML (NF-e)" no DashboardLayout
 - [x] Testar interface (drag-and-drop, botão, menu funcionando)
 - [ ] Testar importação completa com XML real de NF-e
+
+
+## Importação via Excel/CSV
+- [x] Instalar dependência papaparse para parse de CSV
+- [x] Criar procedures tRPC (previewCSV, importProducts, importCustomers)
+- [x] Criar templates de download (produtos-template.csv, clientes-template.csv)
+- [x] Criar página ImportarPlanilha.tsx separada
+- [x] Tabs para Produtos e Clientes
+- [x] Botões de download de templates
+- [x] Upload de arquivo CSV
+- [x] Preview de dados antes de importar
+- [x] Validação de campos obrigatórios
+- [x] Relatório de erros por linha
+- [x] Estatísticas (total, válidos, inválidos)
+- [x] Opção de atualizar registros existentes
+- [x] Adicionar rota /importar-planilha
+- [x] Adicionar menu "Importar Planilha (CSV)"
+- [x] Testar interface (tabs, templates, upload funcionando)
+- [ ] Testar importação real de produtos com CSV
+- [ ] Testar importação real de clientes com CSV

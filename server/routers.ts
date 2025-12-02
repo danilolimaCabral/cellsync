@@ -6,6 +6,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { onboardingRouter } from "./onboarding";
 import { tenantManagementRouter } from "./tenant-management";
 import { xmlImportRouter } from "./xml-import";
+import { csvImportRouter } from "./csv-import";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import bcrypt from "bcryptjs";
@@ -36,6 +37,7 @@ export const appRouter = router({
   onboarding: onboardingRouter,
   tenantManagement: tenantManagementRouter,
   xmlImport: xmlImportRouter,
+  csvImport: csvImportRouter,
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({

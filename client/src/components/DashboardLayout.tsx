@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield, FileInput } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield, FileInput, Table } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -88,6 +88,14 @@ const menuItems = [
     gradient: "from-orange-500 to-red-500",
     bgGradient: "from-orange-50 to-red-50",
     iconColor: "text-orange-600"
+  },
+  { 
+    icon: Table, 
+    label: "Importar Planilha (CSV)", 
+    path: "/importar-planilha",
+    gradient: "from-emerald-500 to-teal-500",
+    bgGradient: "from-emerald-50 to-teal-50",
+    iconColor: "text-emerald-600"
   },
   { 
     icon: FileSpreadsheet, 
