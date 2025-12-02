@@ -1096,3 +1096,17 @@
 - [x] Redirecionar para dashboard após contratação
 - [ ] Testar checkout com cartão de teste do Stripe
 - [ ] Validar webhook de confirmação de pagamento
+
+## Configuração Stripe - Produtos e Price IDs
+- [x] Criar produto "Plano Básico" no Stripe
+- [x] Criar Price ID mensal para Plano Básico
+- [x] Criar Price ID anual para Plano Básico
+- [x] Criar produto "Plano Profissional" no Stripe
+- [x] Criar Price ID mensal para Plano Profissional
+- [x] Criar Price ID anual para Plano Profissional
+- [x] Criar produto "Plano Enterprise" no Stripe
+- [x] Criar Price ID mensal para Plano Enterprise
+- [x] Criar Price ID anual para Plano Enterprise
+- [x] Atualizar banco de dados com Price IDs
+- [ ] Testar checkout com cartão de teste
+- [ ] Validar webhook de confirmação

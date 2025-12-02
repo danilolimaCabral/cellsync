@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE plans SET stripe_price_id_monthly = 'price_1SZyS3Pzi7uvFYwO6tGiJgzA', stripe_price_id_yearly = 'price_1SZyS3Pzi7uvFYwOhzKFBUyC' WHERE slug = 'enterprise';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute UPDATE plans SET stripe_price_id_monthly = 'price_1SZyS3Pzi7uvFYwO6tGiJgzA', stripe_price_id_yearly = 'price_1SZyS3Pzi7uvFYwOhzKFBUyC' WHERE slug = 'enterprise';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 68
+}
