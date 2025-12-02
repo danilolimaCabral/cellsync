@@ -426,5 +426,73 @@ export const tenantManagementRouter = router({
         newPlan: newPlan.name,
       };
     }),
+
+  /**
+   * Atualiza dados da empresa (CNPJ, razão social, etc)
+   */
+  updateCompanyData: publicProcedure
+    .input(z.object({
+      cnpj: z.string().optional(),
+      razaoSocial: z.string().optional(),
+      nomeFantasia: z.string().optional(),
+      endereco: z.string().optional(),
+      cidade: z.string().optional(),
+      estado: z.string().optional(),
+      cep: z.string().optional(),
+      telefone: z.string().optional(),
+      email: z.string().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      }
+
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // Atualizar dados do tenant do usuário logado
+      await db
+        .update(tenants)
+        .set({
+          cnpj: input.cnpj,
+          razaoSocial: input.razaoSocial,
+          nomeFantasia: input.nomeFantasia,
+          endereco: input.endereco,
+          cidade: input.cidade,
+          estado: input.estado,
+          cep: input.cep,
+          telefone: input.telefone,
+          email: input.email,
+          updatedAt: new Date(),
+        })
+        .where(eq(tenants.id, ctx.user.tenantId));
+
+      return { success: true, message: "Dados da empresa atualizados com sucesso" };
+    }),
+
+  /**
+   * Obtém dados da empresa do tenant atual
+   */
+  getCurrentTenant: publicProcedure
+    .query(async ({ ctx }) => {
+      if (!ctx.user) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário não autenticado" });
+      }
+
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const [tenant] = await db
+        .select()
+        .from(tenants)
+        .where(eq(tenants.id, ctx.user.tenantId))
+        .limit(1);
+
+      if (!tenant) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Tenant não encontrado" });
+      }
+
+      return tenant;
+    }),
 });
 

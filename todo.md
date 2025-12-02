@@ -1519,3 +1519,24 @@
 - [x] Implementar ativação/desativação individual de módulos
 - [x] Criar relatório de módulos por tenant
 - [x] Sistema preparado para permissões por role
+
+## Consulta Automática de CNPJ (Receita Federal)
+- [x] Integrar API de consulta de CNPJ da Receita Federal
+- [x] Criar endpoint tRPC para consulta de CNPJ
+- [x] Adicionar campos de dados da empresa no schema (tenants)
+- [x] Criar interface de configuração da empresa com consulta automática
+- [x] Integrar dados da empresa no cupom fiscal
+- [ ] Integrar dados da empresa na emissão de NF-e
+- [ ] Integrar dados da empresa em cotações
+- [x] Validar e testar consulta automática de CNPJ
+
+
+## Sistema de Acesso Multi-Tenant para Manutenção Remota
+- [x] Criar sistema de impersonação de tenant (tenant switching)
+- [x] Adicionar endpoint para master admin trocar de tenant
+- [ ] Criar interface de seleção de tenant no dashboard master
+- [ ] Adicionar indicador visual de tenant ativo no header
+- [ ] Adaptar importações (produtos, XML, planilhas) para tenant selecionado
+- [x] Garantir isolamento de dados entre tenants
+- [x] Criar log de auditoria de acesso entre tenants
+- [ ] Testar fluxo completo de manutenção remota

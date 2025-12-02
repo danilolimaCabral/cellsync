@@ -18,6 +18,18 @@ export const tenants = mysqlTable("tenants", {
   trialEndsAt: timestamp("trial_ends_at"),
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }), // ID do cliente no Stripe
   stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }), // ID da assinatura no Stripe
+  
+  // Dados da empresa (preenchidos via consulta CNPJ)
+  cnpj: varchar("cnpj", { length: 18 }), // CNPJ da empresa
+  razaoSocial: varchar("razao_social", { length: 255 }), // Razão social
+  nomeFantasia: varchar("nome_fantasia", { length: 255 }), // Nome fantasia
+  endereco: text("endereco"), // Endereço completo
+  cidade: varchar("cidade", { length: 100 }), // Cidade
+  estado: varchar("estado", { length: 2 }), // UF
+  cep: varchar("cep", { length: 10 }), // CEP
+  telefone: varchar("telefone", { length: 20 }), // Telefone
+  email: varchar("email", { length: 320 }), // Email da empresa
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

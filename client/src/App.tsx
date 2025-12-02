@@ -32,6 +32,7 @@ import GerenciarBackups from "./pages/GerenciarBackups";
 import DashboardBI from "./pages/DashboardBI";
 import ControleComissoes from "./pages/ControleComissoes";
 import GerenciarModulos from "./pages/GerenciarModulos";
+import CompanySettings from "./pages/CompanySettings";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -298,13 +299,17 @@ function Router() {
 
       <Route path="/configuracoes">
         {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <Configuracoes />
-              </DashboardLayout>
-            )}
-          />
+          <DashboardLayout>
+            <Configuracoes />
+          </DashboardLayout>
+        )}
+      </Route>
+
+      <Route path="/configuracoes-empresa">
+        {() => (
+          <DashboardLayout>
+            <CompanySettings />
+          </DashboardLayout>
         )}
       </Route>
 

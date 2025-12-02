@@ -5,6 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { onboardingRouter } from "./onboarding";
 import { tenantManagementRouter } from "./tenant-management";
+import { tenantSwitchingRouter } from "./tenant-switching";
 import { xmlImportRouter } from "./xml-import";
 import { csvImportRouter } from "./csv-import";
 import { backupRouter } from "./routers/backup";
@@ -40,6 +41,7 @@ export const appRouter = router({
   system: systemRouter,
   onboarding: onboardingRouter,
   tenantManagement: tenantManagementRouter,
+  tenantSwitching: tenantSwitchingRouter,
   xmlImport: xmlImportRouter,
   csvImport: csvImportRouter,
   backup: backupRouter,
@@ -541,6 +543,9 @@ export const appRouter = router({
         // Buscar itens da venda
         const items = await db.getSaleItems(input.saleId);
         
+        // Buscar dados da empresa (tenant)
+        const tenant = await db.getTenantById(ctx.user.tenantId);
+        
         // Preparar dados para o cupom fiscal
         const fiscalData = {
           id: sale.id,
@@ -558,7 +563,9 @@ export const appRouter = router({
           customerName: customer?.name,
           customerDocument: customer?.cpf || customer?.cnpj || undefined,
           sellerName: seller?.name,
-          tenantName: "LOJA DE CELULAR", // TODO: Buscar do banco de dados
+          tenantName: tenant?.nomeFantasia || tenant?.razaoSocial || tenant?.name || "LOJA DE CELULAR",
+          tenantDocument: tenant?.cnpj || undefined,
+          tenantAddress: tenant?.endereco || undefined,
         };
         
         // Gerar cupom fiscal ESC/POS
@@ -1676,6 +1683,56 @@ export const appRouter = router({
         const { cancelTenant } = await import("./admin-master");
         const result = await cancelTenant(input.tenantId);
         return result;
+      }),
+  }),
+
+  // ============= CONSULTA DE CNPJ =============
+  cnpj: router({
+    lookup: publicProcedure
+      .input(z.object({
+        cnpj: z.string().min(14).max(18), // Aceita com ou sem formatação
+      }))
+      .mutation(async ({ input }) => {
+        const { lookupCNPJ, extractBasicData } = await import("./cnpj-lookup");
+        
+        try {
+          const cnpjData = await lookupCNPJ(input.cnpj);
+          
+          if (!cnpjData) {
+            return {
+              success: false,
+              error: "CNPJ não encontrado na Receita Federal",
+            };
+          }
+          
+          const basicData = extractBasicData(cnpjData);
+          
+          return {
+            success: true,
+            data: basicData,
+            fullData: cnpjData, // Dados completos para referência
+          };
+        } catch (error: any) {
+          return {
+            success: false,
+            error: error.message || "Erro ao consultar CNPJ",
+          };
+        }
+      }),
+
+    validate: publicProcedure
+      .input(z.object({
+        cnpj: z.string(),
+      }))
+      .query(async ({ input }) => {
+        const { validateCNPJ, formatCNPJ } = await import("./cnpj-lookup");
+        
+        const isValid = validateCNPJ(input.cnpj);
+        
+        return {
+          valid: isValid,
+          formatted: isValid ? formatCNPJ(input.cnpj) : null,
+        };
       }),
   }),
 });
