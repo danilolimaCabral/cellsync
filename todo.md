@@ -1196,3 +1196,9 @@
 - [x] Alterar preço do Plano Enterprise de R$ 397 para R$ 599
 - [x] Manter trial apenas nos planos Básico e Profissional
 - [ ] Testar visualização dos 3 planos
+
+## CORREÇÃO URGENTE - Enterprise
+- [x] Verificar por que alterações no Planos.tsx não estão sendo aplicadas
+- [x] Garantir que Enterprise mostre R$ 599 (não R$ 397)
+- [x] Garantir que Enterprise NÃO mostre botão de trial
+- [x] Corrigir preço anual do Enterprise (com desconto de 17%)

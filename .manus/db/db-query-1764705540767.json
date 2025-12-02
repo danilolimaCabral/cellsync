@@ -1,0 +1,28 @@
+{
+  "query": "SELECT id, name, slug, price_monthly/100 as preco_mensal FROM plans ORDER BY price_monthly;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT id, name, slug, price_monthly/100 as preco_mensal FROM plans ORDER BY price_monthly;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Plano Básico",
+      "slug": "basico",
+      "preco_mensal": "97.0000"
+    },
+    {
+      "id": "2",
+      "name": "Plano Profissional",
+      "slug": "profissional",
+      "preco_mensal": "197.0000"
+    },
+    {
+      "id": "3",
+      "name": "Plano Enterprise",
+      "slug": "empresarial",
+      "preco_mensal": "397.0000"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\tpreco_mensal\n1\tPlano Básico\tbasico\t97.0000\n2\tPlano Profissional\tprofissional\t197.0000\n3\tPlano Enterprise\tempresarial\t397.0000\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

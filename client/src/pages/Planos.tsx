@@ -172,7 +172,7 @@ export default function Planos() {
                   </div>                      {/* Botões */}
                   <div className="space-y-3 mb-6">
                     {/* Mostrar trial apenas para Básico e Profissional */}
-                    {plan.slug !== "enterprise" && (
+                    {plan.slug !== "empresarial" && (
                       <Button
                         onClick={() => handleStartTrial(plan.slug)}
                         disabled={loadingPlan === plan.slug + "_trial"}
@@ -198,7 +198,7 @@ export default function Planos() {
                       className={`w-full ${
                         isPopular
                           ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                          : plan.slug === "enterprise"
+                          : plan.slug === "empresarial"
                             ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
                             : ""
                       }`}
@@ -212,7 +212,9 @@ export default function Planos() {
                         "Assinar Agora"
                       )}
                     </Button>
-                  </div>                 {/* Features */}
+                  </div>
+
+                  {/* Features */}
                   <div className="space-y-3">
                     {features.map((feature, idx) => (
                       <div key={idx} className="flex items-start gap-3">
