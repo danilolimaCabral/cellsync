@@ -46,6 +46,8 @@ export default function AdminMaster() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
+  const [showChangePlanDialog, setShowChangePlanDialog] = useState(false);
+  const [selectedNewPlanId, setSelectedNewPlanId] = useState<number | null>(null);
 
   // Queries
   const { data: stats, isLoading: statsLoading } = trpc.tenantManagement.stats.useQuery();
@@ -62,6 +64,8 @@ export default function AdminMaster() {
     { id: selectedTenantId! },
     { enabled: !!selectedTenantId }
   );
+
+  const { data: availablePlans } = trpc.tenantManagement.listPlans.useQuery();
 
   // Mutations
   const suspendMutation = trpc.tenantManagement.suspend.useMutation({
@@ -94,6 +98,20 @@ export default function AdminMaster() {
     },
   });
 
+  const changePlanMutation = trpc.tenantManagement.changePlan.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message, {
+        description: data.isDowngrade ? "⚠️ Downgrade realizado" : "✅ Upgrade realizado",
+      });
+      refetch();
+      setShowChangePlanDialog(false);
+      setSelectedNewPlanId(null);
+    },
+    onError: (error) => {
+      toast.error("Erro ao alterar plano", { description: error.message });
+    },
+  });
+
   const handleSuspend = (tenantId: number) => {
     if (confirm("Tem certeza que deseja suspender este tenant?")) {
       suspendMutation.mutate({ id: tenantId });
@@ -103,6 +121,35 @@ export default function AdminMaster() {
   const handleReactivate = (tenantId: number) => {
     if (confirm("Tem certeza que deseja reativar este tenant?")) {
       reactivateMutation.mutate({ id: tenantId });
+    }
+  };
+
+  const handleOpenChangePlan = () => {
+    setShowChangePlanDialog(true);
+    setSelectedNewPlanId(tenantDetails?.planId || null);
+  };
+
+  const handleConfirmChangePlan = () => {
+    if (!selectedTenantId || !selectedNewPlanId) return;
+    
+    if (selectedNewPlanId === tenantDetails?.planId) {
+      toast.error("Selecione um plano diferente do atual");
+      return;
+    }
+
+    const currentPlan = availablePlans?.find(p => p.id === tenantDetails?.planId);
+    const newPlan = availablePlans?.find(p => p.id === selectedNewPlanId);
+    const isDowngrade = (newPlan?.priceMonthly || 0) < (currentPlan?.priceMonthly || 0);
+
+    const message = isDowngrade
+      ? `Tem certeza que deseja fazer DOWNGRADE de "${currentPlan?.name}" para "${newPlan?.name}"? Verifique se o tenant não excede os limites do novo plano.`
+      : `Tem certeza que deseja fazer UPGRADE de "${currentPlan?.name}" para "${newPlan?.name}"?`;
+
+    if (confirm(message)) {
+      changePlanMutation.mutate({
+        tenantId: selectedTenantId,
+        newPlanId: selectedNewPlanId,
+      });
     }
   };
 
@@ -450,6 +497,14 @@ export default function AdminMaster() {
                 )}
               </div>
 
+              {/* Botão Alterar Plano */}
+              <div className="flex justify-end">
+                <Button onClick={handleOpenChangePlan} variant="outline">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Alterar Plano
+                </Button>
+              </div>
+
               {/* Usuários */}
               <div>
                 <h4 className="font-semibold mb-3">Usuários ({tenantDetails.users.length})</h4>
@@ -479,6 +534,127 @@ export default function AdminMaster() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Alteração de Plano */}
+      <Dialog open={showChangePlanDialog} onOpenChange={setShowChangePlanDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Alterar Plano do Tenant</DialogTitle>
+            <DialogDescription>
+              Selecione o novo plano para {tenantDetails?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Plano Atual */}
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <Label className="text-muted-foreground">Plano Atual</Label>
+              <div className="flex items-center justify-between mt-2">
+                <div>
+                  <p className="font-semibold text-lg">{tenantDetails?.planName}</p>
+                  <p className="text-sm text-muted-foreground">
+                    R$ {availablePlans?.find(p => p.id === tenantDetails?.planId)?.priceMonthly.toFixed(2)}/mês
+                  </p>
+                </div>
+                <Badge variant="outline">Atual</Badge>
+              </div>
+            </div>
+
+            {/* Seleção de Novo Plano */}
+            <div>
+              <Label>Novo Plano</Label>
+              <div className="grid grid-cols-1 gap-3 mt-3">
+                {availablePlans?.map((plan) => {
+                  const isCurrent = plan.id === tenantDetails?.planId;
+                  const isSelected = plan.id === selectedNewPlanId;
+                  const currentPlanPrice = availablePlans?.find(p => p.id === tenantDetails?.planId)?.priceMonthly || 0;
+                  const isUpgrade = plan.priceMonthly > currentPlanPrice;
+                  const isDowngrade = plan.priceMonthly < currentPlanPrice;
+
+                  return (
+                    <button
+                      key={plan.id}
+                      onClick={() => setSelectedNewPlanId(plan.id)}
+                      disabled={isCurrent}
+                      className={`p-4 border-2 rounded-lg text-left transition-all ${
+                        isSelected
+                          ? "border-primary bg-primary/5"
+                          : isCurrent
+                          ? "border-muted bg-muted/30 opacity-50 cursor-not-allowed"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold">{plan.name}</p>
+                            {isCurrent && <Badge variant="outline">Atual</Badge>}
+                            {!isCurrent && isUpgrade && (
+                              <Badge className="bg-green-500 text-white">Upgrade</Badge>
+                            )}
+                            {!isCurrent && isDowngrade && (
+                              <Badge className="bg-orange-500 text-white">Downgrade</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
+                          <div className="flex items-center gap-4 mt-2 text-sm">
+                            <span>👥 {plan.maxUsers} usuários</span>
+                            <span>📦 {plan.maxProducts} produtos</span>
+                            <span>💾 {plan.maxStorage}GB</span>
+                          </div>
+                        </div>
+                        <div className="text-right ml-4">
+                          <p className="text-2xl font-bold text-primary">
+                            R$ {plan.priceMonthly.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">por mês</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Aviso de Downgrade */}
+            {selectedNewPlanId && 
+             (availablePlans?.find(p => p.id === selectedNewPlanId)?.priceMonthly || 0) < 
+             (availablePlans?.find(p => p.id === tenantDetails?.planId)?.priceMonthly || 0) && (
+              <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-orange-700 dark:text-orange-400">Atenção: Downgrade</p>
+                    <p className="text-sm text-orange-600 dark:text-orange-300 mt-1">
+                      Verifique se o tenant não excede os limites do novo plano (usuários, produtos, storage).
+                      O sistema bloqueará o downgrade se os limites forem excedidos.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Botões */}
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowChangePlanDialog(false);
+                  setSelectedNewPlanId(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleConfirmChangePlan}
+                disabled={!selectedNewPlanId || selectedNewPlanId === tenantDetails?.planId || changePlanMutation.isPending}
+              >
+                {changePlanMutation.isPending ? "Alterando..." : "Confirmar Alteração"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

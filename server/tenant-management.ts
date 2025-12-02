@@ -315,4 +315,116 @@ export const tenantManagementRouter = router({
 
       return { success: true, message: "Tenant reativado com sucesso" };
     }),
+
+  /**
+   * Lista todos os planos disponíveis
+   */
+  listPlans: masterAdminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+    const allPlans = await db
+      .select({
+        id: plans.id,
+        name: plans.name,
+        slug: plans.slug,
+        description: plans.description,
+        priceMonthly: plans.priceMonthly,
+        priceYearly: plans.priceYearly,
+        features: plans.features,
+        maxUsers: plans.maxUsers,
+        maxProducts: plans.maxProducts,
+        maxStorage: plans.maxStorage,
+      })
+      .from(plans)
+      .orderBy(asc(plans.priceMonthly));
+
+    return allPlans;
+  }),
+
+  /**
+   * Altera o plano de um tenant
+   */
+  changePlan: masterAdminProcedure
+    .input(z.object({
+      tenantId: z.number(),
+      newPlanId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // Buscar tenant atual
+      const [tenant] = await db
+        .select()
+        .from(tenants)
+        .where(eq(tenants.id, input.tenantId))
+        .limit(1);
+
+      if (!tenant) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Tenant não encontrado" });
+      }
+
+      // Buscar novo plano
+      const [newPlan] = await db
+        .select()
+        .from(plans)
+        .where(eq(plans.id, input.newPlanId))
+        .limit(1);
+
+      if (!newPlan) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Plano não encontrado" });
+      }
+
+      // Buscar plano atual
+      const [currentPlan] = await db
+        .select()
+        .from(plans)
+        .where(eq(plans.id, tenant.planId))
+        .limit(1);
+
+      // Validar se é downgrade e verificar limites
+      const isDowngrade = newPlan.priceMonthly < (currentPlan?.priceMonthly || 0);
+
+      if (isDowngrade) {
+        // Contar usuários do tenant
+        const [{ userCount }] = await db
+          .select({ userCount: sql<number>`count(*)` })
+          .from(users)
+          .where(eq(users.tenantId, input.tenantId));
+
+        // Verificar se excede limites do novo plano
+        if (Number(userCount) > newPlan.maxUsers) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Downgrade não permitido: tenant possui ${userCount} usuários, mas o novo plano permite apenas ${newPlan.maxUsers}`,
+          });
+        }
+
+        // TODO: Adicionar validações de produtos e storage quando necessário
+      }
+
+      // Atualizar plano do tenant
+      await db
+        .update(tenants)
+        .set({ 
+          planId: input.newPlanId,
+          updatedAt: new Date(),
+        })
+        .where(eq(tenants.id, input.tenantId));
+
+      // TODO: Atualizar Stripe subscription se existir
+      // if (tenant.stripeSubscriptionId) {
+      //   await updateStripeSubscription(tenant.stripeSubscriptionId, newPlan.stripePriceId);
+      // }
+
+      return {
+        success: true,
+        message: `Plano alterado com sucesso de "${currentPlan?.name}" para "${newPlan.name}"`,
+        isDowngrade,
+        oldPlan: currentPlan?.name,
+        newPlan: newPlan.name,
+      };
+    }),
 });
+

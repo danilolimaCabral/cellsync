@@ -1055,3 +1055,305 @@
 - [x] Adicionar estatísticas (total de tenants, por status, por plano)
 - [x] Dialog de detalhes com lista de usuários
 - [x] Testar todas as funcionalidades
+
+## Upgrade/Downgrade de Planos (Admin Master)
+- [x] Criar procedure tRPC para alterar plano de um tenant (changePlan)
+- [x] Buscar todos os planos disponíveis (listPlans)
+- [x] Validar mudança de plano (não permitir downgrade se exceder limites)
+- [x] Atualizar planId no tenant
+- [x] Atualizar Stripe subscription (TODO: implementar quando necessário)
+- [x] Adicionar botão "Alterar Plano" no dialog de detalhes
+- [x] Criar dialog de seleção de plano
+- [x] Mostrar comparação entre plano atual e novo plano
+- [x] Exibir aviso se for downgrade
+- [x] Badges de Upgrade/Downgrade nos planos
+- [x] Mostrar limites de cada plano (usuários, produtos, storage)
+- [ ] Testar upgrade de plano
+- [ ] Testar downgrade de plano
+
+
+## 🚀 FASE 1: CRÍTICO PARA LANÇAMENTO (MVP)
+
+### Importação Automática de Dados
+- [ ] Parser de XML de NF-e de fornecedores
+- [ ] Extração automática de produtos (nome, preço, código, NCM)
+- [ ] Importação em lote de múltiplos XMLs
+- [ ] Validação e detecção de duplicatas
+- [ ] Preview antes de importar
+- [ ] Mapeamento de categorias automático
+- [ ] Template padrão de importação Excel/CSV (produtos, clientes, estoque)
+- [ ] Validação de dados (IMEI, CPF/CNPJ, preços)
+- [ ] Importação de produtos com IMEI
+- [ ] Importação de clientes com histórico
+- [ ] Importação de estoque inicial
+- [ ] Relatório de erros e sucessos de importação
+- [ ] Upload de XML de NF-e de compra
+- [ ] Extração automática de fornecedor
+- [ ] Cadastro automático de produtos novos
+- [ ] Atualização de preços de custo
+- [ ] Entrada automática no estoque
+- [ ] Registro no financeiro (contas a pagar)
+
+### Integração Contábil Profissional
+- [ ] Relatório de Entradas e Saídas (formato SPED)
+- [ ] Livro Caixa digital
+- [ ] Relatório de Notas Fiscais emitidas
+- [ ] Relatório de Notas Fiscais recebidas
+- [ ] DRE (Demonstrativo de Resultado do Exercício)
+- [ ] Balancete mensal
+- [ ] Exportação em formato compatível com sistemas contábeis (XML, TXT, Excel)
+- [ ] Estrutura de plano de contas padrão
+- [ ] Classificação automática de transações
+- [ ] Centro de custos por departamento
+- [ ] Rateio de despesas
+- [ ] Conciliação bancária automática
+
+### Emissão Fiscal Completa (Produção)
+- [ ] Integração real com SEFAZ (ambiente de homologação)
+- [ ] Suporte a Certificado digital A1/A3
+- [ ] Armazenamento de XMLs no S3
+- [ ] Consulta de status na SEFAZ
+- [ ] Carta de Correção Eletrônica (CC-e)
+- [ ] Inutilização de numeração
+
+### Sistema de Notificações Automáticas
+- [ ] Estrutura de dados para notificações
+- [ ] Backend de notificações
+- [ ] Central de notificações in-app
+- [ ] Alertas de estoque baixo (<15 unidades)
+- [ ] Alertas de OS com prazo vencido
+- [ ] Alertas de contas a pagar próximas do vencimento
+- [ ] Notificações de metas de vendas atingidas
+- [ ] Notificações de aniversários de clientes
+- [ ] Histórico de notificações lidas/não lidas
+
+### Segurança e Conformidade LGPD
+- [ ] Criptografia de dados sensíveis (AES-256)
+- [ ] Backups automáticos diários
+- [ ] Conformidade com LGPD (política de privacidade)
+- [ ] Logs de auditoria completos
+- [ ] Termos de uso
+- [ ] Consentimento de coleta de dados
+
+## 🎯 FASE 2: IMPORTANTE PARA COMPETITIVIDADE
+
+### Business Intelligence Avançado
+- [ ] Dashboards personalizáveis por usuário
+- [ ] KPIs customizáveis
+- [ ] Análises preditivas de demanda
+- [ ] Alertas de anomalias (vendas, estoque)
+
+### CRM Avançado
+- [ ] Segmentação avançada de clientes
+- [ ] Campanhas de marketing direcionadas
+- [ ] Análise de comportamento de compra
+- [ ] Score de clientes (RFM - Recência, Frequência, Monetário)
+- [ ] Automação de follow-up
+
+### Conciliação Bancária Automática
+- [ ] Importação de OFX/CSV de bancos
+- [ ] Conciliação automática de transações
+- [ ] Sugestões inteligentes de matching
+- [ ] Relatório de divergências
+
+## 🎯 FASE 3: DIFERENCIAL COMPETITIVO
+
+### Integrações com Marketplaces
+- [ ] Integração com Mercado Livre
+- [ ] Integração com Amazon
+- [ ] Integração com Shopee
+- [ ] Sincronização automática de estoque
+- [ ] Importação de pedidos
+- [ ] Atualização de preços em massa
+
+### Transferência entre Filiais
+- [ ] Solicitação de transferência
+- [ ] Aprovação de transferência
+- [ ] Rastreamento de produtos em trânsito
+- [ ] Baixa automática em origem e entrada em destino
+- [ ] Relatório de transferências
+
+### Sistema de Reservas de Produtos
+- [ ] Reserva de produtos para clientes
+- [ ] Prazo de validade da reserva
+- [ ] Notificações de reserva expirada
+- [ ] Conversão de reserva em venda
+
+### Inventário Periódico Automatizado
+- [ ] Agendamento de inventários
+- [ ] Contagem por código de barras
+- [ ] Relatório de divergências
+- [ ] Ajustes automáticos de estoque
+- [ ] Histórico de inventários
+
+## 🎯 FASE 4: EXPANSÃO E ESCALABILIDADE
+
+### API Aberta para Integrações
+- [ ] Documentação completa da API
+- [ ] Autenticação via OAuth 2.0
+- [ ] Rate limiting
+- [ ] Webhooks para eventos
+- [ ] SDK em JavaScript/Python
+
+### Aplicativo Mobile Nativo
+- [ ] App iOS nativo
+- [ ] App Android nativo
+- [ ] PDV mobile
+- [ ] Consulta de estoque mobile
+- [ ] Aprovação de OS mobile
+
+### WhatsApp Business Integration
+- [ ] Notificações de OS via WhatsApp
+- [ ] Envio de comprovantes via WhatsApp
+- [ ] Chatbot para consultas
+- [ ] Campanhas de marketing via WhatsApp
+
+
+## 🔒 Segurança e LGPD - Detalhamento Técnico (Fase 1 - Crítico)
+
+### 1. Criptografia de Dados
+- [ ] Configurar certificado SSL/TLS válido (Let's Encrypt ou similar)
+- [ ] Forçar HTTPS em todas as rotas (redirecionamento 301)
+- [ ] Habilitar HSTS (HTTP Strict Transport Security) com 1 ano
+- [ ] Desabilitar protocolos inseguros (SSLv2, SSLv3, TLS 1.0, TLS 1.1)
+- [ ] Implementar criptografia AES-256-GCM para dados sensíveis
+- [ ] Criar funções encrypt() e decrypt() com IV único
+- [ ] Armazenar chave mestra em variável de ambiente
+- [ ] Criptografar CPF/CNPJ no banco de dados
+- [ ] Criptografar números de telefone
+- [ ] Criptografar endereços completos
+- [ ] Implementar hash bcrypt para senhas (12 rounds mínimo)
+- [ ] Validar força de senha (mínimo 8 caracteres, letras, números, símbolos)
+
+### 2. Backups Automáticos
+- [ ] Configurar backup diário completo (03:00 AM UTC)
+- [ ] Configurar backup incremental a cada 6 horas
+- [ ] Implementar script de backup do banco de dados (mysqldump)
+- [ ] Implementar backup de arquivos de upload
+- [ ] Configurar upload automático para S3
+- [ ] Configurar retenção de 30 dias para backups completos
+- [ ] Configurar retenção de 7 dias para backups incrementais
+- [ ] Implementar snapshot de BD antes de migrations (retenção 90 dias)
+- [ ] Criar procedimento de teste mensal de restauração
+- [ ] Documentar RTO (Recovery Time Objective: < 4 horas)
+- [ ] Documentar RPO (Recovery Point Objective: < 6 horas)
+- [ ] Configurar alertas de falha de backup
+
+### 3. Conformidade com LGPD
+- [ ] Criar Política de Privacidade completa
+- [ ] Criar Termos de Uso do sistema
+- [ ] Implementar modal de consentimento de cookies
+- [ ] Criar opções granulares de consentimento (analíticos, marketing)
+- [ ] Implementar endpoint `/api/gdpr/my-data` (acesso a dados)
+- [ ] Implementar endpoint `/api/gdpr/export-data` (portabilidade)
+- [ ] Criar função de anonimização de dados
+- [ ] Implementar "Excluir Minha Conta" com anonimização
+- [ ] Criar interface "Meus Dados" para clientes finais
+- [ ] Implementar revogação de consentimento de marketing
+- [ ] Manter dados de NF-e por 5 anos (obrigação fiscal)
+- [ ] Criar registro de consentimento com timestamp
+- [ ] Implementar versionamento da Política de Privacidade
+- [ ] Criar sistema de notificação de mudanças na política
+- [ ] Designar encarregado de dados (DPO)
+- [ ] Criar email dpo@cellsync.com.br
+
+### 4. Logs de Auditoria
+- [ ] Criar tabela `audit_logs` no banco de dados
+- [ ] Implementar log de login bem-sucedido
+- [ ] Implementar log de login falhado
+- [ ] Implementar log de logout
+- [ ] Implementar log de alteração de senha
+- [ ] Implementar log de acesso negado
+- [ ] Implementar log de visualização de CPF/CNPJ
+- [ ] Implementar log de exportação de dados
+- [ ] Implementar log de criação/cancelamento de venda
+- [ ] Implementar log de emissão/cancelamento de NF-e
+- [ ] Implementar log de alteração de configurações
+- [ ] Implementar log de criação/exclusão de usuário
+- [ ] Adicionar índices em `timestamp`, `userId`, `eventType`
+- [ ] Implementar rotação de logs (arquivar > 90 dias em S3)
+- [ ] Configurar retenção de 6 meses online, 5 anos em arquivo
+- [ ] Implementar hash SHA-256 para proteção contra alteração
+- [ ] Criar dashboard de logs em tempo real (Grafana)
+- [ ] Configurar alertas de atividades suspeitas
+
+### 5. Controle de Acesso
+- [ ] Implementar autenticação JWT com validade de 8 horas
+- [ ] Implementar refresh token com validade de 30 dias
+- [ ] Implementar logout em todos os dispositivos ao trocar senha
+- [ ] Implementar bloqueio de conta após 5 tentativas falhadas
+- [ ] Implementar desbloqueio automático após 30 minutos
+- [ ] Implementar middleware de autorização RBAC
+- [ ] Validar role no backend em todas as rotas protegidas
+- [ ] Implementar princípio do menor privilégio
+- [ ] Testar isolamento multi-tenant (usuário A não acessa dados de B)
+- [ ] Criar índices compostos `(tenantId, id)` em todas as tabelas
+
+### 6. Proteção contra Vulnerabilidades
+- [ ] Configurar Content Security Policy (CSP)
+- [ ] Configurar header X-Frame-Options
+- [ ] Configurar header X-Content-Type-Options
+- [ ] Desabilitar mensagens de erro detalhadas em produção
+- [ ] Remover endpoints de debug
+- [ ] Implementar rate limiting (100 req/min por IP)
+- [ ] Implementar tokens CSRF em formulários
+- [ ] Configurar SameSite cookies
+- [ ] Implementar CAPTCHA após 3 tentativas de login falhadas
+- [ ] Sanitizar HTML com DOMPurify
+- [ ] Validar entrada com Zod em todas as rotas
+- [ ] Executar `npm audit` e corrigir vulnerabilidades críticas
+- [ ] Configurar Snyk ou Dependabot para monitoramento de CVEs
+- [ ] Implementar whitelist de domínios para integrações externas
+
+### 7. Monitoramento e Alertas
+- [ ] Configurar alerta de 5+ tentativas de login falhadas em 10min
+- [ ] Configurar alerta de acesso a 100+ registros em 1min
+- [ ] Configurar alerta de alteração de permissões fora do horário
+- [ ] Configurar alerta de emissão de NF-e acima de R$ 50.000
+- [ ] Configurar alerta de exclusão em massa (50+ registros)
+- [ ] Implementar notificações via email/SMS para admins
+
+### 8. Plano de Resposta a Incidentes
+- [ ] Documentar procedimento de detecção de incidentes
+- [ ] Documentar procedimento de contenção
+- [ ] Documentar procedimento de investigação
+- [ ] Documentar procedimento de notificação (ANPD, titulares)
+- [ ] Documentar procedimento de recuperação
+- [ ] Criar template de relatório de incidente
+- [ ] Treinar equipe em resposta a incidentes
+
+### 9. Testes de Segurança
+- [ ] Realizar teste de SSL Labs (score mínimo A+)
+- [ ] Realizar teste de restauração de backup
+- [ ] Realizar teste de isolamento multi-tenant
+- [ ] Realizar scan de vulnerabilidades com npm audit
+- [ ] Realizar penetration testing (empresa especializada)
+- [ ] Validar criptografia de dados sensíveis
+- [ ] Validar logs de auditoria
+- [ ] Validar rate limiting
+- [ ] Validar bloqueio de conta após tentativas falhadas
+
+### 10. Documentação e Treinamento
+- [ ] Publicar Política de Privacidade no site
+- [ ] Publicar Termos de Uso no site
+- [ ] Criar FAQ sobre LGPD para lojistas
+- [ ] Criar guia de boas práticas de segurança
+- [ ] Treinar equipe em LGPD e segurança da informação
+- [ ] Documentar responsabilidades de Controlador vs Operador
+
+
+## ✅ Progresso da Implementação (Sessão Atual)
+
+### Importação de XML de NF-e (70% concluído)
+- [x] Instalar dependência fast-xml-parser
+- [x] Criar parser de XML de NF-e (xml-parser.ts)
+- [x] Criar procedures tRPC (xml-import.ts)
+- [x] Integrar xmlImportRouter no routers.ts
+- [ ] Criar interface frontend de upload de XML
+- [ ] Criar página de preview antes de importar
+- [ ] Testar importação completa
+
+### Próximas Prioridades Imediatas
+1. Finalizar interface de importação XML
+2. Implementar exportação contábil (SPED, DRE, Balancete)
+3. Implementar segurança básica (SSL, criptografia, backups)

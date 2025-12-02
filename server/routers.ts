@@ -5,6 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { onboardingRouter } from "./onboarding";
 import { tenantManagementRouter } from "./tenant-management";
+import { xmlImportRouter } from "./xml-import";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import bcrypt from "bcryptjs";
@@ -34,6 +35,7 @@ export const appRouter = router({
   system: systemRouter,
   onboarding: onboardingRouter,
   tenantManagement: tenantManagementRouter,
+  xmlImport: xmlImportRouter,
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
