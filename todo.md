@@ -1496,3 +1496,18 @@
 - [x] Ajustar Assistente de IA para permitir seleção visível e editável do tipo de dados (Produtos, Clientes, etc.)
 - [x] Corrigir chatbot flutuante que está cobrindo o conteúdo do Dashboard (transformar em modal acionado por clique)
 - [x] Ajustar validação do campo descrição no sistema de chamados (reduzir mínimo de 20 para 10 caracteres)
+
+
+## Sistema de Assistentes IA por Módulo
+
+- [x] Criar componente base AIAssistant reutilizável com chat contextual
+- [x] Implementar assistente IA para cadastro de Produtos (análise de fotos e descrições)
+- [x] Implementar assistente IA para cadastro de Clientes (validação CPF/CNPJ e segmentação)
+- [ ] Implementar assistente IA para cadastro de Estoque (identificação de IMEI e localização)
+- [ ] Implementar assistente IA para Vendas (sugestão de produtos por perfil)
+- [ ] Implementar assistente IA para OS (diagnóstico de problemas e soluções)
+- [ ] Implementar assistente IA para Financeiro (categorização e parcelamentos)
+- [ ] Adicionar análise de imagens (NF-e, produtos, documentos) em todos assistentes
+- [ ] Implementar preenchimento automático de campos baseado em análise IA
+- [ ] Criar sistema de validação inteligente de dados com sugestões proativas
+- [x] Criar página de comparação CellSync vs OKCell com tabela de funcionalidades e diferenciais

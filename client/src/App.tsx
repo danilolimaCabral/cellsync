@@ -35,6 +35,9 @@ import Vendedores from "./pages/Vendedores";
 import ImportarXML from "./pages/ImportarXML";
 import ImportarPlanilha from "./pages/ImportarPlanilha";
 import AssistenteImportacao from "./pages/AssistenteImportacao";
+import CadastrarProduto from "./pages/CadastrarProduto";
+import CadastrarCliente from "./pages/CadastrarCliente";
+import Comparacao from "./pages/Comparacao";
 import LiberacaoModulos from "./pages/LiberacaoModulos";
 import AssinaturaSucesso from "./pages/AssinaturaSucesso";
 import Onboarding from "./pages/Onboarding";
@@ -65,6 +68,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/comparacao" component={Comparacao} />
       <Route path="/login" component={Login} />
       <Route path="/planos" component={Planos} />
       <Route path="/assinatura/sucesso" component={AssinaturaSucesso} />
@@ -156,6 +160,18 @@ function Router() {
         )}
       </Route>
 
+      <Route path="/cadastrar-produto">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <CadastrarProduto />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
       <Route path="/pdv-mobile">
         {() => (
           <ProtectedRoute
@@ -186,6 +202,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Clientes />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/cadastrar-cliente">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <CadastrarCliente />
               </DashboardLayout>
             )}
           />

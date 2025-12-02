@@ -15,6 +15,8 @@ import { ENV } from "./_core/env";
 import { analyzeProductWithAI } from "./ai-product-assistant";
 import { diagnoseServiceOrder } from "./ai-os-assistant";
 import { analyzeTicketWithAI } from "./ai-ticket-assistant";
+import { analyzeProductImage, analyzeDocumentImage, analyzeInvoiceImage } from "./ai-image-analyzer";
+import { storagePut } from "./storage";
 import { generateLabel, generateBarcode, generateQRCode } from "./label-generator";
 import { tenantSwitchingRouter } from "./routers/tenantSwitching";
 import { tenantManagementRouter } from "./routers/tenantManagement";
@@ -40,6 +42,50 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 export const appRouter = router({
   system: systemRouter,
   aiAssistant: aiAssistantRouter,
+  
+  // ============= ANÁLISE DE IMAGENS COM IA =============
+  imageAnalysis: router({
+    analyzeProduct: protectedProcedure
+      .input(z.object({
+        imageBase64: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        // Upload da imagem para S3
+        const imageBuffer = Buffer.from(input.imageBase64.split(',')[1], 'base64');
+        const fileName = `ai-analysis/product-${Date.now()}.jpg`;
+        const { url } = await storagePut(fileName, imageBuffer, 'image/jpeg');
+        
+        // Analisar com IA
+        const result = await analyzeProductImage(url);
+        return result;
+      }),
+    
+    analyzeDocument: protectedProcedure
+      .input(z.object({
+        imageBase64: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const imageBuffer = Buffer.from(input.imageBase64.split(',')[1], 'base64');
+        const fileName = `ai-analysis/document-${Date.now()}.jpg`;
+        const { url } = await storagePut(fileName, imageBuffer, 'image/jpeg');
+        
+        const result = await analyzeDocumentImage(url);
+        return result;
+      }),
+    
+    analyzeInvoice: protectedProcedure
+      .input(z.object({
+        imageBase64: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const imageBuffer = Buffer.from(input.imageBase64.split(',')[1], 'base64');
+        const fileName = `ai-analysis/invoice-${Date.now()}.jpg`;
+        const { url } = await storagePut(fileName, imageBuffer, 'image/jpeg');
+        
+        const result = await analyzeInvoiceImage(url);
+        return result;
+      }),
+  }),
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
