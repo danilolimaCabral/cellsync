@@ -222,6 +222,15 @@ const menuItems = [
     iconColor: "text-indigo-700",
     masterAdminOnly: true
   },
+  { 
+    icon: Sparkles, 
+    label: "Analytics do Chatbot", 
+    path: "/chatbot-analytics",
+    gradient: "from-purple-600 to-pink-600",
+    bgGradient: "from-purple-50 to-pink-50",
+    iconColor: "text-purple-700",
+    masterAdminOnly: true
+  },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

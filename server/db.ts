@@ -1,12 +1,18 @@
-import { eq, and, or, gte, lte, isNull, desc, sql, like } from "drizzle-orm";
+import { eq, and, or, gte, lte, gt, isNull, desc, sql, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, User, users,
   customers, sales,
   commissionRules, commissions,
   invoices, invoiceItems,
+  chatbotConversations,
+  chatbotMessages,
+  chatbotEvents,
   type InsertCommissionRule, type InsertCommission,
-  type InsertInvoice, type InsertInvoiceItem
+  type InsertInvoice, type InsertInvoiceItem,
+  type InsertChatbotConversation,
+  type InsertChatbotMessage,
+  type InsertChatbotEvent
 } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1671,4 +1677,146 @@ export async function getSaleItems(saleId: number) {
     .where(eq(saleItems.saleId, saleId));
   
   return items;
+}
+
+// ============= ANALYTICS DO CHATBOT =============
+export async function createChatbotConversation(data: InsertChatbotConversation): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(chatbotConversations).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function updateChatbotConversation(
+  sessionId: string,
+  data: Partial<InsertChatbotConversation>
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db
+    .update(chatbotConversations)
+    .set(data)
+    .where(eq(chatbotConversations.sessionId, sessionId));
+}
+
+export async function createChatbotMessage(data: InsertChatbotMessage): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(chatbotMessages).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function createChatbotEvent(data: InsertChatbotEvent): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(chatbotEvents).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function getChatbotMetrics(startDate?: Date, endDate?: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Métricas gerais
+  const totalConversations = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(chatbotConversations);
+  
+  const conversionsCount = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(chatbotConversations)
+    .where(eq(chatbotConversations.converted, true));
+  
+  const avgDuration = await db
+    .select({ avg: sql<number>`avg(duration)` })
+    .from(chatbotConversations)
+    .where(gt(chatbotConversations.duration, 0));
+  
+  const avgMessagesPerConversation = await db
+    .select({ avg: sql<number>`avg(message_count)` })
+    .from(chatbotConversations);
+  
+  return {
+    totalConversations: totalConversations[0]?.count || 0,
+    conversions: conversionsCount[0]?.count || 0,
+    conversionRate: totalConversations[0]?.count 
+      ? ((conversionsCount[0]?.count || 0) / totalConversations[0].count) * 100 
+      : 0,
+    avgDuration: Math.round(avgDuration[0]?.avg || 0),
+    avgMessagesPerConversation: Math.round(avgMessagesPerConversation[0]?.avg || 0),
+  };
+}
+
+export async function getFrequentQuestions(limit: number = 10) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Buscar mensagens de usuários agrupadas por similaridade de conteúdo
+  const questions = await db
+    .select({
+      content: chatbotMessages.content,
+      count: sql<number>`count(*)`,
+    })
+    .from(chatbotMessages)
+    .where(eq(chatbotMessages.role, "user"))
+    .groupBy(chatbotMessages.content)
+    .orderBy(sql`count(*) DESC`)
+    .limit(limit);
+  
+  return questions;
+}
+
+export async function getChatbotConversationsByDate(days: number = 30) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const conversations = await db
+    .select({
+      date: sql<string>`DATE(started_at)`,
+      count: sql<number>`count(*)`,
+      conversions: sql<number>`sum(CASE WHEN converted = 1 THEN 1 ELSE 0 END)`,
+    })
+    .from(chatbotConversations)
+    .where(sql`started_at >= DATE_SUB(NOW(), INTERVAL ${days} DAY)`)
+    .groupBy(sql`DATE(started_at)`)
+    .orderBy(sql`DATE(started_at) ASC`);
+  
+  return conversations;
+}
+
+export async function getConversionsByType() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const conversions = await db
+    .select({
+      type: chatbotConversations.conversionType,
+      count: sql<number>`count(*)`,
+    })
+    .from(chatbotConversations)
+    .where(eq(chatbotConversations.converted, true))
+    .groupBy(chatbotConversations.conversionType);
+  
+  return conversions;
+}
+
+export async function getAverageResponseTime() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const avgTime = await db
+    .select({ avg: sql<number>`avg(response_time)` })
+    .from(chatbotMessages)
+    .where(
+      and(
+        eq(chatbotMessages.role, "assistant"),
+        gt(chatbotMessages.responseTime, 0)
+      )
+    );
+  
+  return Math.round(avgTime[0]?.avg || 0);
 }

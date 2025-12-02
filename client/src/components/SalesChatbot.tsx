@@ -21,10 +21,38 @@ export function SalesChatbot() {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [conversationStartTime] = useState(() => Date.now());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Mutations para analytics
+  const startConversationMutation = trpc.chatAnalytics.startConversation.useMutation();
+  const trackMessageMutation = trpc.chatAnalytics.trackMessage.useMutation();
+  const trackEventMutation = trpc.chatAnalytics.trackEvent.useMutation();
+  const endConversationMutation = trpc.chatAnalytics.endConversation.useMutation();
+
+  // Iniciar conversa quando abrir o chat
+  useEffect(() => {
+    if (isOpen && !startConversationMutation.isSuccess) {
+      startConversationMutation.mutate({
+        sessionId,
+        userAgent: navigator.userAgent,
+      });
+    }
+  }, [isOpen]);
+
+  // Finalizar conversa quando fechar o chat
+  useEffect(() => {
+    if (!isOpen && startConversationMutation.isSuccess) {
+      const duration = Math.floor((Date.now() - conversationStartTime) / 1000);
+      endConversationMutation.mutate({ sessionId, duration });
+    }
+  }, [isOpen]);
 
   const chatMutation = trpc.sales.chat.useMutation({
     onSuccess: (data) => {
+      const responseTime = Date.now() - (window as any).__lastMessageTime;
+      
       setMessages((prev) => [
         ...prev,
         {
@@ -34,6 +62,14 @@ export function SalesChatbot() {
         },
       ]);
       setIsTyping(false);
+
+      // Rastrear mensagem do assistente
+      trackMessageMutation.mutate({
+        sessionId,
+        role: "assistant",
+        content: data.response as string,
+        responseTime,
+      });
     },
     onError: () => {
       setMessages((prev) => [
@@ -66,6 +102,17 @@ export function SalesChatbot() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    
+    // Rastrear mensagem do usuário
+    trackMessageMutation.mutate({
+      sessionId,
+      role: "user",
+      content: input,
+    });
+
+    // Marcar tempo para calcular response time
+    (window as any).__lastMessageTime = Date.now();
+
     setInput("");
     setIsTyping(true);
 

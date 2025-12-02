@@ -26,6 +26,7 @@ import GerarEtiquetas from "./pages/GerarEtiquetas";
 import SuporteClientes from "./pages/SuporteClientes";
 import PDVMobile from "./pages/PDVMobile";
 import Planos from "./pages/Planos";
+import ChatbotAnalytics from "./pages/ChatbotAnalytics";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -62,6 +63,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Dashboard />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/chatbot-analytics">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <ChatbotAnalytics />
               </DashboardLayout>
             )}
           />

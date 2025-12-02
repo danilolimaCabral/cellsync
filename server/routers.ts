@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { sql } from "drizzle-orm";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -1611,5 +1612,126 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
   
   // ============= TENANT MANAGEMENT (GERENCIAMENTO DE CLIENTES) =============
   tenantManagement: tenantManagementRouter,
+
+  // ============= ANALYTICS DO CHATBOT =============
+  chatAnalytics: router({
+    // Iniciar nova conversa
+    startConversation: publicProcedure
+      .input(z.object({
+        sessionId: z.string(),
+        userId: z.number().optional(),
+        userAgent: z.string().optional(),
+        ipAddress: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const conversationId = await db.createChatbotConversation({
+          sessionId: input.sessionId,
+          userId: input.userId,
+          userAgent: input.userAgent,
+          ipAddress: input.ipAddress,
+        });
+        return { conversationId };
+      }),
+
+    // Registrar mensagem
+    trackMessage: publicProcedure
+      .input(z.object({
+        sessionId: z.string(),
+        role: z.enum(["user", "assistant"]),
+        content: z.string(),
+        responseTime: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        // Buscar conversationId pelo sessionId
+        const messageId = await db.createChatbotMessage({
+          conversationId: 0, // Será atualizado via sessionId
+          role: input.role,
+          content: input.content,
+          responseTime: input.responseTime,
+        });
+
+        // Atualizar contador de mensagens
+        await db.updateChatbotConversation(input.sessionId, {
+          messageCount: sql`message_count + 1` as any,
+        });
+
+        return { messageId };
+      }),
+
+    // Registrar evento (conversão, clique em CTA)
+    trackEvent: publicProcedure
+      .input(z.object({
+        sessionId: z.string(),
+        eventType: z.string(),
+        eventData: z.any().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const eventId = await db.createChatbotEvent({
+          conversationId: 0, // Será atualizado via sessionId
+          eventType: input.eventType,
+          eventData: input.eventData,
+        });
+
+        // Se for conversão, atualizar flag
+        if (input.eventType.startsWith("conversion_")) {
+          await db.updateChatbotConversation(input.sessionId, {
+            converted: true,
+            conversionType: input.eventType.replace("conversion_", ""),
+          });
+        }
+
+        return { eventId };
+      }),
+
+    // Finalizar conversa
+    endConversation: publicProcedure
+      .input(z.object({
+        sessionId: z.string(),
+        duration: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateChatbotConversation(input.sessionId, {
+          endedAt: new Date(),
+          duration: input.duration,
+        });
+        return { success: true };
+      }),
+
+    // Obter métricas gerais
+    getMetrics: protectedProcedure
+      .input(z.object({
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      }))
+      .query(async ({ input }) => {
+        const metrics = await db.getChatbotMetrics(input.startDate, input.endDate);
+        const avgResponseTime = await db.getAverageResponseTime();
+        return { ...metrics, avgResponseTime };
+      }),
+
+    // Obter perguntas mais frequentes
+    getFrequentQuestions: protectedProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(50).default(10),
+      }))
+      .query(async ({ input }) => {
+        return await db.getFrequentQuestions(input.limit);
+      }),
+
+    // Obter conversas por data
+    getConversationsByDate: protectedProcedure
+      .input(z.object({
+        days: z.number().min(1).max(365).default(30),
+      }))
+      .query(async ({ input }) => {
+        return await db.getChatbotConversationsByDate(input.days);
+      }),
+
+    // Obter conversões por tipo
+    getConversionsByType: protectedProcedure
+      .query(async () => {
+        return await db.getConversionsByType();
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

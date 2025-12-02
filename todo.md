@@ -1015,3 +1015,20 @@
 - [x] Adicionar animações de digitação e transições suaves
 - [x] Testar conversas e ajustar respostas
 - [ ] Criar testes para integração com Gemini
+
+## Analytics do Chatbot
+- [x] Criar tabela chatbot_conversations no schema
+- [x] Criar tabela chatbot_messages no schema
+- [x] Criar tabela chatbot_events no schema (conversões, cliques em CTA)
+- [x] Implementar procedure chatAnalytics.trackConversation
+- [x] Implementar procedure chatAnalytics.trackMessage
+- [x] Implementar procedure chatAnalytics.trackEvent
+- [x] Implementar procedure chatAnalytics.getMetrics (perguntas frequentes, taxa de conversão)
+- [x] Integrar rastreamento no componente SalesChatbot
+- [x] Criar página ChatbotAnalytics.tsx com dashboard de métricas
+- [x] Adicionar gráficos de perguntas mais frequentes
+- [x] Adicionar gráfico de taxa de conversão
+- [x] Adicionar métricas de tempo médio de resposta
+- [x] Adicionar métricas de engajamento (mensagens por sessão)
+- [x] Testar rastreamento de eventos
+- [x] Adicionar item "Analytics do Chatbot" no menu lateral (apenas master_admin)

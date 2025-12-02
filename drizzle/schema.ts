@@ -551,3 +551,45 @@ export const invoiceItems = mysqlTable("invoiceItems", {
 
 export type InvoiceItem = typeof invoiceItems.$inferSelect;
 export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
+
+// ============= ANALYTICS DO CHATBOT =============
+export const chatbotConversations = mysqlTable("chatbot_conversations", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("session_id", { length: 255 }).notNull().unique(), // UUID da sessão
+  userId: int("user_id"), // Null se visitante anônimo
+  startedAt: timestamp("started_at").defaultNow().notNull(),
+  endedAt: timestamp("ended_at"),
+  messageCount: int("message_count").default(0).notNull(),
+  duration: int("duration").default(0), // Duração em segundos
+  converted: boolean("converted").default(false).notNull(), // Se houve conversão (clique em CTA)
+  conversionType: varchar("conversion_type", { length: 50 }), // "trial", "demo", "contact"
+  userAgent: text("user_agent"),
+  ipAddress: varchar("ip_address", { length: 45 }),
+});
+
+export type ChatbotConversation = typeof chatbotConversations.$inferSelect;
+export type InsertChatbotConversation = typeof chatbotConversations.$inferInsert;
+
+export const chatbotMessages = mysqlTable("chatbot_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversation_id").notNull(),
+  role: mysqlEnum("role", ["user", "assistant"]).notNull(),
+  content: text("content").notNull(),
+  responseTime: int("response_time"), // Tempo de resposta em ms (apenas para assistant)
+  sentimentScore: int("sentiment_score"), // -100 a 100 (negativo a positivo)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ChatbotMessage = typeof chatbotMessages.$inferSelect;
+export type InsertChatbotMessage = typeof chatbotMessages.$inferInsert;
+
+export const chatbotEvents = mysqlTable("chatbot_events", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversation_id").notNull(),
+  eventType: varchar("event_type", { length: 50 }).notNull(), // "cta_click", "link_click", "chat_closed"
+  eventData: json("event_data"), // Dados adicionais do evento
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ChatbotEvent = typeof chatbotEvents.$inferSelect;
+export type InsertChatbotEvent = typeof chatbotEvents.$inferInsert;
