@@ -34,6 +34,7 @@ import AdminMaster from "./pages/AdminMaster";
 import Vendedores from "./pages/Vendedores";
 import ImportarXML from "./pages/ImportarXML";
 import ImportarPlanilha from "./pages/ImportarPlanilha";
+import AssistenteImportacao from "./pages/AssistenteImportacao";
 import LiberacaoModulos from "./pages/LiberacaoModulos";
 import AssinaturaSucesso from "./pages/AssinaturaSucesso";
 import Onboarding from "./pages/Onboarding";
@@ -388,6 +389,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <ImportarPlanilha />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/assistente-importacao">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <AssistenteImportacao />
               </DashboardLayout>
             )}
           />

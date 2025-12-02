@@ -1467,3 +1467,26 @@
 - [ ] Mostrar contador de uso na interface
 - [ ] Bloquear importação quando atingir limite
 - [ ] Sugerir upgrade quando próximo do limite
+
+
+## Interface do Assistente de IA - Sprint Atual
+
+### Componentes
+- [x] Criar componente FileUpload com drag-and-drop
+- [x] Criar componente ChatBox para conversa com IA
+- [x] Criar componente DataPreview com tabela editável
+- [x] Criar componente LimitIndicator mostrando uso mensal
+- [ ] Criar componente MappingEditor para ajustar colunas
+
+### Página Principal
+- [x] Criar /assistente-importacao com fluxo completo
+- [x] Implementar stepper (Upload → Análise → Ajustes → Confirmar)
+- [x] Adicionar seletor de módulo (Produtos, Clientes, etc)
+- [ ] Mostrar histórico de importações anteriores
+- [ ] Adicionar link no menu lateral
+
+### Integrações
+- [x] Conectar com endpoints tRPC (analyzeFile, chat, executeImport)
+- [x] Implementar loading states e feedback visual
+- [x] Adicionar tratamento de erros amigável
+- [ ] Implementar salvamento automático de progresso
