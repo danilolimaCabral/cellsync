@@ -14,6 +14,7 @@ import { diagnoseServiceOrder } from "./ai-os-assistant";
 import { generateLabel, generateBarcode, generateQRCode } from "./label-generator";
 import { tenantSwitchingRouter } from "./routers/tenantSwitching";
 import { tenantManagementRouter } from "./routers/tenantManagement";
+import { notifyOwner } from "./_core/notification";
 
 // Helper para criar procedimentos protegidos
 const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
@@ -1731,6 +1732,150 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
     getConversionsByType: protectedProcedure
       .query(async () => {
         return await db.getConversionsByType();
+      }),
+  }),
+
+  // ============= SISTEMA DE CHAMADOS/TICKETS DE SUPORTE =============
+  supportTickets: router({
+    // Criar novo ticket (qualquer usuário autenticado)
+    create: protectedProcedure
+      .input(z.object({
+        subject: z.string().min(5, "Assunto deve ter pelo menos 5 caracteres"),
+        category: z.enum(["duvida", "problema_tecnico", "solicitacao_recurso", "bug"]),
+        priority: z.enum(["baixa", "media", "alta", "urgente"]).default("media"),
+        description: z.string().min(20, "Descrição deve ter pelo menos 20 caracteres"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const ticketId = await db.createSupportTicket({
+          userId: ctx.user.id,
+          tenantId: null, // Pode ser preenchido se houver contexto de tenant
+          subject: input.subject,
+          category: input.category,
+          priority: input.priority,
+          description: input.description,
+        });
+        
+        // Notificar owner sobre novo chamado
+        const categoryLabels: Record<string, string> = {
+          duvida: "Dúvida",
+          problema_tecnico: "Problema Técnico",
+          solicitacao_recurso: "Solicitação de Recurso",
+          bug: "Bug"
+        };
+        
+        await notifyOwner({
+          title: `Novo Chamado #${ticketId}: ${input.subject}`,
+          content: `**Usuário:** ${ctx.user.name} (${ctx.user.email})\n**Categoria:** ${categoryLabels[input.category]}\n**Prioridade:** ${input.priority.toUpperCase()}\n\n**Descrição:**\n${input.description}`
+        }).catch((err: any) => console.error("Erro ao notificar owner:", err));
+        
+        return { ticketId };
+      }),
+
+    // Listar tickets do usuário
+    myTickets: protectedProcedure
+      .query(async ({ ctx }) => {
+        return await db.listSupportTicketsByUser(ctx.user.id);
+      }),
+
+    // Listar todos os tickets (apenas master_admin)
+    listAll: protectedProcedure
+      .input(z.object({
+        status: z.string().optional(),
+        priority: z.string().optional(),
+        category: z.string().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+        return await db.listAllSupportTickets(input);
+      }),
+
+    // Obter detalhes de um ticket
+    getById: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const ticket = await db.getSupportTicketById(input.id);
+        
+        // Verificar permissão: usuário pode ver apenas seus próprios tickets, admin vê todos
+        if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin" && ticket.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+        
+        return ticket;
+      }),
+
+    // Obter mensagens de um ticket
+    getMessages: protectedProcedure
+      .input(z.object({
+        ticketId: z.number(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const ticket = await db.getSupportTicketById(input.ticketId);
+        
+         // Verificar permissão
+        if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin" && ticket.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+        
+        return await db.getSupportTicketMessages(input.ticketId);
+      }),
+
+    // Adicionar mensagem a um ticket
+    addMessage: protectedProcedure
+      .input(z.object({
+        ticketId: z.number(),
+        message: z.string().min(1, "Mensagem não pode estar vazia"),
+        isInternal: z.boolean().default(false),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const ticket = await db.getSupportTicketById(input.ticketId);
+        
+        // Verificar permissão
+        if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin" && ticket.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+        
+        // Apenas admins podem criar mensagens internas
+        if (input.isInternal && ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Apenas administradores podem criar mensagens internas" });
+        }
+        
+        const messageId = await db.createSupportTicketMessage({
+          ticketId: input.ticketId,
+          userId: ctx.user.id,
+          message: input.message,
+          isInternal: input.isInternal,
+        });
+        
+        return { messageId };
+      }),
+
+    // Atualizar status do ticket (apenas admin)
+    updateStatus: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["aberto", "em_andamento", "resolvido", "fechado"]),
+        assignedTo: z.number().optional(),
+      }))
+        .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+        
+        await db.updateSupportTicketStatus(input.id, input.status, input.assignedTo);
+        return { success: true };
+      }),
+
+    // Obter estatísticas (apenas admin)
+    getStats: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+        return await db.getSupportTicketStats();
       }),
   }),
 });

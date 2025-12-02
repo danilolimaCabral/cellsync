@@ -8,11 +8,15 @@ import {
   chatbotConversations,
   chatbotMessages,
   chatbotEvents,
+  supportTickets,
+  supportTicketMessages,
   type InsertCommissionRule, type InsertCommission,
   type InsertInvoice, type InsertInvoiceItem,
   type InsertChatbotConversation,
   type InsertChatbotMessage,
-  type InsertChatbotEvent
+  type InsertChatbotEvent,
+  type InsertSupportTicket,
+  type InsertSupportTicketMessage
 } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1819,4 +1823,156 @@ export async function getAverageResponseTime() {
     );
   
   return Math.round(avgTime[0]?.avg || 0);
+}
+
+// ============= SISTEMA DE CHAMADOS/TICKETS DE SUPORTE =============
+export async function createSupportTicket(data: InsertSupportTicket): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(supportTickets).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function getSupportTicketById(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select().from(supportTickets).where(eq(supportTickets.id, id)).limit(1);
+  return result[0];
+}
+
+export async function listSupportTicketsByUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db
+    .select()
+    .from(supportTickets)
+    .where(eq(supportTickets.userId, userId))
+    .orderBy(desc(supportTickets.createdAt));
+}
+
+export async function listAllSupportTickets(filters?: {
+  status?: string;
+  priority?: string;
+  category?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  let query = db.select().from(supportTickets);
+  
+  const conditions = [];
+  if (filters?.status) {
+    conditions.push(eq(supportTickets.status, filters.status as any));
+  }
+  if (filters?.priority) {
+    conditions.push(eq(supportTickets.priority, filters.priority as any));
+  }
+  if (filters?.category) {
+    conditions.push(eq(supportTickets.category, filters.category as any));
+  }
+  
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions)) as any;
+  }
+  
+  return await query.orderBy(desc(supportTickets.createdAt));
+}
+
+export async function updateSupportTicketStatus(
+  id: number,
+  status: string,
+  assignedTo?: number
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const updateData: any = { status };
+  
+  if (assignedTo !== undefined) {
+    updateData.assignedTo = assignedTo;
+  }
+  
+  if (status === "resolvido") {
+    updateData.resolvedAt = new Date();
+  }
+  
+  if (status === "fechado") {
+    updateData.closedAt = new Date();
+  }
+  
+  await db
+    .update(supportTickets)
+    .set(updateData)
+    .where(eq(supportTickets.id, id));
+}
+
+export async function createSupportTicketMessage(data: InsertSupportTicketMessage): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(supportTicketMessages).values(data);
+  
+  // Atualizar updatedAt do ticket
+  await db
+    .update(supportTickets)
+    .set({ updatedAt: new Date() })
+    .where(eq(supportTickets.id, data.ticketId));
+  
+  return Number(result[0].insertId);
+}
+
+export async function getSupportTicketMessages(ticketId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db
+    .select({
+      id: supportTicketMessages.id,
+      ticketId: supportTicketMessages.ticketId,
+      userId: supportTicketMessages.userId,
+      userName: users.name,
+      userEmail: users.email,
+      message: supportTicketMessages.message,
+      isInternal: supportTicketMessages.isInternal,
+      attachments: supportTicketMessages.attachments,
+      createdAt: supportTicketMessages.createdAt,
+    })
+    .from(supportTicketMessages)
+    .leftJoin(users, eq(supportTicketMessages.userId, users.id))
+    .where(eq(supportTicketMessages.ticketId, ticketId))
+    .orderBy(supportTicketMessages.createdAt);
+}
+
+export async function getSupportTicketStats() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const total = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(supportTickets);
+  
+  const abertos = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(supportTickets)
+    .where(eq(supportTickets.status, "aberto"));
+  
+  const emAndamento = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(supportTickets)
+    .where(eq(supportTickets.status, "em_andamento"));
+  
+  const resolvidos = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(supportTickets)
+    .where(eq(supportTickets.status, "resolvido"));
+  
+  return {
+    total: total[0]?.count || 0,
+    abertos: abertos[0]?.count || 0,
+    emAndamento: emAndamento[0]?.count || 0,
+    resolvidos: resolvidos[0]?.count || 0,
+  };
 }

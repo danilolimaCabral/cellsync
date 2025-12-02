@@ -1032,3 +1032,24 @@
 - [x] Adicionar métricas de engajamento (mensagens por sessão)
 - [x] Testar rastreamento de eventos
 - [x] Adicionar item "Analytics do Chatbot" no menu lateral (apenas master_admin)
+
+## Sistema de Chamados/Tickets de Suporte
+- [x] Criar tabela support_tickets no schema
+- [x] Criar tabela support_ticket_messages no schema (conversas do ticket)
+- [x] Implementar procedure supportTickets.create (usuários abrem chamados)
+- [x] Implementar procedure supportTickets.list (listar tickets do usuário)
+- [x] Implementar procedure supportTickets.listAll (super master vê todos)
+- [x] Implementar procedure supportTickets.getById (detalhes do ticket)
+- [x] Implementar procedure supportTickets.addMessage (adicionar resposta)
+- [x] Implementar procedure supportTickets.updateStatus (aberto, em andamento, resolvido, fechado)
+- [x] Criar página MeusChamados.tsx (usuários veem seus tickets)
+- [x] Criar formulário de abertura de novo chamado
+- [x] Criar página GerenciarChamados.tsx (super master vê todos os tickets)
+- [x] Adicionar filtros por status (aberto, em andamento, resolvido, fechado)
+- [x] Adicionar sistema de prioridade (baixa, média, alta, urgente)
+- [x] Adicionar categorias (dúvida, problema técnico, solicitação de recurso, bug)
+- [x] Implementar notificação quando novo chamado é aberto
+- [ ] Implementar notificação quando chamado recebe resposta
+- [x] Adicionar item "Meus Chamados" no menu lateral (todos os usuários)
+- [x] Adicionar item "Gerenciar Chamados" no menu lateral (apenas master_admin)
+- [x] Testar abertura e resposta de chamados

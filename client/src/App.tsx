@@ -27,6 +27,8 @@ import SuporteClientes from "./pages/SuporteClientes";
 import PDVMobile from "./pages/PDVMobile";
 import Planos from "./pages/Planos";
 import ChatbotAnalytics from "./pages/ChatbotAnalytics";
+import MeusChamados from "./pages/MeusChamados";
+import GerenciarChamados from "./pages/GerenciarChamados";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -75,6 +77,30 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <ChatbotAnalytics />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/meus-chamados">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <MeusChamados />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/gerenciar-chamados">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <GerenciarChamados />
               </DashboardLayout>
             )}
           />

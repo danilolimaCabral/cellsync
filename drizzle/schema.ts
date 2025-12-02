@@ -593,3 +593,36 @@ export const chatbotEvents = mysqlTable("chatbot_events", {
 
 export type ChatbotEvent = typeof chatbotEvents.$inferSelect;
 export type InsertChatbotEvent = typeof chatbotEvents.$inferInsert;
+
+// ============= SISTEMA DE CHAMADOS/TICKETS DE SUPORTE =============
+export const supportTickets = mysqlTable("support_tickets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id").notNull(), // Usuário que abriu o chamado
+  tenantId: int("tenant_id"), // Tenant do usuário (para contexto)
+  subject: varchar("subject", { length: 255 }).notNull(), // Assunto do chamado
+  category: mysqlEnum("category", ["duvida", "problema_tecnico", "solicitacao_recurso", "bug"]).notNull(),
+  priority: mysqlEnum("priority", ["baixa", "media", "alta", "urgente"]).default("media").notNull(),
+  status: mysqlEnum("status", ["aberto", "em_andamento", "resolvido", "fechado"]).default("aberto").notNull(),
+  description: text("description").notNull(), // Descrição detalhada do problema
+  assignedTo: int("assigned_to"), // ID do admin que está tratando (null = não atribuído)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  resolvedAt: timestamp("resolved_at"), // Quando foi resolvido
+  closedAt: timestamp("closed_at"), // Quando foi fechado
+});
+
+export type SupportTicket = typeof supportTickets.$inferSelect;
+export type InsertSupportTicket = typeof supportTickets.$inferInsert;
+
+export const supportTicketMessages = mysqlTable("support_ticket_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  ticketId: int("ticket_id").notNull(), // Referência ao ticket
+  userId: int("user_id").notNull(), // Quem enviou a mensagem
+  message: text("message").notNull(), // Conteúdo da mensagem
+  isInternal: boolean("is_internal").default(false).notNull(), // Mensagem interna (apenas para admins)
+  attachments: json("attachments"), // URLs de anexos (se houver)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type SupportTicketMessage = typeof supportTicketMessages.$inferSelect;
+export type InsertSupportTicketMessage = typeof supportTicketMessages.$inferInsert;

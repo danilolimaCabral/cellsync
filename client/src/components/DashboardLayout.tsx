@@ -231,6 +231,23 @@ const menuItems = [
     iconColor: "text-purple-700",
     masterAdminOnly: true
   },
+  { 
+    icon: Headphones, 
+    label: "Meus Chamados", 
+    path: "/meus-chamados",
+    gradient: "from-teal-500 to-cyan-500",
+    bgGradient: "from-teal-50 to-cyan-50",
+    iconColor: "text-teal-600"
+  },
+  { 
+    icon: UserCog, 
+    label: "Gerenciar Chamados", 
+    path: "/gerenciar-chamados",
+    gradient: "from-rose-600 to-pink-600",
+    bgGradient: "from-rose-50 to-pink-50",
+    iconColor: "text-rose-700",
+    masterAdminOnly: true
+  },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
