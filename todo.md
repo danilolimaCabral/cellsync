@@ -1534,3 +1534,44 @@
 - [x] Adicionar seleção de transportadora
 - [x] Criar endpoint backend para gerar etiquetas
 - [ ] Testar geração e impressão
+
+## 📮 Integração com APIs de Frete e Rastreamento - NOVA FUNCIONALIDADE
+
+### APIs dos Correios (Gratuitas)
+- [x] Pesquisar e documentar APIs gratuitas dos Correios disponíveis
+- [x] Implementar cálculo de frete (PAC, SEDEX)
+- [x] Implementar cálculo de prazo de entrega
+- [x] Implementar rastreamento de encomendas
+- [x] Criar módulo correios-api.ts no backend
+
+### Melhor Envio API (Gratuita)
+- [ ] Criar conta no Melhor Envio e obter token de API
+- [x] Documentar endpoints disponíveis
+- [x] Implementar cotação de frete (múltiplas transportadoras)
+- [ ] Implementar geração de etiqueta via Melhor Envio
+- [ ] Implementar rastreamento via Melhor Envio
+- [x] Criar módulo melhor-envio-api.ts no backend
+
+### Sistema de Cotação Automática
+- [x] Criar endpoint para comparar preços entre transportadoras
+- [x] Implementar seleção automática da melhor opção (menor preço)
+- [ ] Adicionar filtros (prazo, preço, transportadora)
+- [ ] Criar interface de comparação de cotações
+- [x] Salvar histórico de cotações no banco
+
+### Rastreamento de Envios
+- [x] Criar tabela shipments no banco de dados
+- [ ] Implementar webhook para atualizações de status
+- [x] Criar endpoint de rastreamento de envios
+- [ ] Adicionar notificações automáticas de mudança de status
+- [ ] Integrar rastreamento com vendas
+
+### Interface de Etiquetas Atualizada
+- [x] Criar página dedicada de calculadora de frete
+- [x] Criar página de rastreamento de envios
+- [x] Exibir cotações de múltiplas transportadoras
+- [x] Permitir seleção da melhor opção
+- [x] Destacar opção mais barata e mais rápida
+- [x] Adicionar campos de peso e dimensões do pacote
+- [x] Adicionar itens de menu no DashboardLayout
+- [ ] Integrar calculadora com geração de etiquetas

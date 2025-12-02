@@ -40,6 +40,8 @@ import CadastrarProduto from "./pages/CadastrarProduto";
 import CadastrarCliente from "./pages/CadastrarCliente";
 import Comparacao from "./pages/Comparacao";
 import EtiquetasEnvio from "./pages/EtiquetasEnvio";
+import CalculadoraFrete from "./pages/CalculadoraFrete";
+import RastreamentoEnvios from "./pages/RastreamentoEnvios";
 import LiberacaoModulos from "./pages/LiberacaoModulos";
 import AssinaturaSucesso from "./pages/AssinaturaSucesso";
 import Onboarding from "./pages/Onboarding";
@@ -324,6 +326,30 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <EtiquetasEnvio />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/calculadora-frete">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <CalculadoraFrete />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/rastreamento-envios">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <RastreamentoEnvios />
               </DashboardLayout>
             )}
           />

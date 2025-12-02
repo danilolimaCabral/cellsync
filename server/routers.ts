@@ -2208,6 +2208,151 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
       }),
   }),
 
+  // ============= COTAÇÃO DE FRETE E RASTREAMENTO =============
+  shipping: router({
+    // Calcular cotações de frete
+    calculateQuotes: protectedProcedure
+      .input(z.object({
+        fromPostalCode: z.string().length(8),
+        toPostalCode: z.string().length(8),
+        weight: z.number().positive(), // gramas
+        length: z.number().positive(), // cm
+        width: z.number().positive(), // cm
+        height: z.number().positive(), // cm
+        insuranceValue: z.number().optional(), // centavos
+        receipt: z.boolean().optional(),
+        ownHand: z.boolean().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { calculateAllQuotes, sortByPrice } = await import("./shipping-service");
+        
+        const quotes = await calculateAllQuotes(input);
+        const sortedQuotes = sortByPrice(quotes);
+        
+        // Salvar cotações no banco
+        for (const quote of sortedQuotes.filter(q => !q.error)) {
+          try {
+            await db.createShippingQuote({
+              tenantId: ctx.user.tenantId,
+              userId: ctx.user.id,
+              fromPostalCode: input.fromPostalCode,
+              toPostalCode: input.toPostalCode,
+              weight: input.weight,
+              length: input.length,
+              width: input.width,
+              height: input.height,
+              carrier: quote.carrier,
+              service: quote.service,
+              price: quote.price,
+              deliveryTime: quote.deliveryTime,
+              insuranceValue: input.insuranceValue,
+              receipt: input.receipt || false,
+              ownHand: input.ownHand || false,
+              source: quote.source,
+            });
+          } catch (error) {
+            console.error("Erro ao salvar cotação:", error);
+          }
+        }
+        
+        return sortedQuotes;
+      }),
+    
+    // Verificar status das APIs
+    checkApisStatus: protectedProcedure
+      .query(async () => {
+        const { getApisStatus } = await import("./shipping-service");
+        return getApisStatus();
+      }),
+    
+    // Criar envio
+    createShipment: protectedProcedure
+      .input(z.object({
+        saleId: z.number().optional(),
+        trackingCode: z.string(),
+        carrier: z.string(),
+        service: z.string().optional(),
+        fromName: z.string(),
+        fromPostalCode: z.string(),
+        fromAddress: z.string().optional(),
+        fromCity: z.string().optional(),
+        fromState: z.string().optional(),
+        toName: z.string(),
+        toPostalCode: z.string(),
+        toAddress: z.string().optional(),
+        toCity: z.string().optional(),
+        toState: z.string().optional(),
+        toPhone: z.string().optional(),
+        weight: z.number().optional(),
+        length: z.number().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+        shippingCost: z.number(),
+        insuranceValue: z.number().optional(),
+        estimatedDelivery: z.date().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const shipmentId = await db.createShipment({
+          tenantId: ctx.user.tenantId,
+          ...input,
+        });
+        
+        return { id: shipmentId, success: true };
+      }),
+    
+    // Listar envios
+    listShipments: protectedProcedure
+      .input(z.object({
+        limit: z.number().optional(),
+      }))
+      .query(async ({ input, ctx }) => {
+        return await db.listShipmentsByTenant(ctx.user.tenantId, input.limit);
+      }),
+    
+    // Rastrear envio
+    trackShipment: protectedProcedure
+      .input(z.object({
+        trackingCode: z.string(),
+      }))
+      .query(async ({ input }) => {
+        const { rastrearEncomenda } = await import("./correios-api");
+        const { rastrearPorCodigo } = await import("./melhor-envio-api");
+        
+        // Tentar rastrear pelos Correios primeiro
+        const correiosResult = await rastrearEncomenda(input.trackingCode);
+        if (correiosResult.sucesso && correiosResult.eventos.length > 0) {
+          return {
+            source: "correios" as const,
+            events: correiosResult.eventos,
+          };
+        }
+        
+        // Tentar rastrear pelo Melhor Envio
+        const melhorEnvioResult = await rastrearPorCodigo(input.trackingCode);
+        if (melhorEnvioResult) {
+          return {
+            source: "melhor_envio" as const,
+            data: melhorEnvioResult,
+          };
+        }
+        
+        return {
+          source: "none" as const,
+          error: "Código de rastreamento não encontrado",
+        };
+      }),
+    
+    // Listar histórico de cotações
+    listQuotes: protectedProcedure
+      .input(z.object({
+        limit: z.number().optional(),
+      }))
+      .query(async ({ input, ctx }) => {
+        return await db.listShippingQuotesByTenant(ctx.user.tenantId, input.limit);
+      }),
+  }),
+
   // ============= ETIQUETAS DE ENVIO =============
   shippingLabels: router({
     generate: protectedProcedure

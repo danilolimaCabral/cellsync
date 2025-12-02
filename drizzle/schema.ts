@@ -718,3 +718,137 @@ export const importSessions = mysqlTable("import_sessions", {
 
 export type ImportSession = typeof importSessions.$inferSelect;
 export type InsertImportSession = typeof importSessions.$inferInsert;
+
+
+// ============= RASTREAMENTO DE ENVIOS =============
+export const shipments = mysqlTable("shipments", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull(),
+  saleId: int("sale_id"), // Referência à venda (opcional)
+  
+  // Informações do envio
+  trackingCode: varchar("tracking_code", { length: 50 }).notNull(), // Código de rastreamento
+  carrier: varchar("carrier", { length: 100 }).notNull(), // Transportadora (Correios, Jadlog, etc)
+  service: varchar("service", { length: 100 }), // Serviço (PAC, SEDEX, etc)
+  
+  // Status do envio
+  status: mysqlEnum("status", [
+    "pending",      // Pendente
+    "posted",       // Postado
+    "in_transit",   // Em trânsito
+    "out_delivery", // Saiu para entrega
+    "delivered",    // Entregue
+    "failed",       // Falha na entrega
+    "returned",     // Devolvido
+    "cancelled"     // Cancelado
+  ]).default("pending").notNull(),
+  
+  // Dados do remetente
+  fromName: varchar("from_name", { length: 255 }).notNull(),
+  fromPostalCode: varchar("from_postal_code", { length: 9 }).notNull(),
+  fromAddress: text("from_address"),
+  fromCity: varchar("from_city", { length: 100 }),
+  fromState: varchar("from_state", { length: 2 }),
+  
+  // Dados do destinatário
+  toName: varchar("to_name", { length: 255 }).notNull(),
+  toPostalCode: varchar("to_postal_code", { length: 9 }).notNull(),
+  toAddress: text("to_address"),
+  toCity: varchar("to_city", { length: 100 }),
+  toState: varchar("to_state", { length: 2 }),
+  toPhone: varchar("to_phone", { length: 20 }),
+  
+  // Informações do pacote
+  weight: int("weight"), // Peso em gramas
+  length: int("length"), // Comprimento em cm
+  width: int("width"), // Largura em cm
+  height: int("height"), // Altura em cm
+  
+  // Valores
+  shippingCost: int("shipping_cost").notNull(), // Custo do frete em centavos
+  insuranceValue: int("insurance_value"), // Valor declarado em centavos
+  
+  // Prazos
+  estimatedDelivery: timestamp("estimated_delivery"), // Previsão de entrega
+  postedAt: timestamp("posted_at"), // Data de postagem
+  deliveredAt: timestamp("delivered_at"), // Data de entrega
+  
+  // Integrações externas
+  melhorEnvioId: varchar("melhor_envio_id", { length: 100 }), // ID no Melhor Envio
+  externalId: varchar("external_id", { length: 100 }), // ID externo
+  
+  // Observações
+  notes: text("notes"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Shipment = typeof shipments.$inferSelect;
+export type InsertShipment = typeof shipments.$inferInsert;
+
+// Eventos de rastreamento
+export const shipmentEvents = mysqlTable("shipment_events", {
+  id: int("id").autoincrement().primaryKey(),
+  shipmentId: int("shipment_id").notNull(),
+  
+  // Informações do evento
+  date: timestamp("date").notNull(), // Data e hora do evento
+  status: varchar("status", { length: 100 }).notNull(), // Status do evento
+  description: text("description").notNull(), // Descrição do evento
+  location: varchar("location", { length: 255 }), // Local do evento
+  city: varchar("city", { length: 100 }),
+  state: varchar("state", { length: 2 }),
+  
+  // Origem/Destino (para eventos de trânsito)
+  origin: varchar("origin", { length: 255 }),
+  destination: varchar("destination", { length: 255 }),
+  
+  // Dados brutos da API
+  rawData: json("raw_data"), // Dados completos do evento da API
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ShipmentEvent = typeof shipmentEvents.$inferSelect;
+export type InsertShipmentEvent = typeof shipmentEvents.$inferInsert;
+
+// Histórico de cotações de frete
+export const shippingQuotes = mysqlTable("shipping_quotes", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull(),
+  userId: int("user_id"), // Usuário que solicitou a cotação
+  
+  // Origem e destino
+  fromPostalCode: varchar("from_postal_code", { length: 9 }).notNull(),
+  toPostalCode: varchar("to_postal_code", { length: 9 }).notNull(),
+  
+  // Dimensões do pacote
+  weight: int("weight").notNull(), // Peso em gramas
+  length: int("length").notNull(), // Comprimento em cm
+  width: int("width").notNull(), // Largura em cm
+  height: int("height").notNull(), // Altura em cm
+  
+  // Resultado da cotação
+  carrier: varchar("carrier", { length: 100 }).notNull(), // Transportadora
+  service: varchar("service", { length: 100 }).notNull(), // Serviço
+  price: int("price").notNull(), // Preço em centavos
+  deliveryTime: int("delivery_time"), // Prazo em dias úteis
+  
+  // Opções adicionais
+  insuranceValue: int("insurance_value"), // Valor declarado em centavos
+  receipt: boolean("receipt").default(false), // Aviso de recebimento
+  ownHand: boolean("own_hand").default(false), // Mão própria
+  
+  // Fonte da cotação
+  source: mysqlEnum("source", ["correios", "melhor_envio", "manual"]).notNull(),
+  
+  // Se foi utilizada (convertida em envio)
+  used: boolean("used").default(false).notNull(),
+  shipmentId: int("shipment_id"), // Referência ao envio criado
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ShippingQuote = typeof shippingQuotes.$inferSelect;
+export type InsertShippingQuote = typeof shippingQuotes.$inferInsert;
