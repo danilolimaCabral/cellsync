@@ -96,7 +96,7 @@ export default function Planos() {
         {/* Planos */}
         <div className="grid md:grid-cols-3 gap-8">
           {plans?.map((plan: any) => {
-            const features = JSON.parse(plan.features as string) as string[];
+            const features = plan.features as string[];
             const price = billingPeriod === "monthly" ? plan.priceMonthly : plan.priceYearly;
             const priceDisplay = (price / 100).toFixed(2);
             const isPopular = plan.slug === "profissional";

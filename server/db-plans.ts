@@ -8,7 +8,13 @@ import { eq } from "drizzle-orm";
 export async function getPlans() {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(plans).where(eq(plans.isActive, true));
+  const result = await db.select().from(plans).where(eq(plans.isActive, true));
+  
+  // Parsear features de JSON string para array
+  return result.map(plan => ({
+    ...plan,
+    features: typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features
+  }));
 }
 
 /**
