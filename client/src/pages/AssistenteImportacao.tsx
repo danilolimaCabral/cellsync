@@ -285,33 +285,48 @@ export default function AssistenteImportacao() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Coluna Esquerda - Upload e Seletor */}
         <div className="lg:col-span-1 space-y-6">
-          {step === "upload" && (
-            <>
-              <Card className="p-4">
-                <label className="block text-sm font-medium mb-2">
-                  Tipo de Dados
-                </label>
-                <Select
-                  value={moduleType}
-                  onValueChange={(value) => setModuleType(value as ModuleType)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="products">Produtos</SelectItem>
-                    <SelectItem value="customers">Clientes</SelectItem>
-                    <SelectItem value="sales">Vendas</SelectItem>
-                    <SelectItem value="stock">Estoque</SelectItem>
-                    <SelectItem value="service_orders">Ordens de Serviço</SelectItem>
-                    <SelectItem value="accounts_payable">Contas a Pagar</SelectItem>
-                    <SelectItem value="accounts_receivable">Contas a Receber</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Card>
+          {/* Seletor de Tipo - Sempre visível */}
+          <Card className="p-4">
+            <label className="block text-sm font-medium mb-2">
+              Tipo de Dados
+            </label>
+            <Select
+              value={moduleType}
+              onValueChange={(value) => {
+                if (step === "upload") {
+                  setModuleType(value as ModuleType);
+                } else {
+                  // Se já analisou, precisa resetar
+                  if (confirm("Alterar o tipo irá resetar a análise atual. Deseja continuar?")) {
+                    setModuleType(value as ModuleType);
+                    handleReset();
+                  }
+                }
+              }}
+              disabled={step === "analyzing" || step === "importing"}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="products">Produtos</SelectItem>
+                <SelectItem value="customers">Clientes</SelectItem>
+                <SelectItem value="sales">Vendas</SelectItem>
+                <SelectItem value="stock">Estoque</SelectItem>
+                <SelectItem value="service_orders">Ordens de Serviço</SelectItem>
+                <SelectItem value="accounts_payable">Contas a Pagar</SelectItem>
+                <SelectItem value="accounts_receivable">Contas a Receber</SelectItem>
+              </SelectContent>
+            </Select>
+            {step !== "upload" && step !== "analyzing" && (
+              <p className="text-xs text-muted-foreground mt-2">
+                💡 Alterar o tipo irá resetar a análise
+              </p>
+            )}
+          </Card>
 
-              <FileUploadZone onFileSelect={handleFileSelect} />
-            </>
+          {step === "upload" && (
+            <FileUploadZone onFileSelect={handleFileSelect} />
           )}
 
           {step === "analyzing" && (
