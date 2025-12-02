@@ -2207,5 +2207,47 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
         return { success: true };
       }),
   }),
+
+  // ============= ETIQUETAS DE ENVIO =============
+  shippingLabels: router({
+    generate: protectedProcedure
+      .input(z.object({
+        labels: z.array(z.object({
+          recipientName: z.string(),
+          recipientCpf: z.string().optional(),
+          recipientAddress: z.string(),
+          recipientNumber: z.string(),
+          recipientComplement: z.string().optional(),
+          recipientNeighborhood: z.string(),
+          recipientCity: z.string(),
+          recipientState: z.string(),
+          recipientZipCode: z.string(),
+          recipientPhone: z.string(),
+          senderName: z.string(),
+          senderAddress: z.string(),
+          senderNumber: z.string(),
+          senderComplement: z.string().optional(),
+          senderNeighborhood: z.string(),
+          senderCity: z.string(),
+          senderState: z.string(),
+          senderZipCode: z.string(),
+          senderPhone: z.string().optional(),
+          carrier: z.string().optional(),
+          trackingCode: z.string().optional(),
+          labelType: z.enum(["simple", "correios"]),
+        })),
+      }))
+      .mutation(async ({ input }) => {
+        const { generateShippingLabels } = await import("./shipping-label-generator");
+        
+        const pdfBuffer = await generateShippingLabels(input.labels);
+        const base64Pdf = pdfBuffer.toString("base64");
+        
+        return {
+          success: true,
+          pdf: base64Pdf,
+        };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

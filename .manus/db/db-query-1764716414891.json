@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `tenants` ADD COLUMN `inscricao_estadual` varchar(50) AFTER `razao_social`;\nALTER TABLE `tenants` ADD COLUMN `inscricao_municipal` varchar(50) AFTER `inscricao_estadual`;\nALTER TABLE `tenants` ADD COLUMN `logradouro` varchar(255) AFTER `cep`;\nALTER TABLE `tenants` ADD COLUMN `numero` varchar(20) AFTER `logradouro`;\nALTER TABLE `tenants` ADD COLUMN `complemento` varchar(100) AFTER `numero`;\nALTER TABLE `tenants` ADD COLUMN `bairro` varchar(100) AFTER `complemento`;\nALTER TABLE `tenants` ADD COLUMN `celular` varchar(20) AFTER `telefone`;\nALTER TABLE `tenants` ADD COLUMN `site` varchar(255) AFTER `email`;\nALTER TABLE `tenants` ADD COLUMN `regime_tributario` enum('simples_nacional','lucro_presumido','lucro_real','mei') AFTER `site`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute ALTER TABLE `tenants` ADD COLUMN `inscricao_estadual` varchar(50) AFTER `razao_social`;\nALTER TABLE `tenants` ADD COLUMN `inscricao_municipal` varchar(50) AFTER `inscricao_estadual`;\nALTER TABLE `tenants` ADD COLUMN `logradouro` varchar(255) AFTER `cep`;\nALTER TABLE `tenants` ADD COLUMN `numero` varchar(20) AFTER `logradouro`;\nALTER TABLE `tenants` ADD COLUMN `complemento` varchar(100) AFTER `numero`;\nALTER TABLE `tenants` ADD COLUMN `bairro` varchar(100) AFTER `complemento`;\nALTER TABLE `tenants` ADD COLUMN `celular` varchar(20) AFTER `telefone`;\nALTER TABLE `tenants` ADD COLUMN `site` varchar(255) AFTER `email`;\nALTER TABLE `tenants` ADD COLUMN `regime_tributario` enum('simples_nacional','lucro_presumido','lucro_real','mei') AFTER `site`;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 4279
+}

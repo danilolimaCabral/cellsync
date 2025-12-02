@@ -26,9 +26,9 @@ await connection.execute(`
   UPDATE tenants SET
     name = 'TechCell - Loja de Celulares',
     cnpj = '12.345.678/0001-90',
-    razaoSocial = 'TechCell Comércio de Eletrônicos LTDA',
-    inscricaoEstadual = '123.456.789.012',
-    inscricaoMunicipal = '12345678',
+    razao_social = 'TechCell Comércio de Eletrônicos LTDA',
+    inscricao_estadual = '123.456.789.012',
+    inscricao_municipal = '12345678',
     cep = '01310-100',
     logradouro = 'Avenida Paulista',
     numero = '1578',
@@ -40,7 +40,7 @@ await connection.execute(`
     celular = '(11) 98765-4321',
     email = 'contato@techcell.com.br',
     site = 'https://www.techcell.com.br',
-    regimeTributario = 'simples_nacional'
+    regime_tributario = 'simples_nacional'
   WHERE id = ${lojaId}
 `);
 
@@ -53,14 +53,14 @@ const senhaHash = await bcrypt.hash('123456', 10);
 
 // Admin
 await connection.execute(`
-  INSERT INTO users (tenantId, name, email, password, role, active, createdAt, updatedAt)
+  INSERT INTO users (tenant_id, name, email, password, role, active, createdAt, updatedAt)
   VALUES (${lojaId}, 'Carlos Silva', 'admin@techcell.com', '${senhaHash}', 'admin', 1, NOW(), NOW())
   ON DUPLICATE KEY UPDATE name=name
 `);
 
 // Vendedores
 await connection.execute(`
-  INSERT INTO users (tenantId, name, email, password, role, active, createdAt, updatedAt)
+  INSERT INTO users (tenant_id, name, email, password, role, active, createdAt, updatedAt)
   VALUES 
     (${lojaId}, 'João Santos', 'joao@techcell.com', '${senhaHash}', 'vendedor', 1, NOW(), NOW()),
     (${lojaId}, 'Maria Oliveira', 'maria@techcell.com', '${senhaHash}', 'vendedor', 1, NOW(), NOW())
@@ -69,7 +69,7 @@ await connection.execute(`
 
 // Técnico
 await connection.execute(`
-  INSERT INTO users (tenantId, name, email, password, role, active, createdAt, updatedAt)
+  INSERT INTO users (tenant_id, name, email, password, role, active, createdAt, updatedAt)
   VALUES (${lojaId}, 'Pedro Costa', 'pedro@techcell.com', '${senhaHash}', 'tecnico', 1, NOW(), NOW())
   ON DUPLICATE KEY UPDATE name=name
 `);
@@ -107,7 +107,7 @@ const produtos = [
 for (const produto of produtos) {
   await connection.execute(`
     INSERT INTO products (
-      tenantId, name, brand, model, category, sku, 
+      tenant_id, name, brand, model, category, sku, 
       costPrice, salePrice, wholesalePrice, minWholesaleQty,
       minStock, requiresImei, createdAt, updatedAt
     ) VALUES (
@@ -126,7 +126,7 @@ console.log(`✅ ${produtos.length} produtos cadastrados\n`);
 console.log('📦 4. Adicionando produtos ao estoque...');
 
 // Buscar IDs dos produtos
-const [produtosDb] = await connection.execute('SELECT id, name, requiresImei FROM products WHERE tenantId = ?', [lojaId]);
+const [produtosDb] = await connection.execute('SELECT id, name, requiresImei FROM products WHERE tenant_id = ?', [lojaId]);
 
 let estoqueCount = 0;
 
@@ -138,11 +138,9 @@ for (const produto of produtosDb) {
     
     await connection.execute(`
       INSERT INTO stockItems (
-        tenantId, productId, imei, status, 
-        entryDate, createdAt, updatedAt
+        tenant_id, productId, imei, status, createdAt, updatedAt
       ) VALUES (
-        ${lojaId}, ${produto.id}, ${imei ? `'${imei}'` : 'NULL'}, 'available',
-        NOW(), NOW(), NOW()
+        ${lojaId}, ${produto.id}, ${imei ? `'${imei}'` : 'NULL'}, 'disponivel', NOW(), NOW()
       )
     `);
     
@@ -169,7 +167,7 @@ for (const cliente of clientes) {
   
   await connection.execute(`
     INSERT INTO customers (
-      tenantId, name, cpf, cnpj, phone, email, 
+      tenant_id, name, cpf, cnpj, phone, email, 
       address, city, state, createdAt, updatedAt
     ) VALUES (
       ${lojaId}, '${cliente.name}', ${cpfField}, ${cnpjField}, 
@@ -187,15 +185,15 @@ console.log(`✅ ${clientes.length} clientes cadastrados\n`);
 console.log('💰 6. Criando vendas de exemplo...');
 
 // Buscar IDs necessários
-const [vendedores] = await connection.execute('SELECT id FROM users WHERE tenantId = ? AND role = "vendedor" LIMIT 2', [lojaId]);
-const [clientesDb] = await connection.execute('SELECT id FROM customers WHERE tenantId = ? LIMIT 3', [lojaId]);
-const [produtosVenda] = await connection.execute('SELECT id, salePrice, wholesalePrice, requiresImei FROM products WHERE tenantId = ? LIMIT 5', [lojaId]);
+const [vendedores] = await connection.execute('SELECT id FROM users WHERE tenant_id = ? AND role = "vendedor" LIMIT 2', [lojaId]);
+const [clientesDb] = await connection.execute('SELECT id FROM customers WHERE tenant_id = ? LIMIT 3', [lojaId]);
+const [produtosVenda] = await connection.execute('SELECT id, salePrice, wholesalePrice, requiresImei FROM products WHERE tenant_id = ? LIMIT 5', [lojaId]);
 
 // Venda 1: Varejo - iPhone 15 Pro Max
 const venda1Total = produtosVenda[0].salePrice;
 await connection.execute(`
   INSERT INTO sales (
-    tenantId, sellerId, customerId, totalAmount, discountAmount, 
+    tenant_id, sellerId, customerId, totalAmount, discountAmount, 
     finalAmount, paymentMethod, saleType, createdAt, updatedAt
   ) VALUES (
     ${lojaId}, ${vendedores[0].id}, ${clientesDb[0].id}, 
@@ -234,7 +232,7 @@ const venda2Total = venda2UnitPrice * venda2Qtd;
 
 await connection.execute(`
   INSERT INTO sales (
-    tenantId, sellerId, customerId, totalAmount, discountAmount, 
+    tenant_id, sellerId, customerId, totalAmount, discountAmount, 
     finalAmount, paymentMethod, saleType, appliedDiscount, createdAt, updatedAt
   ) VALUES (
     ${lojaId}, ${vendedores[1].id}, ${clientesDb[2].id}, 
@@ -260,11 +258,11 @@ console.log('✅ 2 vendas de exemplo criadas\n');
 // ============= 7. CRIAR ORDEM DE SERVIÇO =============
 console.log('🔧 7. Criando ordem de serviço...');
 
-const [tecnico] = await connection.execute('SELECT id FROM users WHERE tenantId = ? AND role = "tecnico" LIMIT 1', [lojaId]);
+const [tecnico] = await connection.execute('SELECT id FROM users WHERE tenant_id = ? AND role = "tecnico" LIMIT 1', [lojaId]);
 
 await connection.execute(`
   INSERT INTO serviceOrders (
-    tenantId, customerId, technicianId, deviceBrand, deviceModel,
+    tenant_id, customerId, technicianId, deviceBrand, deviceModel,
     defectReported, diagnosis, status, estimatedCost, estimatedDays,
     createdAt, updatedAt
   ) VALUES (
@@ -296,7 +294,7 @@ console.log('💵 8. Criando transações financeiras...');
 // Contas a Receber
 await connection.execute(`
   INSERT INTO accountsReceivable (
-    tenantId, description, amount, dueDate, status, category, createdAt, updatedAt
+    tenant_id, description, amount, dueDate, status, category, createdAt, updatedAt
   ) VALUES 
     (${lojaId}, 'Venda #${venda1Id} - PIX', ${venda1Total}, NOW(), 'paid', 'Vendas', NOW(), NOW()),
     (${lojaId}, 'Venda #${venda2Id} - Cartão', ${venda2Total}, NOW(), 'paid', 'Vendas', NOW(), NOW())
@@ -305,7 +303,7 @@ await connection.execute(`
 // Contas a Pagar
 await connection.execute(`
   INSERT INTO accountsPayable (
-    tenantId, description, amount, dueDate, status, category, createdAt, updatedAt
+    tenant_id, description, amount, dueDate, status, category, createdAt, updatedAt
   ) VALUES 
     (${lojaId}, 'Aluguel da Loja - Janeiro', 500000, DATE_ADD(NOW(), INTERVAL 5 DAY), 'pending', 'Custo Fixo', NOW(), NOW()),
     (${lojaId}, 'Fornecedor - Compra de Estoque', 1500000, DATE_ADD(NOW(), INTERVAL 10 DAY), 'pending', 'Custo Variável', NOW(), NOW()),

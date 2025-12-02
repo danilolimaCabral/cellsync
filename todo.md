@@ -1523,3 +1523,14 @@
 - [x] Preparar NF-e para usar dados do emitente automaticamente
 - [x] Criar script de seed completo (seed-complete-system.mjs)
 - [x] Criar documentação de teste end-to-end (TESTE-COMPLETO.md)
+
+## 📦 Sistema de Etiquetas de Envio - NOVA FUNCIONALIDADE
+
+- [x] Criar gerador de etiquetas em PDF (formato simples e Correios)
+- [x] Implementar geração de código de barras (CEP e rastreamento)
+- [x] Integrar com API ViaCEP para validação de endereços
+- [x] Criar página de geração de etiquetas
+- [x] Implementar impressão em formato A4 (múltiplas etiquetas)
+- [x] Adicionar seleção de transportadora
+- [x] Criar endpoint backend para gerar etiquetas
+- [ ] Testar geração e impressão

@@ -39,6 +39,7 @@ import AssistenteImportacao from "./pages/AssistenteImportacao";
 import CadastrarProduto from "./pages/CadastrarProduto";
 import CadastrarCliente from "./pages/CadastrarCliente";
 import Comparacao from "./pages/Comparacao";
+import EtiquetasEnvio from "./pages/EtiquetasEnvio";
 import LiberacaoModulos from "./pages/LiberacaoModulos";
 import AssinaturaSucesso from "./pages/AssinaturaSucesso";
 import Onboarding from "./pages/Onboarding";
@@ -311,6 +312,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <ConfiguracaoLoja />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/etiquetas-envio">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <EtiquetasEnvio />
               </DashboardLayout>
             )}
           />
