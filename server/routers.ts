@@ -18,6 +18,7 @@ import { analyzeTicketWithAI } from "./ai-ticket-assistant";
 import { generateLabel, generateBarcode, generateQRCode } from "./label-generator";
 import { tenantSwitchingRouter } from "./routers/tenantSwitching";
 import { tenantManagementRouter } from "./routers/tenantManagement";
+import { aiAssistantRouter } from "./routers/aiAssistant";
 import { notifyOwner } from "./_core/notification";
 
 // Helper para criar procedimentos protegidos
@@ -38,6 +39,7 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 export const appRouter = router({
   system: systemRouter,
+  aiAssistant: aiAssistantRouter,
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
@@ -49,7 +51,9 @@ export const appRouter = router({
         password: z.string().min(6),
       }))
       .mutation(async ({ input, ctx }) => {
+        console.log('[Login] Tentativa de login:', input.email);
         const user = await db.getUserByEmail(input.email);
+        console.log('[Login] Usuário encontrado:', user ? `ID ${user.id}` : 'NÃO ENCONTRADO');
         
         if (!user || !user.active) {
           throw new TRPCError({ 
@@ -58,7 +62,9 @@ export const appRouter = router({
           });
         }
 
+        console.log('[Login] Verificando senha...');
         const isValidPassword = await bcrypt.compare(input.password, user.password);
+        console.log('[Login] Senha válida:', isValidPassword);
         
         if (!isValidPassword) {
           throw new TRPCError({ 

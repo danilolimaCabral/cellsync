@@ -85,6 +85,20 @@
       "when": 1764707312387,
       "tag": "0011_first_silver_samurai",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1764708892974,
+      "tag": "0012_salty_nightmare",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1764710368492,
+      "tag": "0013_dashing_vindicator",
+      "breakpoints": true
     }
   ]
 }

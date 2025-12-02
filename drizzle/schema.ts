@@ -18,6 +18,8 @@ export const tenants = mysqlTable("tenants", {
   trialEndsAt: timestamp("trial_ends_at"),
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }), // ID do cliente no Stripe
   stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }), // ID da assinatura no Stripe
+  aiImportsUsed: int("ai_imports_used").default(0).notNull(), // Contador de importações IA no mês
+  aiImportsResetAt: timestamp("ai_imports_reset_at").defaultNow().notNull(), // Último reset do contador
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -38,6 +40,8 @@ export const plans = mysqlTable("plans", {
   maxProducts: int("max_products").default(500).notNull(), // Limite de produtos
   maxStorage: int("max_storage").default(1024).notNull(), // Limite de armazenamento em MB
   features: json("features"), // Array de features: ["ia", "etiquetas", "relatorios"]
+  aiImportsLimit: int("ai_imports_limit").default(50).notNull(), // Limite de importações IA por mês (-1 = ilimitado)
+  aiTrialDays: int("ai_trial_days").default(60).notNull(), // Dias de trial do assistente IA
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -627,3 +631,64 @@ export const supportTicketMessages = mysqlTable("support_ticket_messages", {
 
 export type SupportTicketMessage = typeof supportTicketMessages.$inferSelect;
 export type InsertSupportTicketMessage = typeof supportTicketMessages.$inferInsert;
+
+// ============= IA PERSONALIZADA POR TENANT =============
+export const tenantAIMemory = mysqlTable("tenant_ai_memory", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull(), // Referência ao tenant
+  memoryType: mysqlEnum("memory_type", [
+    "mapping_rule",      // Regras de mapeamento de colunas
+    "preference",        // Preferências do usuário
+    "pattern",          // Padrões detectados
+    "correction",       // Correções aplicadas
+    "business_rule"     // Regras de negócio aprendidas
+  ]).notNull(),
+  key: varchar("key", { length: 255 }).notNull(), // Identificador da regra (ex: 'category_mapping')
+  value: json("value").notNull(), // Conteúdo da regra/preferência em JSON
+  confidence: int("confidence").default(50).notNull(), // Score de confiança 0-100
+  usageCount: int("usage_count").default(1).notNull(), // Quantas vezes foi usada
+  lastUsedAt: timestamp("last_used_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TenantAIMemory = typeof tenantAIMemory.$inferSelect;
+export type InsertTenantAIMemory = typeof tenantAIMemory.$inferInsert;
+
+// ============= SESSÕES DE IMPORTAÇÃO =============
+export const importSessions = mysqlTable("import_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull(),
+  userId: int("user_id").notNull(), // Quem iniciou a importação
+  moduleType: mysqlEnum("module_type", [
+    "products",
+    "customers", 
+    "sales",
+    "stock",
+    "service_orders",
+    "accounts_payable",
+    "accounts_receivable"
+  ]).notNull(),
+  status: mysqlEnum("status", [
+    "analyzing",      // Analisando arquivo
+    "mapping",        // Mapeando colunas
+    "validating",     // Validando dados
+    "importing",      // Importando
+    "completed",      // Concluído
+    "failed"          // Falhou
+  ]).default("analyzing").notNull(),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  fileUrl: text("file_url"), // URL do arquivo no S3
+  totalRows: int("total_rows").default(0).notNull(),
+  processedRows: int("processed_rows").default(0).notNull(),
+  successRows: int("success_rows").default(0).notNull(),
+  errorRows: int("error_rows").default(0).notNull(),
+  columnMapping: json("column_mapping"), // Mapeamento de colunas aplicado
+  transformations: json("transformations"), // Transformações aplicadas
+  errors: json("errors"), // Lista de erros encontrados
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+export type ImportSession = typeof importSessions.$inferSelect;
+export type InsertImportSession = typeof importSessions.$inferInsert;

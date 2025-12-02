@@ -1230,3 +1230,240 @@
 - [x] Passo 4: Salvar tenant + criar usuário no banco
 - [x] Passo 5: Redirecionar para login
 - [x] Passo 6: Implementação completa do fluxo
+
+## Isolamento de Dados por Tenant
+- [ ] Criar função para copiar produtos padrão do tenant master (ID=1) para novo tenant
+- [ ] Integrar cópia de produtos no endpoint tenant.createWithUser
+- [ ] Garantir que novos tenants comecem com:
+  * ✅ Produtos pré-cadastrados (catálogo padrão)
+  * ❌ Clientes vazios
+  * ❌ Vendas vazias
+  * ❌ Estoque vazio
+  * ❌ OS vazias
+  * ❌ Financeiro vazio
+- [ ] Criar endpoint tenant.clearAllData para limpar todos os dados do tenant
+- [ ] Criar página de Gestão de Dados nas Configurações
+- [ ] Adicionar botão "Limpar Todos os Dados" com confirmação
+- [ ] Adicionar botão "Importar Dados" que redireciona para importação
+- [ ] Testar criação de novo tenant com produtos pré-cadastrados
+- [ ] Testar limpeza de dados e reimportação
+
+## Sistema de Importação em Massa - Todos os Módulos
+
+### Produtos (✅ Já Implementado)
+- [x] Template CSV de produtos
+- [x] Backend de importação
+- [x] Interface de importação
+- [x] Validação e preview
+
+### Clientes (✅ Já Implementado)
+- [x] Template CSV de clientes
+- [x] Backend de importação
+- [x] Interface de importação
+- [x] Validação e preview
+
+### Vendas (🆕 Novo)
+- [ ] Criar template CSV de vendas (data, cliente, vendedor, produtos, valores, forma de pagamento)
+- [ ] Implementar backend de importação de vendas
+- [ ] Validar cliente e vendedor existentes
+- [ ] Validar produtos e estoque
+- [ ] Criar baixa automática de estoque
+- [ ] Calcular comissões automaticamente
+- [ ] Interface de importação com preview
+
+### Estoque (🆕 Novo)
+- [ ] Criar template CSV de estoque (produto, quantidade, IMEI, fornecedor, data entrada)
+- [ ] Implementar backend de importação de saldos
+- [ ] Validar produtos existentes
+- [ ] Criar movimentações de entrada
+- [ ] Atualizar currentStock automaticamente
+- [ ] Interface de importação com preview
+
+### Ordens de Serviço (🆕 Novo)
+- [ ] Criar template CSV de OS (cliente, aparelho, defeito, status, técnico, data abertura)
+- [ ] Implementar backend de importação de OS
+- [ ] Validar cliente e técnico existentes
+- [ ] Criar OS com status correto
+- [ ] Interface de importação com preview
+
+### Fornecedores (🆕 Novo)
+- [ ] Criar tabela de fornecedores no schema (se não existir)
+- [ ] Criar template CSV de fornecedores (nome, CNPJ, telefone, email, endereço)
+- [ ] Implementar backend de importação
+- [ ] Interface de importação com preview
+
+### Contas a Pagar (🆕 Novo)
+- [ ] Criar template CSV de contas a pagar (descrição, valor, vencimento, fornecedor, categoria)
+- [ ] Implementar backend de importação
+- [ ] Validar datas e valores
+- [ ] Calcular status (pendente/vencido)
+- [ ] Interface de importação com preview
+
+### Contas a Receber (🆕 Novo)
+- [ ] Criar template CSV de contas a receber (descrição, valor, vencimento, cliente)
+- [ ] Implementar backend de importação
+- [ ] Validar cliente existente
+- [ ] Calcular status (pendente/vencido)
+- [ ] Interface de importação com preview
+
+### Página Unificada de Importações
+- [ ] Criar página /importacoes com tabs para cada módulo
+- [ ] Botão de download de template em cada tab
+- [ ] Upload de arquivo CSV
+- [ ] Preview dos dados antes de importar
+- [ ] Barra de progresso durante importação
+- [ ] Relatório detalhado de sucesso/erros
+- [ ] Link no menu lateral "Importações em Massa"
+
+## 🤖 Assistente de IA para Importação Inteligente de Dados
+
+### Backend - Análise de Arquivos
+- [x] Criar endpoint para upload de arquivo (CSV, Excel, PDF, imagem)
+- [x] Implementar extração de dados de CSV/Excel com biblioteca
+- [ ] Implementar OCR para extrair dados de imagens de planilhas
+- [x] Criar função de análise de colunas com IA (identificar significado)
+- [x] Implementar mapeamento automático para campos do sistema
+- [x] Criar validação inteligente de dados (formato, duplicatas, erros)
+- [x] Implementar sugestões de correção automática
+
+### Backend - Chat Interativo
+- [x] Criar endpoint de chat para ajustes de importação
+- [x] Implementar contexto de conversa (manter estado da importação)
+- [x] Permitir comandos: renomear colunas, filtrar dados, corrigir valores
+- [x] Implementar transformações: substituir valores, padronizar formatos
+- [x] Criar preview em tempo real após cada ajuste
+
+### Frontend - Interface do Assistente
+- [ ] Criar página /assistente-importacao
+- [ ] Implementar área de upload (drag & drop)
+- [ ] Criar visualização de análise automática
+- [ ] Implementar tabela de preview dos dados
+- [ ] Criar chat interativo lateral
+- [ ] Adicionar botão "Confirmar Importação"
+- [ ] Mostrar progresso e relatório final
+
+### Integração com Módulos
+- [ ] Produtos - Mapear para campos de produtos
+- [ ] Clientes - Mapear para campos de clientes
+- [ ] Vendas - Mapear para vendas (incluir itens)
+- [ ] Estoque - Mapear para movimentações
+- [ ] OS - Mapear para ordens de serviço
+- [ ] Contas a Pagar/Receber - Mapear para transações
+
+### Funcionalidades Avançadas
+- [ ] Detectar e remover duplicatas automaticamente
+- [ ] Sugerir categorias baseado em nome do produto
+- [ ] Calcular preços de atacado automaticamente (margem padrão)
+- [ ] Validar CPF/CNPJ automaticamente
+- [ ] Formatar telefones automaticamente
+- [ ] Detectar e corrigir datas em formatos variados
+
+## 🧠 IA Personalizada por Tenant com Aprendizado Contínuo
+
+### Estrutura de Dados - Memória da IA
+- [ ] Criar tabela `tenant_ai_memory` no schema
+  * tenant_id (FK)
+  * memory_type (enum: 'mapping_rule', 'preference', 'pattern', 'correction')
+  * key (ex: 'category_mapping', 'price_margin', 'supplier_default')
+  * value (JSON com a regra/preferência)
+  * confidence (0-100, aumenta a cada uso confirmado)
+  * created_at, updated_at, last_used_at
+- [ ] Criar índices para busca rápida por tenant_id e memory_type
+
+### Backend - Sistema de Aprendizado
+- [ ] Criar função `saveAIMemory(tenantId, type, key, value)`
+- [ ] Criar função `getAIMemory(tenantId, type, key)`
+- [ ] Criar função `updateConfidence(memoryId, feedback)` - aumenta/diminui confiança
+- [ ] Implementar sugestões baseadas em histórico
+- [ ] Criar análise de padrões (detectar repetições)
+- [ ] Implementar aplicação automática de regras com alta confiança (>80%)
+
+### Tipos de Aprendizado
+
+#### 1. Mapeamento de Colunas
+- [ ] Salvar mapeamento aceito pelo usuário
+- [ ] Aplicar automaticamente em próximas importações
+- [ ] Sugerir mapeamento baseado em nomes similares
+
+#### 2. Transformações de Dados
+- [ ] Lembrar substituições (ex: "CEL" → "Smartphone")
+- [ ] Aplicar automaticamente transformações recorrentes
+- [ ] Sugerir novas transformações baseadas em padrões
+
+#### 3. Regras de Negócio
+- [ ] Detectar margem de lucro média do tenant
+- [ ] Sugerir preços baseados no histórico
+- [ ] Identificar fornecedores frequentes
+- [ ] Detectar categorias mais usadas
+
+#### 4. Validações Personalizadas
+- [ ] Aprender formatos preferidos (telefone, IMEI, etc)
+- [ ] Detectar e alertar sobre valores fora do padrão
+- [ ] Sugerir correções baseadas em dados históricos
+
+### Interface - Feedback e Aprendizado
+- [ ] Botão "✓ Aplicar sempre" em sugestões da IA
+- [ ] Botão "✗ Ignorar sempre" para rejeitar sugestões
+- [ ] Mostrar "🧠 Aprendi!" quando salvar nova regra
+- [ ] Exibir confiança da IA em cada sugestão (ex: "95% de certeza")
+- [ ] Página de "Memória da IA" para revisar regras aprendidas
+
+### Assistente Proativo
+- [ ] Detectar campos vazios e sugerir valores baseados no histórico
+- [ ] Alertar sobre preços muito diferentes da média
+- [ ] Sugerir categorização automática baseada em nome do produto
+- [ ] Detectar duplicatas comparando com histórico
+- [ ] Sugerir fornecedor baseado em produto similar já importado
+
+### Exemplos de Aprendizado
+```json
+// Regra de mapeamento aprendida
+{
+  "type": "mapping_rule",
+  "key": "column_categoria",
+  "value": {
+    "CEL": "Smartphone",
+    "ACES": "Acessório",
+    "PECA": "Peça de Reposição"
+  },
+  "confidence": 95
+}
+
+// Preferência de margem
+{
+  "type": "preference",
+  "key": "profit_margin",
+  "value": {
+    "Smartphone": 35,
+    "Acessório": 50,
+    "Peça de Reposição": 40
+  },
+  "confidence": 88
+}
+
+// Fornecedor padrão por categoria
+{
+  "type": "pattern",
+  "key": "default_supplier",
+  "value": {
+    "Xiaomi": "Importadora Tech Ltda",
+    "Samsung": "Distribuidora Mobile"
+  },
+  "confidence": 92
+}
+```
+
+## Limites do Assistente de IA por Plano
+
+### Configuração de Limites
+- [ ] Adicionar campo `ai_imports_limit` na tabela `plans`
+- [ ] Adicionar campo `ai_imports_used` na tabela `tenants`
+- [ ] Configurar limites:
+  * Básico: 50 importações/mês (60 dias trial)
+  * Profissional: 200 importações/mês (90 dias trial)
+  * Enterprise: Ilimitado
+- [ ] Criar função para verificar limite antes de importação
+- [ ] Resetar contador `ai_imports_used` todo mês
+- [ ] Mostrar contador de uso na interface
+- [ ] Bloquear importação quando atingir limite
+- [ ] Sugerir upgrade quando próximo do limite
