@@ -679,12 +679,11 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    markAllAsRead: protectedProcedure
-      .mutation(async ({ ctx }) => {
-        const notificationsModule = await import("./notifications");
-        await notificationsModule.markAllAsRead(ctx.user.id);
-        return { success: true };
-      }),
+    markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
+      const notificationsModule = await import("./notifications");
+      await notificationsModule.markAllAsRead(ctx.user.id);
+      return { success: true };
+    }),
 
     delete: protectedProcedure
       .input(z.object({

@@ -237,9 +237,9 @@
 
 ## Finalização do Sistema - Pendências Prioritárias
 - [x] Implementar backend de notificações automáticas (alertas de estoque, OS, contas a pagar)
-- [ ] Criar interface frontend de notificações in-app
-- [ ] Criar script de seed de dados para popular banco com exemplos
-- [ ] Adicionar alteração de senhas de usuários
+- [x] Criar interface frontend de notificações in-app (NotificationBell.tsx já existe)
+- [x] Criar script de seed de dados para popular banco com exemplos (seed-demo-data.mjs)
+- [x] Adicionar alteração de senhas de usuários (auth.changePassword já implementado)
 - [ ] Implementar formulário de emissão manual de NF-e
 - [ ] Criar armazenamento de XMLs no S3
 - [ ] Adicionar interface de configuração de regras de comissão
@@ -1393,3 +1393,15 @@
 - [x] Testar interface (tabs, templates, upload funcionando)
 - [ ] Testar importação real de produtos com CSV
 - [ ] Testar importação real de clientes com CSV
+
+
+## Finalização do Sistema - Pendências Prioritárias
+- [x] Implementar backend de notificações automáticas (alertas de estoque, OS, contas a pagar)
+- [x] Criar interface frontend de notificações in-app (NotificationBell.tsx já existe)
+- [x] Criar script de seed de dados para popular banco com exemplos (seed-demo-data.mjs)
+- [x] Adicionar alteração de senhas de usuários (auth.changePassword já implementado)
+- [ ] Implementar formulário de emissão manual de NF-e
+- [ ] Criar armazenamento de XMLs no S3
+- [ ] Adicionar interface de configuração de regras de comissão
+- [ ] Implementar relatório de comissões por período
+- [ ] Criar testes para cálculo de comissões
