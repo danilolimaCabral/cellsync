@@ -1,0 +1,8 @@
+{
+  "query": "UPDATE plans SET priceMonthly = 59900, priceYearly = 598800 WHERE slug = 'enterprise';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute UPDATE plans SET priceMonthly = 59900, priceYearly = 598800 WHERE slug = 'enterprise';",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'priceMonthly' in 'field list'"
+  ]
+}

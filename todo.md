@@ -1190,3 +1190,9 @@
 - [x] Adicionar loading state durante consulta
 - [x] Tratar erros de CNPJ inválido ou não encontrado
 - [ ] Testar com CNPJ real
+
+## Ajustes na Página de Planos
+- [x] Remover botão "Iniciar Trial Grátis" do Plano Enterprise
+- [x] Alterar preço do Plano Enterprise de R$ 397 para R$ 599
+- [x] Manter trial apenas nos planos Básico e Profissional
+- [ ] Testar visualização dos 3 planos

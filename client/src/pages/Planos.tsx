@@ -169,25 +169,28 @@ export default function Planos() {
                         Economize R$ {((plan.priceMonthly * 12 - plan.priceYearly!) / 100).toFixed(2)}
                       </p>
                     )}
-                  </div>                  {/* Bot\u00f5es */}
+                  </div>                      {/* Botões */}
                   <div className="space-y-3 mb-6">
-                    <Button
-                      onClick={() => handleStartTrial(plan.slug)}
-                      disabled={loadingPlan === plan.slug + "_trial"}
-                      variant="outline"
-                      className="w-full border-2 border-green-500 text-green-700 hover:bg-green-50 dark:hover:bg-green-950"
-                    >
-                      {loadingPlan === plan.slug + "_trial" ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Ativando...
-                        </>
-                      ) : (
-                        <>
-                          🎉 Iniciar Trial Grátis (14 dias)
-                        </>
-                      )}
-                    </Button>
+                    {/* Mostrar trial apenas para Básico e Profissional */}
+                    {plan.slug !== "enterprise" && (
+                      <Button
+                        onClick={() => handleStartTrial(plan.slug)}
+                        disabled={loadingPlan === plan.slug + "_trial"}
+                        variant="outline"
+                        className="w-full border-2 border-green-500 text-green-700 hover:bg-green-50 dark:hover:bg-green-950"
+                      >
+                        {loadingPlan === plan.slug + "_trial" ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Ativando...
+                          </>
+                        ) : (
+                          <>
+                            🎉 Iniciar Trial Grátis (14 dias)
+                          </>
+                        )}
+                      </Button>
+                    )}
                     
                     <Button
                       onClick={() => handleSubscribe(plan.slug)}
@@ -195,7 +198,9 @@ export default function Planos() {
                       className={`w-full ${
                         isPopular
                           ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                          : ""
+                          : plan.slug === "enterprise"
+                            ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                            : ""
                       }`}
                     >
                       {loadingPlan === plan.slug ? (
