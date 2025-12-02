@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json, index } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json } from "drizzle-orm/mysql-core";
 
 /**
  * Sistema CellSync - Schema completo do banco de dados
@@ -18,18 +18,6 @@ export const tenants = mysqlTable("tenants", {
   trialEndsAt: timestamp("trial_ends_at"),
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }), // ID do cliente no Stripe
   stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }), // ID da assinatura no Stripe
-  
-  // Dados da empresa (preenchidos via consulta CNPJ)
-  cnpj: varchar("cnpj", { length: 18 }), // CNPJ da empresa
-  razaoSocial: varchar("razao_social", { length: 255 }), // Razão social
-  nomeFantasia: varchar("nome_fantasia", { length: 255 }), // Nome fantasia
-  endereco: text("endereco"), // Endereço completo
-  cidade: varchar("cidade", { length: 100 }), // Cidade
-  estado: varchar("estado", { length: 2 }), // UF
-  cep: varchar("cep", { length: 10 }), // CEP
-  telefone: varchar("telefone", { length: 20 }), // Telefone
-  email: varchar("email", { length: 320 }), // Email da empresa
-  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -61,20 +49,11 @@ export type InsertPlan = typeof plans.$inferInsert;
 // ============= USUÁRIOS E AUTENTICAÇÃO =============
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   email: varchar("email", { length: 320 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(), // Hash bcrypt
   name: text("name").notNull(),
-  role: mysqlEnum("role", ["master_admin", "admin", "vendedor", "tecnico", "gerente"]).default("vendedor").notNull(),
+  role: mysqlEnum("role", ["admin", "vendedor", "tecnico", "gerente"]).default("vendedor").notNull(),
   active: boolean("active").default(true).notNull(),
-  
-  // Campos de vendedor
-  cpf: varchar("cpf", { length: 14 }), // CPF do vendedor
-  phone: varchar("phone", { length: 20 }), // Telefone do vendedor
-  commissionPercentage: int("commission_percentage").default(0), // Percentual de comissão em centésimos (500 = 5%)
-  commissionType: mysqlEnum("commission_type", ["percentual", "fixo", "misto"]).default("percentual"), // Tipo de comissão
-  fixedCommissionAmount: int("fixed_commission_amount").default(0), // Valor fixo de comissão em centavos (se tipo = fixo)
-  
   openId: varchar("openId", { length: 64 }), // Mantido para compatibilidade com SDK
   loginMethod: varchar("loginMethod", { length: 64 }), // Mantido para compatibilidade com SDK
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -88,7 +67,6 @@ export type InsertUser = typeof users.$inferInsert;
 // ============= CLIENTES (CRM) =============
 export const customers = mysqlTable("customers", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   name: text("name").notNull(),
   fantasyName: varchar("fantasyName", { length: 255 }), // Nome fantasia
   email: varchar("email", { length: 320 }),
@@ -117,7 +95,6 @@ export type InsertCustomer = typeof customers.$inferInsert;
 // ============= PRODUTOS =============
 export const products = mysqlTable("products", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   name: text("name").notNull(),
   description: text("description"),
   category: varchar("category", { length: 100 }),
@@ -147,7 +124,6 @@ export type InsertProduct = typeof products.$inferInsert;
 // ============= ESTOQUE COM IMEI =============
 export const stockItems = mysqlTable("stockItems", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   productId: int("productId").notNull(),
   imei: varchar("imei", { length: 20 }).unique(),
   serialNumber: varchar("serialNumber", { length: 100 }),
@@ -170,7 +146,6 @@ export type InsertStockItem = typeof stockItems.$inferInsert;
 // ============= MOVIMENTAÇÕES DE ESTOQUE =============
 export const stockMovements = mysqlTable("stockMovements", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   productId: int("productId").notNull(),
   stockItemId: int("stockItemId"), // Opcional, para produtos com IMEI
   type: mysqlEnum("type", ["entrada", "saida", "transferencia", "ajuste", "devolucao"]).notNull(),
@@ -190,7 +165,6 @@ export type InsertStockMovement = typeof stockMovements.$inferInsert;
 // ============= VENDAS =============
 export const sales = mysqlTable("sales", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   customerId: int("customerId"),
   sellerId: int("sellerId").notNull(), // Vendedor
   totalAmount: int("totalAmount").notNull(), // Total em centavos
@@ -215,7 +189,6 @@ export type InsertSale = typeof sales.$inferInsert;
 // ============= ITENS DA VENDA =============
 export const saleItems = mysqlTable("saleItems", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   saleId: int("saleId").notNull(),
   productId: int("productId").notNull(),
   stockItemId: int("stockItemId"), // Para produtos com IMEI
@@ -233,7 +206,6 @@ export type InsertSaleItem = typeof saleItems.$inferInsert;
 // ============= ORDENS DE SERVIÇO =============
 export const serviceOrders = mysqlTable("serviceOrders", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   customerId: int("customerId").notNull(),
   technicianId: int("technicianId"), // Técnico responsável
   deviceType: varchar("deviceType", { length: 100 }),
@@ -265,7 +237,6 @@ export type InsertServiceOrder = typeof serviceOrders.$inferInsert;
 // ============= PEÇAS UTILIZADAS NA OS =============
 export const serviceOrderParts = mysqlTable("serviceOrderParts", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   serviceOrderId: int("serviceOrderId").notNull(),
   productId: int("productId").notNull(),
   stockItemId: int("stockItemId"),
@@ -281,7 +252,6 @@ export type InsertServiceOrderPart = typeof serviceOrderParts.$inferInsert;
 // ============= FINANCEIRO - CONTAS A PAGAR =============
 export const accountsPayable = mysqlTable("accountsPayable", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   description: text("description").notNull(),
   category: varchar("category", { length: 100 }), // Categoria de despesa
   costCenter: varchar("costCenter", { length: 100 }), // Centro de custo
@@ -305,7 +275,6 @@ export type InsertAccountPayable = typeof accountsPayable.$inferInsert;
 // ============= FINANCEIRO - CONTAS A RECEBER =============
 export const accountsReceivable = mysqlTable("accountsReceivable", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   customerId: int("customerId"),
   description: text("description").notNull(),
   amount: int("amount").notNull(), // Valor em centavos
@@ -327,7 +296,6 @@ export type InsertAccountReceivable = typeof accountsReceivable.$inferInsert;
 // ============= TRANSAÇÕES DE CAIXA =============
 export const cashTransactions = mysqlTable("cashTransactions", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   type: mysqlEnum("type", ["entrada", "saida"]).notNull(),
   category: varchar("category", { length: 100 }),
   amount: int("amount").notNull(), // Valor em centavos
@@ -346,7 +314,6 @@ export type InsertCashTransaction = typeof cashTransactions.$inferInsert;
 // ============= CAMPANHAS DE MARKETING =============
 export const marketingCampaigns = mysqlTable("marketingCampaigns", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   name: text("name").notNull(),
   description: text("description"),
   type: mysqlEnum("type", ["email", "sms", "whatsapp", "push"]).notNull(),
@@ -369,7 +336,6 @@ export type InsertMarketingCampaign = typeof marketingCampaigns.$inferInsert;
 // ============= NOTIFICAÇÕES =============
 export const notifications = mysqlTable("notifications", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   userId: int("userId"),
   customerId: int("customerId"),
   type: varchar("type", { length: 50 }).notNull(), // os_status, payment_reminder, etc
@@ -390,7 +356,6 @@ export type InsertNotification = typeof notifications.$inferInsert;
 // ============= CONFIGURAÇÕES DO SISTEMA =============
 export const systemSettings = mysqlTable("systemSettings", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   key: varchar("key", { length: 100 }).notNull().unique(),
   value: text("value"),
   description: text("description"),
@@ -404,7 +369,6 @@ export type InsertSystemSetting = typeof systemSettings.$inferInsert;
 // ============= LOGS DE AUDITORIA =============
 export const auditLogs = mysqlTable("auditLogs", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   userId: int("userId").notNull(),
   action: varchar("action", { length: 100 }).notNull(), // create, update, delete
   entity: varchar("entity", { length: 100 }).notNull(), // sale, product, customer, etc
@@ -421,7 +385,6 @@ export type InsertAuditLog = typeof auditLogs.$inferInsert;
 // ============= COMISSÕES DE VENDEDORES =============
 export const commissionRules = mysqlTable("commissionRules", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   userId: int("userId").notNull(), // Vendedor
   name: text("name").notNull(), // Nome da regra
   type: mysqlEnum("type", ["percentual_fixo", "meta_progressiva", "bonus_produto"]).notNull(),
@@ -451,7 +414,6 @@ export type InsertCommissionRule = typeof commissionRules.$inferInsert;
 
 export const commissions = mysqlTable("commissions", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   userId: int("userId").notNull(), // Vendedor
   saleId: int("saleId"), // Venda relacionada (opcional para comissões manuais)
   amount: int("amount").notNull(), // Valor da comissão em centavos
@@ -474,7 +436,6 @@ export type InsertCommission = typeof commissions.$inferInsert;
 // Tabela de Notas Fiscais Eletrônicas
 export const invoices = mysqlTable("invoices", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   saleId: int("saleId"), // Venda relacionada (opcional para NF-e avulsa)
   number: int("number").notNull(), // Número da NF-e
   series: int("series").notNull().default(1), // Série da NF-e
@@ -547,7 +508,6 @@ export type InsertInvoice = typeof invoices.$inferInsert;
 // Tabela de Itens da Nota Fiscal
 export const invoiceItems = mysqlTable("invoiceItems", {
   id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
   invoiceId: int("invoiceId").notNull(),
   productId: int("productId"),
   
@@ -591,152 +551,3 @@ export const invoiceItems = mysqlTable("invoiceItems", {
 
 export type InvoiceItem = typeof invoiceItems.$inferSelect;
 export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
-
-// ============= HISTÓRICO DE BACKUPS =============
-export const backupHistory = mysqlTable("backupHistory", {
-  id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master para backup global)
-  filename: varchar("filename", { length: 255 }).notNull(), // Nome do arquivo no S3
-  s3Key: varchar("s3_key", { length: 500 }).notNull(), // Caminho completo no S3
-  s3Url: text("s3_url"), // URL de acesso ao backup
-  fileSize: int("file_size").notNull(), // Tamanho em bytes
-  status: mysqlEnum("status", ["success", "failed", "in_progress"]).default("in_progress").notNull(),
-  errorMessage: text("error_message"), // Mensagem de erro caso falhe
-  duration: int("duration"), // Duração em milissegundos
-  backupType: mysqlEnum("backup_type", ["manual", "scheduled"]).default("scheduled").notNull(),
-  deletedCount: int("deleted_count").default(0), // Quantidade de backups antigos removidos
-  triggeredBy: int("triggered_by"), // ID do usuário que executou (null para agendado)
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  completedAt: timestamp("completedAt"),
-});
-
-export type BackupHistory = typeof backupHistory.$inferSelect;
-export type InsertBackupHistory = typeof backupHistory.$inferInsert;
-
-// ============= SISTEMA DE MÓDULOS E PERMISSÕES =============
-
-/**
- * Módulos disponíveis no sistema
- */
-export const modules = mysqlTable("modules", {
-  id: int("id").autoincrement().primaryKey(),
-  code: varchar("code", { length: 50 }).notNull().unique(), // pdv, estoque, os, financeiro, etc
-  name: varchar("name", { length: 100 }).notNull(), // Nome amigável
-  description: text("description"), // Descrição do módulo
-  icon: varchar("icon", { length: 50 }), // Nome do ícone Lucide
-  routePath: varchar("route_path", { length: 100 }), // Rota principal do módulo
-  active: boolean("active").default(true).notNull(), // Se o módulo está disponível
-  sortOrder: int("sort_order").default(0).notNull(), // Ordem de exibição
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
-
-export type Module = typeof modules.$inferSelect;
-export type InsertModule = typeof modules.$inferInsert;
-
-/**
- * Módulos contratados por tenant
- */
-export const tenantModules = mysqlTable("tenantModules", {
-  id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull(),
-  moduleId: int("module_id").notNull(),
-  enabled: boolean("enabled").default(true).notNull(), // Se está ativo para este tenant
-  expiresAt: timestamp("expiresAt"), // Data de expiração (null = sem expiração)
-  maxUsers: int("max_users"), // Limite de usuários (null = ilimitado)
-  notes: text("notes"), // Observações sobre a contratação
-  activatedAt: timestamp("activatedAt").defaultNow().notNull(),
-  activatedBy: int("activated_by"), // ID do usuário que ativou
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
-
-export type TenantModule = typeof tenantModules.$inferSelect;
-export type InsertTenantModule = typeof tenantModules.$inferInsert;
-
-/**
- * Permissões por role dentro de cada módulo
- */
-export const modulePermissions = mysqlTable("modulePermissions", {
-  id: int("id").autoincrement().primaryKey(),
-  moduleId: int("module_id").notNull(),
-  role: mysqlEnum("role", ["master_admin", "admin", "gerente", "vendedor", "tecnico", "financeiro"]).notNull(),
-  canView: boolean("can_view").default(false).notNull(), // Pode visualizar
-  canCreate: boolean("can_create").default(false).notNull(), // Pode criar
-  canEdit: boolean("can_edit").default(false).notNull(), // Pode editar
-  canDelete: boolean("can_delete").default(false).notNull(), // Pode excluir
-  canApprove: boolean("can_approve").default(false).notNull(), // Pode aprovar (para workflows)
-  customPermissions: json("custom_permissions"), // Permissões específicas do módulo
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
-
-export type ModulePermission = typeof modulePermissions.$inferSelect;
-export type InsertModulePermission = typeof modulePermissions.$inferInsert;
-
-/**
- * Planos pré-configurados
- */
-export const subscriptionPlans = mysqlTable("subscriptionPlans", {
-  id: int("id").autoincrement().primaryKey(),
-  code: varchar("code", { length: 50 }).notNull().unique(), // basico, profissional, enterprise
-  name: varchar("name", { length: 100 }).notNull(),
-  description: text("description"),
-  monthlyPrice: int("monthly_price").notNull(), // Preço em centavos
-  maxUsers: int("max_users"), // Limite de usuários (null = ilimitado)
-  maxStorage: int("max_storage"), // Limite de armazenamento em MB (null = ilimitado)
-  features: json("features"), // Lista de features incluídas
-  active: boolean("active").default(true).notNull(),
-  sortOrder: int("sort_order").default(0).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
-
-export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
-export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
-
-/**
- * Módulos incluídos em cada plano
- */
-export const planModules = mysqlTable("planModules", {
-  id: int("id").autoincrement().primaryKey(),
-  planId: int("plan_id").notNull(),
-  moduleId: int("module_id").notNull(),
-  included: boolean("included").default(true).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export type PlanModule = typeof planModules.$inferSelect;
-export type InsertPlanModule = typeof planModules.$inferInsert;
-
-
-// ============= METAS DE VENDAS =============
-/**
- * Metas de vendas por vendedor, produto ou loja
- */
-export const salesGoals = mysqlTable("salesGoals", {
-  id: int("id").autoincrement().primaryKey(),
-  tenantId: int("tenant_id").notNull().default(1), // Multi-tenant: ID do tenant (1 = Master)
-  name: varchar("name", { length: 255 }).notNull(), // Nome da meta
-  type: mysqlEnum("type", ["vendedor", "produto", "loja", "geral"]).notNull(),
-  
-  // Referências (opcional dependendo do tipo)
-  userId: int("userId"), // Se meta for por vendedor
-  productId: int("productId"), // Se meta for por produto
-  
-  // Período da meta
-  startDate: timestamp("startDate").notNull(),
-  endDate: timestamp("endDate").notNull(),
-  
-  // Valores da meta
-  targetAmount: int("targetAmount").notNull(), // Meta em centavos (valor monetário)
-  targetQuantity: int("targetQuantity"), // Meta em quantidade de produtos (opcional)
-  
-  // Status
-  active: boolean("active").default(true).notNull(),
-  
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type SalesGoal = typeof salesGoals.$inferSelect;
-export type InsertSalesGoal = typeof salesGoals.$inferInsert;

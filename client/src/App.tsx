@@ -6,7 +6,6 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Cadastro from "./pages/Cadastro";
 import Dashboard from "./pages/Dashboard";
 import Vendas from "./pages/Vendas";
 import Estoque from "./pages/Estoque";
@@ -24,16 +23,8 @@ import Notificacoes from "./pages/Notificacoes";
 import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
 import ImportarProdutos from "./pages/ImportarProdutos";
 import GerarEtiquetas from "./pages/GerarEtiquetas";
-import ImportarXML from "./pages/ImportarXML";
-import ImportarPlanilha from "./pages/ImportarPlanilha";
+import PDVMobile from "./pages/PDVMobile";
 import Planos from "./pages/Planos";
-import AdminMaster from "./pages/AdminMaster";
-import GerenciarBackups from "./pages/GerenciarBackups";
-import DashboardBI from "./pages/DashboardBI";
-import ControleComissoes from "./pages/ControleComissoes";
-import GerenciarModulos from "./pages/GerenciarModulos";
-import CompanySettings from "./pages/CompanySettings";
-import Vendors from "./pages/Vendors";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -61,73 +52,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
-      <Route path="/cadastro" component={Cadastro} />
       <Route path="/planos" component={Planos} />
-      
-      {/* Rota Admin Master - Apenas para master_admin */}
-      <Route path="/admin-master">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <AdminMaster />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-      
-      {/* Rota de Gerenciamento de Backups - Apenas para master_admin */}
-      <Route path="/gerenciar-backups">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <GerenciarBackups />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-      
-      {/* Rota de Gerenciar Módulos */}
-      <Route path="/gerenciar-modulos">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <GerenciarModulos />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-
-      {/* Rota de Controle de Comissões */}
-      <Route path="/controle-comissoes">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <ControleComissoes />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-
-      {/* Rota de Dashboard BI */}
-      <Route path="/dashboard-bi">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <DashboardBI />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
       
       {/* Rotas protegidas com DashboardLayout */}
       <Route path="/dashboard">
@@ -178,36 +103,24 @@ function Router() {
         )}
       </Route>
 
+      <Route path="/pdv-mobile">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <PDVMobile />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
       <Route path="/gerar-etiquetas">
         {() => (
           <ProtectedRoute
             component={() => (
               <DashboardLayout>
                 <GerarEtiquetas />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-
-      <Route path="/importar-xml">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <ImportarXML />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-
-      <Route path="/importar-planilha">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <ImportarPlanilha />
               </DashboardLayout>
             )}
           />
@@ -300,25 +213,13 @@ function Router() {
 
       <Route path="/configuracoes">
         {() => (
-          <DashboardLayout>
-            <Configuracoes />
-          </DashboardLayout>
-        )}
-      </Route>
-
-      <Route path="/configuracoes-empresa">
-        {() => (
-          <DashboardLayout>
-            <CompanySettings />
-          </DashboardLayout>
-        )}
-      </Route>
-
-      <Route path="/vendedores">
-        {() => (
-          <DashboardLayout>
-            <Vendors />
-          </DashboardLayout>
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Configuracoes />
+              </DashboardLayout>
+            )}
+          />
         )}
       </Route>
 

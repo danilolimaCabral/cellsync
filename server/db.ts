@@ -1672,12 +1672,3 @@ export async function getSaleItems(saleId: number) {
   
   return items;
 }
-
-export async function getTenantById(id: number) {
-  const db = await getDb();
-  if (!db) return null;
-  
-  const { tenants } = await import("../drizzle/schema");
-  const result = await db.select().from(tenants).where(eq(tenants.id, id)).limit(1);
-  return result[0] || null;
-}

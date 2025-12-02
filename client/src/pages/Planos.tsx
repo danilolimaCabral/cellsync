@@ -2,45 +2,19 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
-import { Check, Loader2, Sparkles, Zap, Crown, ShoppingCart } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Check, Loader2, Sparkles, Zap, Crown } from "lucide-react";
 
 
 export default function Planos() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const [confirmDialog, setConfirmDialog] = useState<{
-    open: boolean;
-    plan: any | null;
-  }>({ open: false, plan: null });
   
   const { data: plans, isLoading } = trpc.plans.list.useQuery();
   const createCheckout = trpc.plans.createCheckout.useMutation();
 
 
-  const openConfirmDialog = (plan: any) => {
-    setConfirmDialog({ open: true, plan });
-  };
-
-  const closeConfirmDialog = () => {
-    setConfirmDialog({ open: false, plan: null });
-  };
-
-  const handleConfirmSubscribe = async () => {
-    if (!confirmDialog.plan) return;
-    
-    const planSlug = confirmDialog.plan.slug;
+  const handleSubscribe = async (planSlug: string) => {
     setLoadingPlan(planSlug);
-    closeConfirmDialog();
-    
     try {
       const result = await createCheckout.mutateAsync({
         planSlug,
@@ -50,14 +24,10 @@ export default function Planos() {
       // Abrir checkout em nova aba
       if (result.checkoutUrl) {
         window.open(result.checkoutUrl, "_blank");
-        toast.success("Redirecionando para pagamento", {
-          description: "Uma nova aba foi aberta com o checkout seguro do Stripe.",
-        });
+        alert("Redirecionando para pagamento...");
       }
     } catch (error: any) {
-      toast.error("Erro ao processar contratação", {
-        description: error.message || "Tente novamente mais tarde.",
-      });
+      alert(`Erro: ${error.message || "Tente novamente mais tarde"}`);
     } finally {
       setLoadingPlan(null);
     }
@@ -126,7 +96,7 @@ export default function Planos() {
         {/* Planos */}
         <div className="grid md:grid-cols-3 gap-8">
           {plans?.map((plan: any) => {
-            const features = plan.features as string[];
+            const features = JSON.parse(plan.features as string) as string[];
             const price = billingPeriod === "monthly" ? plan.priceMonthly : plan.priceYearly;
             const priceDisplay = (price / 100).toFixed(2);
             const isPopular = plan.slug === "profissional";
@@ -179,7 +149,7 @@ export default function Planos() {
 
                   {/* Botão */}
                   <Button
-                    onClick={() => openConfirmDialog(plan)}
+                    onClick={() => handleSubscribe(plan.slug)}
                     disabled={loadingPlan === plan.slug}
                     className={`w-full mb-6 ${
                       isPopular
@@ -230,104 +200,6 @@ export default function Planos() {
           </p>
         </div>
       </div>
-
-      {/* Dialog de Confirmação */}
-      <Dialog open={confirmDialog.open} onOpenChange={(open) => !open && closeConfirmDialog()}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5 text-purple-600" />
-              Confirmar Contratação
-            </DialogTitle>
-            <DialogDescription>
-              Você está prestes a contratar o seguinte plano:
-            </DialogDescription>
-          </DialogHeader>
-
-          {confirmDialog.plan && (
-            <div className="space-y-4 py-4">
-              {/* Resumo do Plano */}
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 p-4 rounded-lg">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`p-2 rounded-lg bg-gradient-to-br ${getPlanColor(confirmDialog.plan.slug)} text-white`}>
-                    {getPlanIcon(confirmDialog.plan.slug)}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                      {confirmDialog.plan.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {confirmDialog.plan.description}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Preço */}
-                <div className="flex items-baseline gap-2 justify-center py-3 border-t border-purple-200 dark:border-purple-800">
-                  <span className="text-3xl font-black text-gray-900 dark:text-white">
-                    R$ {(
-                      (billingPeriod === "monthly" 
-                        ? confirmDialog.plan.priceMonthly 
-                        : confirmDialog.plan.priceYearly) / 100
-                    ).toFixed(2)}
-                  </span>
-                  <span className="text-gray-600 dark:text-gray-400">
-                    /{billingPeriod === "monthly" ? "mês" : "ano"}
-                  </span>
-                </div>
-
-                {billingPeriod === "yearly" && (
-                  <p className="text-sm text-green-600 dark:text-green-400 text-center">
-                    🎉 Economize R$ {(
-                      (confirmDialog.plan.priceMonthly * 12 - confirmDialog.plan.priceYearly!) / 100
-                    ).toFixed(2)} por ano!
-                  </p>
-                )}
-              </div>
-
-              {/* Informações Importantes */}
-              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                <p className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-500" />
-                  14 dias de teste grátis
-                </p>
-                <p className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-500" />
-                  Cancele quando quiser
-                </p>
-                <p className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-500" />
-                  Pagamento seguro via Stripe
-                </p>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={closeConfirmDialog}
-              disabled={loadingPlan !== null}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleConfirmSubscribe}
-              disabled={loadingPlan !== null}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-            >
-              {loadingPlan ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Processando...
-                </>
-              ) : (
-                "Confirmar Contratação"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

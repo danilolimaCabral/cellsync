@@ -57,55 +57,6 @@
       "when": 1764627007186,
       "tag": "0007_lovely_joystick",
       "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "5",
-      "when": 1764669992998,
-      "tag": "0008_loud_hairball",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "5",
-      "when": 1764670566813,
-      "tag": "0009_nappy_killmonger",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "5",
-      "when": 1764680657657,
-      "tag": "0010_fixed_paper_doll",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "5",
-      "when": 1764684001300,
-      "tag": "0011_careful_bastion",
-      "breakpoints": true
-    },
-    {
-      "idx": 12,
-      "version": "5",
-      "when": 1764685363816,
-      "tag": "0012_cute_magik",
-      "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "5",
-      "when": 1764687550739,
-      "tag": "0013_sturdy_the_anarchist",
-      "breakpoints": true
-    },
-    {
-      "idx": 14,
-      "version": "5",
-      "when": 1764690467883,
-      "tag": "0014_unusual_reavers",
-      "breakpoints": true
     }
   ]
 }

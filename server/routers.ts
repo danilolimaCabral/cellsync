@@ -3,16 +3,6 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { onboardingRouter } from "./onboarding";
-import { tenantManagementRouter } from "./tenant-management";
-import { tenantSwitchingRouter } from "./tenant-switching";
-import { xmlImportRouter } from "./xml-import";
-import { csvImportRouter } from "./csv-import";
-import { backupRouter } from "./routers/backup";
-import { dashboardRouter } from "./routers/dashboard";
-import { commissionsRouter as commissionsManagementRouter } from "./routers/commissions";
-import { modulesRouter } from "./routers/modules";
-import { vendorsRouter } from "./routers/vendors";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import bcrypt from "bcryptjs";
@@ -40,15 +30,6 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 export const appRouter = router({
   system: systemRouter,
-  onboarding: onboardingRouter,
-  tenantManagement: tenantManagementRouter,
-  tenantSwitching: tenantSwitchingRouter,
-  xmlImport: xmlImportRouter,
-  csvImport: csvImportRouter,
-  backup: backupRouter,
-  dashboardBI: dashboardRouter,
-  commissionsManagement: commissionsManagementRouter,
-  modules: modulesRouter,
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
@@ -429,7 +410,6 @@ export const appRouter = router({
     create: protectedProcedure
       .input(z.object({
         customerId: z.number(),
-        sellerId: z.number().optional(), // Vendedor (opcional, padrão = usuário logado)
         items: z.array(z.object({
           productId: z.number(),
           quantity: z.number().min(1),
@@ -443,7 +423,7 @@ export const appRouter = router({
         appliedDiscount: z.number().min(0).default(0),
       }))
       .mutation(async ({ input, ctx }) => {
-        const sellerId = input.sellerId || ctx.user.id; // Usar vendedor selecionado ou usuário logado
+        const sellerId = ctx.user.id;
         const saleId = await db.createSale({
           customerId: input.customerId,
           sellerId,
@@ -518,71 +498,6 @@ export const appRouter = router({
         return {
           success: true,
           pdf: pdfBuffer.toString("base64"),
-        };
-      }),
-
-    generateFiscalReceipt: protectedProcedure
-      .input(z.object({
-        saleId: z.number(),
-        paperWidth: z.enum(["58", "80"]).default("80"),
-        includeQRCode: z.boolean().default(true),
-      }))
-      .mutation(async ({ input, ctx }) => {
-        const { generateFiscalReceipt, escPosToBase64 } = await import("./fiscal-printer");
-        
-        // Buscar dados da venda
-        const sale = await db.getSaleById(input.saleId);
-        if (!sale) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Venda não encontrada" });
-        }
-        
-        // Buscar dados do cliente
-        const customer = sale.customerId ? await db.getCustomerById(sale.customerId) : null;
-        
-        // Buscar dados do vendedor
-        const seller = await db.getUserById(sale.sellerId);
-        
-        // Buscar itens da venda
-        const items = await db.getSaleItems(input.saleId);
-        
-        // Buscar dados da empresa (tenant)
-        const tenant = await db.getTenantById(ctx.user.tenantId);
-        
-        // Preparar dados para o cupom fiscal
-        const fiscalData = {
-          id: sale.id,
-          saleDate: sale.createdAt,
-          items: items.map((item: any) => ({
-            productName: item.productName,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            totalPrice: item.quantity * item.unitPrice,
-          })),
-          subtotal: sale.totalAmount,
-          discount: sale.discountAmount || 0,
-          totalAmount: sale.finalAmount,
-          paymentMethod: sale.paymentMethod || "dinheiro",
-          customerName: customer?.name,
-          customerDocument: customer?.cpf || customer?.cnpj || undefined,
-          sellerName: seller?.name,
-          tenantName: tenant?.nomeFantasia || tenant?.razaoSocial || tenant?.name || "LOJA DE CELULAR",
-          tenantDocument: tenant?.cnpj || undefined,
-          tenantAddress: tenant?.endereco || undefined,
-        };
-        
-        // Gerar cupom fiscal ESC/POS
-        const escPosData = generateFiscalReceipt(fiscalData, {
-          paperWidth: parseInt(input.paperWidth) as 58 | 80,
-          includeQRCode: input.includeQRCode,
-        });
-        
-        // Converter para Base64 para envio via web
-        const base64Data = escPosToBase64(escPosData);
-        
-        return {
-          success: true,
-          escPosBase64: base64Data,
-          rawData: escPosData,
         };
       }),
   }),
@@ -756,11 +671,12 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
-      const notificationsModule = await import("./notifications");
-      await notificationsModule.markAllAsRead(ctx.user.id);
-      return { success: true };
-    }),
+    markAllAsRead: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const notificationsModule = await import("./notifications");
+        await notificationsModule.markAllAsRead(ctx.user.id);
+        return { success: true };
+      }),
 
     delete: protectedProcedure
       .input(z.object({
@@ -1600,145 +1516,5 @@ export const appRouter = router({
       return null;
     }),
   }),
-
-  // ============= ADMIN MASTER (GERENCIAR TODOS OS TENANTS) =============
-  adminMaster: router({
-    // Listar todos os tenants
-    getTenants: protectedProcedure.query(async ({ ctx }) => {
-      // Verificar se é master_admin
-      if (ctx.user.role !== "master_admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado. Apenas master_admin pode acessar." });
-      }
-      
-      const { getAllTenants } = await import("./admin-master");
-      const tenants = await getAllTenants();
-      return tenants;
-    }),
-
-    // Obter métricas do painel admin
-    getMetrics: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "master_admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado. Apenas master_admin pode acessar." });
-      }
-      
-      const { getAdminMetrics } = await import("./admin-master");
-      const metrics = await getAdminMetrics();
-      return metrics;
-    }),
-
-    // Obter crescimento de clientes
-    getClientGrowth: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "master_admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado." });
-      }
-      
-      const { getClientGrowth } = await import("./admin-master");
-      const growth = await getClientGrowth();
-      return growth;
-    }),
-
-    // Obter receita mensal
-    getMonthlyRevenue: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "master_admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado." });
-      }
-      
-      const { getMonthlyRevenue } = await import("./admin-master");
-      const revenue = await getMonthlyRevenue();
-      return revenue;
-    }),
-
-    // Ativar tenant
-    activateTenant: protectedProcedure
-      .input(z.object({ tenantId: z.number() }))
-      .mutation(async ({ input, ctx }) => {
-        if (ctx.user.role !== "master_admin") {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado." });
-        }
-        
-        const { activateTenant } = await import("./admin-master");
-        const result = await activateTenant(input.tenantId);
-        return result;
-      }),
-
-    // Desativar tenant
-    deactivateTenant: protectedProcedure
-      .input(z.object({ tenantId: z.number() }))
-      .mutation(async ({ input, ctx }) => {
-        if (ctx.user.role !== "master_admin") {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado." });
-        }
-        
-        const { deactivateTenant } = await import("./admin-master");
-        const result = await deactivateTenant(input.tenantId);
-        return result;
-      }),
-
-    // Cancelar tenant
-    cancelTenant: protectedProcedure
-      .input(z.object({ tenantId: z.number() }))
-      .mutation(async ({ input, ctx }) => {
-        if (ctx.user.role !== "master_admin") {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado." });
-        }
-        
-        const { cancelTenant } = await import("./admin-master");
-        const result = await cancelTenant(input.tenantId);
-        return result;
-      }),
-  }),
-
-  // ============= CONSULTA DE CNPJ =============
-  cnpj: router({
-    lookup: publicProcedure
-      .input(z.object({
-        cnpj: z.string().min(14).max(18), // Aceita com ou sem formatação
-      }))
-      .mutation(async ({ input }) => {
-        const { lookupCNPJ, extractBasicData } = await import("./cnpj-lookup");
-        
-        try {
-          const cnpjData = await lookupCNPJ(input.cnpj);
-          
-          if (!cnpjData) {
-            return {
-              success: false,
-              error: "CNPJ não encontrado na Receita Federal",
-            };
-          }
-          
-          const basicData = extractBasicData(cnpjData);
-          
-          return {
-            success: true,
-            data: basicData,
-            fullData: cnpjData, // Dados completos para referência
-          };
-        } catch (error: any) {
-          return {
-            success: false,
-            error: error.message || "Erro ao consultar CNPJ",
-          };
-        }
-      }),
-
-    validate: publicProcedure
-      .input(z.object({
-        cnpj: z.string(),
-      }))
-      .query(async ({ input }) => {
-        const { validateCNPJ, formatCNPJ } = await import("./cnpj-lookup");
-        
-        const isValid = validateCNPJ(input.cnpj);
-        
-        return {
-          valid: isValid,
-          formatted: isValid ? formatCNPJ(input.cnpj) : null,
-        };
-      }),
-  }),
-
-  // Vendedores
-  vendors: vendorsRouter,
 });
 export type AppRouter = typeof appRouter;

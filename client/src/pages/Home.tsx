@@ -212,11 +212,10 @@ export default function Home() {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  onClick={() => setLocation("/cadastro")}
                   className="text-lg px-10 py-7 border-2 border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400 transition-all duration-300"
                 >
                   <Sparkles className="mr-2 h-5 w-5" />
-                  Criar Conta Grátis
+                  Saiba Mais
                 </Button>
               </motion.div>
             </motion.div>

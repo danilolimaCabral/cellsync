@@ -1,5 +1,4 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useModuleAccess, ROUTE_MODULE_MAP } from "@/hooks/useModuleAccess";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -22,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Shield, FileInput, Table, Database, Wallet, Layers } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -30,7 +29,6 @@ import { useLocation } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
-import { TenantSwitcher } from "./TenantSwitcher";
 
 import { Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag } from "lucide-react";
 
@@ -84,22 +82,6 @@ const menuItems = [
     iconColor: "text-amber-600"
   },
   { 
-    icon: FileInput, 
-    label: "Importar XML (NF-e)", 
-    path: "/importar-xml",
-    gradient: "from-orange-500 to-red-500",
-    bgGradient: "from-orange-50 to-red-50",
-    iconColor: "text-orange-600"
-  },
-  { 
-    icon: Table, 
-    label: "Importar Planilha (CSV)", 
-    path: "/importar-planilha",
-    gradient: "from-emerald-500 to-teal-500",
-    bgGradient: "from-emerald-50 to-teal-50",
-    iconColor: "text-emerald-600"
-  },
-  { 
     icon: FileSpreadsheet, 
     label: "Relatório Avançado", 
     path: "/relatorio-avancado-estoque",
@@ -140,18 +122,9 @@ const menuItems = [
     iconColor: "text-yellow-600"
   },
   { 
-    icon: Wallet, 
-    label: "Controle de Comissões", 
-    path: "/controle-comissoes",
-    gradient: "from-purple-500 to-pink-500",
-    bgGradient: "from-purple-50 to-pink-50",
-    iconColor: "text-purple-600",
-    roles: ["gerente", "admin", "master_admin"]
-  },
-  { 
     icon: TrendingUp, 
-    label: "Dashboard BI", 
-    path: "/dashboard-bi",
+    label: "Relatórios (BI)", 
+    path: "/relatorios",
     gradient: "from-orange-500 to-amber-500",
     bgGradient: "from-orange-50 to-amber-50",
     iconColor: "text-orange-600"
@@ -163,33 +136,6 @@ const menuItems = [
     gradient: "from-slate-500 to-gray-500",
     bgGradient: "from-slate-50 to-gray-50",
     iconColor: "text-slate-600"
-  },
-  { 
-    icon: Shield, 
-    label: "Admin Master", 
-    path: "/admin-master",
-    gradient: "from-red-600 to-pink-600",
-    bgGradient: "from-red-50 to-pink-50",
-    iconColor: "text-red-700",
-    masterOnly: true // Apenas para master_admin
-  },
-  { 
-    icon: Database, 
-    label: "Gerenciar Backups", 
-    path: "/gerenciar-backups",
-    gradient: "from-indigo-600 to-blue-600",
-    bgGradient: "from-indigo-50 to-blue-50",
-    iconColor: "text-indigo-700",
-    masterOnly: true // Apenas para master_admin
-  },
-  { 
-    icon: Layers, 
-    label: "Gerenciar Módulos", 
-    path: "/gerenciar-modulos",
-    gradient: "from-violet-600 to-purple-600",
-    bgGradient: "from-violet-50 to-purple-50",
-    iconColor: "text-violet-700",
-    masterOnly: true // Apenas para master_admin
   },
 ];
 
@@ -274,7 +220,6 @@ function DashboardLayoutContent({
   setSidebarWidth,
 }: DashboardLayoutContentProps) {
   const { user } = useAuth();
-  const { hasAccess } = useModuleAccess();
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
       window.location.href = "/login";
@@ -286,26 +231,7 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  
-  // Filtrar menu items baseado em permissões e módulos contratados
-  const filteredMenuItems = menuItems.filter(item => {
-    // Master admin tem acesso a tudo
-    if (user?.role === "master_admin") return true;
-    
-    // Filtrar items master-only
-    if (item.masterOnly) return false;
-    
-    // Verificar se requer módulo específico
-    const moduleCode = ROUTE_MODULE_MAP[item.path];
-    if (moduleCode && !hasAccess(moduleCode)) return false;
-    
-    // Filtrar por role se especificado
-    if (item.roles && user?.role && !item.roles.includes(user.role)) return false;
-    
-    return true;
-  });
-  
-  const activeMenuItem = filteredMenuItems.find(item => item.path === location);
+  const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -373,7 +299,7 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1 space-y-1">
-              {filteredMenuItems.map((item, index) => {
+              {menuItems.map((item, index) => {
                 const isActive = location === item.path;
                 const Icon = item.icon;
                 return (
@@ -494,7 +420,6 @@ function DashboardLayoutContent({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <TenantSwitcher />
               <NotificationBell />
               <ThemeToggle />
             </div>

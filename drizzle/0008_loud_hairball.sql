@@ -1,1 +1,0 @@
-ALTER TABLE `users` MODIFY COLUMN `role` enum('master_admin','admin','vendedor','tecnico','gerente') NOT NULL DEFAULT 'vendedor';
