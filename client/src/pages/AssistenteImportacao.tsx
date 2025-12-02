@@ -50,6 +50,9 @@ export default function AssistenteImportacao() {
   const [parsedData, setParsedData] = useState<Record<string, any>[]>([]);
   const [mapping, setMapping] = useState<ColumnMapping[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [analysisStep, setAnalysisStep] = useState("");
+  const [estimatedTime, setEstimatedTime] = useState(0);
 
   // tRPC mutations
   const analyzeMutation = trpc.aiAssistant.analyzeFile.useMutation();
@@ -62,12 +65,26 @@ export default function AssistenteImportacao() {
   const handleFileSelect = async (file: File) => {
     setSelectedFile(file);
     setStep("analyzing");
+    setAnalysisProgress(0);
+    setEstimatedTime(10); // 10 segundos estimados
 
     try {
       // Ler arquivo como base64
       const reader = new FileReader();
       reader.onload = async (e) => {
         const content = e.target?.result as string;
+
+        // Simular progresso
+        setAnalysisStep("Lendo arquivo...");
+        setAnalysisProgress(20);
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        setAnalysisStep("Analisando com IA...");
+        setAnalysisProgress(40);
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        setAnalysisStep("Mapeando colunas...");
+        setAnalysisProgress(60);
 
         // Analisar com IA
         const result = await analyzeMutation.mutateAsync({
@@ -76,7 +93,13 @@ export default function AssistenteImportacao() {
           moduleType,
         });
 
+        setAnalysisProgress(90);
+
         if (result.success) {
+          setAnalysisStep("Concluído!");
+          setAnalysisProgress(100);
+          await new Promise(resolve => setTimeout(resolve, 500));
+
           setParsedData(result.analysis.sampleData);
           setMapping(result.analysis.suggestedMapping);
           setStep("preview");
@@ -104,11 +127,7 @@ export default function AssistenteImportacao() {
       };
       reader.readAsDataURL(file);
     } catch (error: any) {
-      toast({
-        title: "Erro ao analisar arquivo",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "Erro ao analisar arquivo");
       setStep("upload");
     }
   };
@@ -133,11 +152,7 @@ export default function AssistenteImportacao() {
         { role: "assistant", content: result.message, timestamp: new Date() },
       ]);
     } catch (error: any) {
-      toast({
-        title: "Erro no chat",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "Erro no chat");
     }
   };
 
@@ -154,17 +169,10 @@ export default function AssistenteImportacao() {
 
       if (result.success) {
         setStep("completed");
-        toast({
-          title: "Importação concluída!",
-          description: result.message,
-        });
+        toast.success("Importação concluída! " + result.message);
       }
     } catch (error: any) {
-      toast({
-        title: "Erro na importação",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "Erro na importação");
       setStep("preview");
     }
   };
@@ -307,12 +315,61 @@ export default function AssistenteImportacao() {
           )}
 
           {step === "analyzing" && (
-            <Card className="p-8 text-center">
-              <Sparkles className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-              <h3 className="font-semibold mb-2">Analisando arquivo...</h3>
-              <p className="text-sm text-muted-foreground">
-                A IA está identificando colunas e mapeando campos
-              </p>
+            <Card className="p-8">
+              <div className="text-center mb-6">
+                <Sparkles className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+                <h3 className="font-semibold mb-2">Analisando arquivo...</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {analysisStep}
+                </p>
+              </div>
+
+              {/* Barra de Progresso */}
+              <div className="space-y-3">
+                <Progress value={analysisProgress} className="h-2" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{analysisProgress}% concluído</span>
+                  <span className="text-muted-foreground">~{Math.max(0, Math.ceil(estimatedTime * (1 - analysisProgress / 100)))}s restantes</span>
+                </div>
+              </div>
+
+              {/* Etapas */}
+              <div className="mt-6 space-y-2">
+                <div className={`flex items-center gap-2 text-sm ${
+                  analysisProgress >= 20 ? "text-primary" : "text-muted-foreground"
+                }`}>
+                  {analysisProgress >= 20 ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border-2 border-current" />
+                  )}
+                  <span>Lendo arquivo</span>
+                </div>
+                <div className={`flex items-center gap-2 text-sm ${
+                  analysisProgress >= 60 ? "text-primary" : "text-muted-foreground"
+                }`}>
+                  {analysisProgress >= 60 ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : analysisProgress >= 40 ? (
+                    <Sparkles className="h-4 w-4 animate-pulse" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border-2 border-current" />
+                  )}
+                  <span>Analisando com IA</span>
+                </div>
+                <div className={`flex items-center gap-2 text-sm ${
+                  analysisProgress >= 100 ? "text-primary" : "text-muted-foreground"
+                }`}>
+                  {analysisProgress >= 100 ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : analysisProgress >= 60 ? (
+                    <Sparkles className="h-4 w-4 animate-pulse" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border-2 border-current" />
+                  )}
+                  <span>Mapeando colunas</span>
+                </div>
+              </div>
             </Card>
           )}
 

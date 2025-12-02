@@ -1490,3 +1490,6 @@
 - [x] Implementar loading states e feedback visual
 - [x] Adicionar tratamento de erros amigável
 - [ ] Implementar salvamento automático de progresso
+
+- [x] Corrigir problema de login de clientes novos (investigar fluxo de cadastro e autenticação) - RESOLVIDO: Fluxo completo testado e funcionando
+- [x] Melhorar interface do Assistente de IA com barra de progresso, tempo estimado e etapas visíveis
