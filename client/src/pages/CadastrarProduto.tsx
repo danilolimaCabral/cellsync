@@ -48,105 +48,190 @@ export default function CadastrarProduto() {
 
   const createProductMutation = trpc.products.create.useMutation({
     onSuccess: () => {
-      toast.success("✅ Produto cadastrado com sucesso!");
+      toast.success("Produto cadastrado com sucesso!");
       setLocation("/estoque");
     },
     onError: (error) => {
-      toast.error(`❌ Erro ao cadastrar produto: ${error.message}`);
+      toast.error(`Erro ao cadastrar produto: ${error.message}`);
     },
   });
 
+  // Mutation para análise de imagem com IA
+  const analyzeImageMutation = trpc.imageAnalysis.analyzeProduct.useMutation();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.costPrice || !formData.salePrice) {
-      toast.error("Preencha os campos obrigatórios!");
+
+    // Validações
+    if (!formData.name || !formData.category) {
+      toast.error("Preencha os campos obrigatórios");
       return;
     }
+
+    const costPriceCents = Math.round(parseFloat(formData.costPrice || "0") * 100);
+    const salePriceCents = Math.round(parseFloat(formData.salePrice || "0") * 100);
+    const wholesalePriceCents = formData.wholesalePrice
+      ? Math.round(parseFloat(formData.wholesalePrice) * 100)
+      : undefined;
 
     createProductMutation.mutate({
       name: formData.name,
       description: formData.description || undefined,
-      category: formData.category || undefined,
+      category: formData.category,
       brand: formData.brand || undefined,
       model: formData.model || undefined,
       sku: formData.sku || undefined,
       barcode: formData.barcode || undefined,
-      costPrice: Math.round(parseFloat(formData.costPrice) * 100),
-      salePrice: Math.round(parseFloat(formData.salePrice) * 100),
-      minStock: parseInt(formData.minStock) || 10,
+      costPrice: costPriceCents,
+      salePrice: salePriceCents,
+      wholesalePrice: wholesalePriceCents,
+      minWholesaleQty: wholesalePriceCents ? parseInt(formData.minWholesaleQty) : undefined,
+      minStock: parseInt(formData.minStock),
       requiresImei: formData.requiresImei,
     });
   };
 
+  // Handler do assistente IA com análise REAL de imagens
   const handleAIMessage = async (message: string, image?: File): Promise<string> => {
-    // Simular análise de IA (em produção, chamar endpoint real)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
+    // Se houver imagem, fazer análise real com IA
     if (image) {
-      // Simular análise de imagem
-      return `📸 **Imagem analisada com sucesso!**
+      try {
+        // Converter imagem para base64
+        const reader = new FileReader();
+        const imageBase64 = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(image);
+        });
 
-Identifiquei as seguintes informações:
+        // Chamar endpoint de análise de imagem
+        const result = await analyzeImageMutation.mutateAsync({ imageBase64 });
 
-**Produto:** iPhone 14 Pro Max 256GB
-**Marca:** Apple
-**Categoria:** Smartphone
-**Modelo:** iPhone 14 Pro Max
+        // Preencher formulário automaticamente com os dados extraídos
+        if (result.success) {
+          handleAutoFill({
+            name: result.data.name,
+            brand: result.data.brand,
+            model: result.data.model,
+            category: result.data.category,
+            description: result.data.description,
+            costPrice: result.data.suggestedCostPrice ? (result.data.suggestedCostPrice / 100).toFixed(2) : "",
+            salePrice: result.data.suggestedSalePrice ? (result.data.suggestedSalePrice / 100).toFixed(2) : "",
+          });
 
-**Especificações detectadas:**
-- Armazenamento: 256GB
-- Cor: Roxo Profundo
-- Estado: Novo/Lacrado
+          return `✅ **Análise Concluída!**
 
-Deseja que eu preencha automaticamente o formulário com essas informações?
+📸 Imagem analisada com sucesso!
 
-Clique em "Preencher Automaticamente" para aplicar!`;
+**Informações Extraídas:**
+- **Nome:** ${result.data.name}
+- **Marca:** ${result.data.brand}
+- **Modelo:** ${result.data.model}
+- **Categoria:** ${result.data.category}
+
+${result.data.suggestedSalePrice ? `💰 **Preço Sugerido:** R$ ${(result.data.suggestedSalePrice / 100).toFixed(2)}` : ''}
+
+${result.data.description ? `📝 **Descrição:**\n${result.data.description}` : ''}
+
+**Confiança da Análise:** ${result.confidence === 'high' ? '✨ Alta' : result.confidence === 'medium' ? '⚠️ Média' : '❌ Baixa'}
+
+Os campos foram preenchidos automaticamente! Revise e ajuste se necessário.`;
+        } else {
+          return `❌ Não foi possível analisar a imagem. ${result.message || 'Tente novamente com uma foto mais clara.'}`;
+        }
+      } catch (error: any) {
+        console.error('Erro na análise de imagem:', error);
+        return `❌ Erro ao analisar imagem: ${error.message || 'Tente novamente.'}`;
+      }
     }
 
-    // Respostas contextuais baseadas na mensagem
+    // Respostas contextuais baseadas na mensagem (sem imagem)
     if (message.toLowerCase().includes("preço") || message.toLowerCase().includes("valor")) {
       return `💰 **Sugestão de Preços**
 
-Baseado em produtos similares no mercado:
+Para calcular preços competitivos, considere:
 
-**Custo sugerido:** R$ 4.500,00
-**Preço varejo:** R$ 5.999,00 (margem de 33%)
-**Preço atacado:** R$ 5.499,00 (para 10+ unidades)
+**1. Custo do Produto** (quanto você paga)
+**2. Margem de Lucro** (recomendado: 30-40% para varejo)
+**3. Preço de Mercado** (pesquise concorrentes)
 
-Essa precificação está competitiva e garante boa margem de lucro!`;
+**Exemplo:**
+- Custo: R$ 4.500,00
+- Margem 33%: R$ 5.999,00 (varejo)
+- Atacado (10+ un): R$ 5.499,00
+
+📸 **Dica:** Envie uma foto do produto para análise automática de preços!`;
     }
 
     if (message.toLowerCase().includes("descrição")) {
-      return `📝 **Sugestão de Descrição**
+      return `📝 **Como Criar Descrições Profissionais**
 
+Uma boa descrição deve incluir:
+1. **Nome completo** do produto
+2. **Especificações técnicas** principais
+3. **Diferenciais** e benefícios
+4. **Estado** (novo, usado, lacrado)
+5. **Garantia**
+
+**Exemplo:**
 "iPhone 14 Pro Max 256GB - Roxo Profundo. Tela Super Retina XDR de 6,7 polegadas com ProMotion. Chip A16 Bionic. Sistema de câmera Pro com 48MP. Dynamic Island. Bateria de longa duração. 5G. Produto novo, lacrado com garantia Apple de 1 ano."
 
-Posso adicionar esta descrição ao formulário?`;
+📸 **Dica:** Envie uma foto e eu gero a descrição automaticamente!`;
     }
 
     if (message.toLowerCase().includes("categoria")) {
-      return `🏷️ **Categorização Inteligente**
+      return `🏷️ **Categorias Disponíveis**
 
-Categorias sugeridas para este produto:
-1. **Smartphone** (recomendado)
-2. Eletrônicos > Celulares
-3. Apple > iPhone
+Principais categorias para produtos:
+- **Smartphone** (celulares em geral)
+- **Tablet** (iPads, tablets Android)
+- **Acessório** (capas, películas, carregadores)
+- **Áudio** (fones, caixas de som)
+- **Smartwatch** (relógios inteligentes)
+- **Notebook** (laptops)
+- **Outros** (demais produtos)
 
-Qual categoria você prefere usar?`;
+📸 **Dica:** Envie uma foto e eu identifico a categoria automaticamente!`;
+    }
+
+    if (message.toLowerCase().includes("foto") || message.toLowerCase().includes("imagem")) {
+      return `📸 **Como Usar a Análise de Imagens**
+
+1. Clique no ícone de **📷 imagem** abaixo
+2. Tire uma foto clara do produto ou selecione da galeria
+3. Aguarde alguns segundos
+4. A IA vai extrair automaticamente:
+   - Nome e modelo
+   - Marca
+   - Categoria
+   - Descrição profissional
+   - Sugestão de preços
+
+**Dicas para melhores resultados:**
+✅ Foto bem iluminada
+✅ Produto centralizado
+✅ Foco nítido
+✅ Mostrar embalagem ou etiquetas
+
+Experimente agora!`;
     }
 
     // Resposta padrão
-    return `👋 Olá! Sou seu assistente para cadastro de produtos.
+    return `👋 **Olá! Sou seu Assistente IA para Cadastro de Produtos**
 
 Posso te ajudar com:
-- 📸 Análise de fotos de produtos
-- 💰 Sugestão de preços competitivos
-- 📝 Geração de descrições profissionais
-- 🏷️ Categorização automática
-- ✨ Preenchimento automático de campos
 
-Como posso ajudar você hoje?`;
+📸 **Análise de Fotos** - Tire uma foto e eu extraio todas as informações automaticamente
+💰 **Sugestão de Preços** - Calcule preços competitivos com margem de lucro
+📝 **Descrições Profissionais** - Gero descrições completas e atrativas
+🏷️ **Categorização** - Identifico a categoria correta do produto
+✨ **Preenchimento Automático** - Preencho todos os campos em segundos
+
+**Como começar?**
+- Envie uma foto do produto usando o botão 📷
+- Ou pergunte algo como: "Como precificar?" ou "Qual categoria usar?"
+
+Estou aqui para economizar seu tempo! 🚀`;
   };
 
   const handleAutoFill = (data: any) => {
@@ -157,27 +242,24 @@ Como posso ajudar você hoje?`;
       model: data.model || formData.model,
       category: data.category || formData.category,
       description: data.description || formData.description,
+      costPrice: data.costPrice || formData.costPrice,
+      salePrice: data.salePrice || formData.salePrice,
     });
     toast.success("✨ Campos preenchidos automaticamente!");
   };
 
   const quickActions = [
     {
-      label: "Preencher Automaticamente",
+      label: "📸 Analisar Foto",
       icon: <Sparkles className="h-3 w-3 mr-1" />,
       action: () => {
-        handleAutoFill({
-          name: "iPhone 14 Pro Max 256GB",
-          brand: "Apple",
-          model: "iPhone 14 Pro Max",
-          category: "Smartphone",
-          description: "iPhone 14 Pro Max 256GB - Roxo Profundo. Tela Super Retina XDR de 6,7 polegadas com ProMotion. Chip A16 Bionic. Sistema de câmera Pro com 48MP.",
-        });
+        toast.info("Clique no ícone de imagem 📷 abaixo para enviar uma foto!");
       },
     },
   ];
 
   const suggestions = [
+    "Como usar a análise de fotos?",
     "Como precificar este produto?",
     "Gere uma descrição profissional",
     "Qual categoria usar?",
@@ -191,210 +273,203 @@ Como posso ajudar você hoje?`;
         backTo="/estoque"
       />
 
-      <form onSubmit={handleSubmit}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Informações do Produto
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Nome */}
-            <div className="space-y-2">
-              <Label htmlFor="name">
-                Nome do Produto <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ex: iPhone 14 Pro Max 256GB"
-                required
-              />
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Formulário */}
+        <div className="lg:col-span-2">
+          <form onSubmit={handleSubmit}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Informações do Produto
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <Label htmlFor="name">Nome do Produto *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Ex: iPhone 14 Pro Max 256GB"
+                      required
+                    />
+                  </div>
 
-            {/* Descrição */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Descrição detalhada do produto..."
-                rows={3}
-              />
-            </div>
+                  <div>
+                    <Label htmlFor="brand">Marca</Label>
+                    <Input
+                      id="brand"
+                      value={formData.brand}
+                      onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                      placeholder="Ex: Apple"
+                    />
+                  </div>
 
-            {/* Categoria, Marca, Modelo */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Categoria</Label>
-                <Input
-                  id="category"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="Ex: Smartphone"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="brand">Marca</Label>
-                <Input
-                  id="brand"
-                  value={formData.brand}
-                  onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                  placeholder="Ex: Apple"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="model">Modelo</Label>
-                <Input
-                  id="model"
-                  value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  placeholder="Ex: iPhone 14 Pro Max"
-                />
-              </div>
-            </div>
+                  <div>
+                    <Label htmlFor="model">Modelo</Label>
+                    <Input
+                      id="model"
+                      value={formData.model}
+                      onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                      placeholder="Ex: iPhone 14 Pro Max"
+                    />
+                  </div>
 
-            {/* SKU e Código de Barras */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
-                <Input
-                  id="sku"
-                  value={formData.sku}
-                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  placeholder="Código interno"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="barcode">Código de Barras</Label>
-                <Input
-                  id="barcode"
-                  value={formData.barcode}
-                  onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                  placeholder="EAN/UPC"
-                />
-              </div>
-            </div>
+                  <div>
+                    <Label htmlFor="category">Categoria *</Label>
+                    <Input
+                      id="category"
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      placeholder="Ex: Smartphone"
+                      required
+                    />
+                  </div>
 
-            {/* Preços */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="costPrice">
-                  Preço de Custo <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="costPrice"
-                  type="number"
-                  step="0.01"
-                  value={formData.costPrice}
-                  onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="salePrice">
-                  Preço de Venda (Varejo) <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="salePrice"
-                  type="number"
-                  step="0.01"
-                  value={formData.salePrice}
-                  onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-            </div>
+                  <div>
+                    <Label htmlFor="sku">SKU</Label>
+                    <Input
+                      id="sku"
+                      value={formData.sku}
+                      onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                      placeholder="Ex: IPH14PM256"
+                    />
+                  </div>
 
-            {/* Preço Atacado */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="wholesalePrice">Preço de Atacado</Label>
-                <Input
-                  id="wholesalePrice"
-                  type="number"
-                  step="0.01"
-                  value={formData.wholesalePrice}
-                  onChange={(e) => setFormData({ ...formData, wholesalePrice: e.target.value })}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="minWholesaleQty">Quantidade Mínima (Atacado)</Label>
-                <Input
-                  id="minWholesaleQty"
-                  type="number"
-                  value={formData.minWholesaleQty}
-                  onChange={(e) => setFormData({ ...formData, minWholesaleQty: e.target.value })}
-                  placeholder="10"
-                />
-              </div>
-            </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="description">Descrição</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Descrição detalhada do produto..."
+                      rows={3}
+                    />
+                  </div>
 
-            {/* Estoque Mínimo */}
-            <div className="space-y-2">
-              <Label htmlFor="minStock">Estoque Mínimo</Label>
-              <Input
-                id="minStock"
-                type="number"
-                value={formData.minStock}
-                onChange={(e) => setFormData({ ...formData, minStock: e.target.value })}
-                placeholder="10"
-              />
-            </div>
+                  <div>
+                    <Label htmlFor="costPrice">Preço de Custo (R$)</Label>
+                    <Input
+                      id="costPrice"
+                      type="number"
+                      step="0.01"
+                      value={formData.costPrice}
+                      onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
+                      placeholder="0.00"
+                    />
+                  </div>
 
-            {/* Requer IMEI */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="requiresImei"
-                checked={formData.requiresImei}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, requiresImei: checked as boolean })
-                }
-              />
-              <Label htmlFor="requiresImei" className="cursor-pointer">
-                Este produto requer rastreamento por IMEI
-              </Label>
-            </div>
+                  <div>
+                    <Label htmlFor="salePrice">Preço de Venda (R$)</Label>
+                    <Input
+                      id="salePrice"
+                      type="number"
+                      step="0.01"
+                      value={formData.salePrice}
+                      onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                      placeholder="0.00"
+                    />
+                  </div>
 
-            {/* Botões */}
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="submit"
-                disabled={createProductMutation.isPending}
-                className="flex-1"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {createProductMutation.isPending ? "Salvando..." : "Salvar Produto"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setLocation("/estoque")}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancelar
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </form>
+                  <div>
+                    <Label htmlFor="wholesalePrice">Preço Atacado (R$)</Label>
+                    <Input
+                      id="wholesalePrice"
+                      type="number"
+                      step="0.01"
+                      value={formData.wholesalePrice}
+                      onChange={(e) => setFormData({ ...formData, wholesalePrice: e.target.value })}
+                      placeholder="0.00"
+                    />
+                  </div>
 
-      {/* Assistente IA */}
-      <AIAssistant
-        moduleName="Produtos"
-        moduleIcon={<Package className="h-5 w-5 text-white" />}
-        contextPrompt="👋 Olá! Sou seu assistente para cadastro de produtos. Envie uma foto do produto ou faça perguntas sobre preços, descrições e categorização!"
-        onSendMessage={handleAIMessage}
-        onAutoFill={handleAutoFill}
-        quickActions={quickActions}
-        suggestions={suggestions}
-      />
+                  <div>
+                    <Label htmlFor="minWholesaleQty">Qtd Mínima Atacado</Label>
+                    <Input
+                      id="minWholesaleQty"
+                      type="number"
+                      value={formData.minWholesaleQty}
+                      onChange={(e) => setFormData({ ...formData, minWholesaleQty: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="minStock">Estoque Mínimo</Label>
+                    <Input
+                      id="minStock"
+                      type="number"
+                      value={formData.minStock}
+                      onChange={(e) => setFormData({ ...formData, minStock: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="barcode">Código de Barras</Label>
+                    <Input
+                      id="barcode"
+                      value={formData.barcode}
+                      onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                      placeholder="Ex: 7891234567890"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 flex items-center space-x-2">
+                    <Checkbox
+                      id="requiresImei"
+                      checked={formData.requiresImei}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, requiresImei: checked as boolean })
+                      }
+                    />
+                    <Label htmlFor="requiresImei" className="cursor-pointer">
+                      Requer rastreamento por IMEI
+                    </Label>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button type="submit" disabled={createProductMutation.isPending}>
+                    {createProductMutation.isPending ? (
+                      <>
+                        <span className="animate-spin mr-2">⏳</span>
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Salvar Produto
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setLocation("/estoque")}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancelar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </form>
+        </div>
+
+        {/* Assistente IA */}
+        <div className="lg:col-span-1">
+          <AIAssistant
+            moduleName="Cadastro de Produtos"
+            moduleIcon={<Sparkles className="h-5 w-5" />}
+            contextPrompt="👋 Olá! Sou seu assistente IA para cadastro de produtos. Envie uma foto do produto e eu extraio automaticamente todas as informações!"
+            onSendMessage={handleAIMessage}
+            onAutoFill={handleAutoFill}
+            quickActions={quickActions}
+            suggestions={suggestions}
+          />
+        </div>
+      </div>
     </div>
   );
 }

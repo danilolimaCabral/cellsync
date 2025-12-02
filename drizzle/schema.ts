@@ -9,10 +9,36 @@ import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal,
 // ============= MULTI-TENANT (SaaS) =============
 export const tenants = mysqlTable("tenants", {
   id: int("id").autoincrement().primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(), // Nome da empresa cliente
+  name: varchar("name", { length: 255 }).notNull(), // Nome fantasia da loja
   subdomain: varchar("subdomain", { length: 63 }).notNull().unique(), // cliente.cellsync.com
   customDomain: varchar("customDomain", { length: 255 }), // domínio personalizado
   logo: text("logo"), // URL do logo
+  
+  // Dados cadastrais da loja (obrigatórios para documentos fiscais)
+  cnpj: varchar("cnpj", { length: 18 }), // CNPJ formatado: 00.000.000/0000-00
+  razaoSocial: varchar("razao_social", { length: 255 }), // Razão social completa
+  inscricaoEstadual: varchar("inscricao_estadual", { length: 50 }), // IE
+  inscricaoMunicipal: varchar("inscricao_municipal", { length: 50 }), // IM
+  
+  // Endereço completo
+  cep: varchar("cep", { length: 9 }), // CEP formatado: 00000-000
+  logradouro: varchar("logradouro", { length: 255 }), // Rua, Avenida, etc
+  numero: varchar("numero", { length: 20 }), // Número
+  complemento: varchar("complemento", { length: 100 }), // Complemento
+  bairro: varchar("bairro", { length: 100 }), // Bairro
+  cidade: varchar("cidade", { length: 100 }), // Cidade
+  estado: varchar("estado", { length: 2 }), // UF (SP, RJ, etc)
+  
+  // Contatos
+  telefone: varchar("telefone", { length: 20 }), // Telefone principal
+  celular: varchar("celular", { length: 20 }), // Celular/WhatsApp
+  email: varchar("email", { length: 255 }), // Email da loja
+  site: varchar("site", { length: 255 }), // Website
+  
+  // Configurações fiscais
+  regimeTributario: mysqlEnum("regime_tributario", ["simples_nacional", "lucro_presumido", "lucro_real", "mei"]), // Regime tributário
+  
+  // Sistema SaaS
   planId: int("plan_id").notNull(), // Referência ao plano
   status: mysqlEnum("status", ["active", "suspended", "cancelled", "trial"]).default("trial").notNull(),
   trialEndsAt: timestamp("trial_ends_at"),

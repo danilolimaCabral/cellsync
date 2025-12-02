@@ -99,6 +99,13 @@
       "when": 1764710368492,
       "tag": "0013_dashing_vindicator",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1764715192379,
+      "tag": "0014_wild_deathstrike",
+      "breakpoints": true
     }
   ]
 }

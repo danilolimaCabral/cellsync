@@ -19,6 +19,7 @@ import Comissoes from "@/pages/Comissoes";
 import NotasFiscais from "@/pages/NotasFiscais";
 import EmitirNFe from "@/pages/EmitirNFe";
 import Configuracoes from "./pages/Configuracoes";
+import ConfiguracaoLoja from "./pages/ConfiguracaoLoja";
 import Notificacoes from "./pages/Notificacoes";
 import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
 import ImportarProdutos from "./pages/ImportarProdutos";
@@ -298,6 +299,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Configuracoes />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/configuracao-loja">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <ConfiguracaoLoja />
               </DashboardLayout>
             )}
           />

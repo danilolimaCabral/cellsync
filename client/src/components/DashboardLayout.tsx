@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag, Headphones, FileInput, Table, Wallet, Shield, Database, Bell, FileText, UserCog, Lock } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag, Headphones, FileInput, Table, Wallet, Shield, Database, Bell, FileText, UserCog, Lock, Store } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { TenantSwitcher } from "./TenantSwitcher";
@@ -193,6 +193,14 @@ const menuItems = [
     gradient: "from-slate-500 to-gray-500",
     bgGradient: "from-slate-50 to-gray-50",
     iconColor: "text-slate-600"
+  },
+  { 
+    icon: Store, 
+    label: "Configuração da Loja", 
+    path: "/configuracao-loja",
+    gradient: "from-indigo-500 to-blue-500",
+    bgGradient: "from-indigo-50 to-blue-50",
+    iconColor: "text-indigo-600"
   },
   { 
     icon: Lock, 

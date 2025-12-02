@@ -29,6 +29,14 @@ interface ReceiptData {
     document?: string;
     phone?: string;
   };
+  store?: {
+    name: string;
+    cnpj?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+  };
   products: ReceiptProduct[];
   subtotal: number;
   discount: number;
@@ -105,20 +113,39 @@ export async function generateReceipt(data: ReceiptData): Promise<Buffer> {
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
-  doc.text("CellSync", pageWidth / 2, yPos, { align: "center" });
+  doc.text(data.store?.name || "CellSync", pageWidth / 2, yPos, { align: "center" });
 
   yPos += 6;
 
-  // Slogan
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 100, 100);
-  doc.text(
-    "Sistema completo de gestão para lojas de celular",
-    pageWidth / 2,
-    yPos,
-    { align: "center" }
-  );
+  // CNPJ da loja (se fornecido)
+  if (data.store?.cnpj) {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    doc.text(`CNPJ: ${data.store.cnpj}`, pageWidth / 2, yPos, { align: "center" });
+    yPos += 4;
+  }
+
+  // Endereço da loja (se fornecido)
+  if (data.store?.address) {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    const addressLine = data.store.city && data.store.state 
+      ? `${data.store.address} - ${data.store.city}/${data.store.state}`
+      : data.store.address;
+    doc.text(addressLine, pageWidth / 2, yPos, { align: "center" });
+    yPos += 4;
+  }
+
+  // Telefone da loja (se fornecido)
+  if (data.store?.phone) {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Tel: ${data.store.phone}`, pageWidth / 2, yPos, { align: "center" });
+    yPos += 4;
+  }
 
   yPos += 10;
 

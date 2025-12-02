@@ -521,6 +521,30 @@ export const appRouter = router({
         // Buscar itens da venda
         const items = await db.getSaleItems(input.saleId);
         
+        // Buscar dados da loja (tenant)
+        const database = await getDb();
+        let storeData = undefined;
+        if (database) {
+          const [tenant] = await database
+            .select()
+            .from(tenants)
+            .where(eq(tenants.id, ctx.user.tenantId))
+            .limit(1);
+          
+          if (tenant) {
+            storeData = {
+              name: tenant.name,
+              cnpj: tenant.cnpj || undefined,
+              phone: tenant.telefone || tenant.celular || undefined,
+              address: tenant.logradouro && tenant.numero 
+                ? `${tenant.logradouro}, ${tenant.numero}${tenant.complemento ? ' - ' + tenant.complemento : ''}`
+                : undefined,
+              city: tenant.cidade || undefined,
+              state: tenant.estado || undefined,
+            };
+          }
+        }
+        
         // Preparar dados para o recibo
         const receiptData = {
           saleId: sale.id.toString(),
@@ -532,6 +556,7 @@ export const appRouter = router({
             document: customer.cpf || customer.cnpj || undefined,
             phone: customer.phone || undefined,
           } : undefined,
+          store: storeData,
           products: items.map((item: any) => ({
             name: item.productName,
             sku: item.productSku || "N/A",
@@ -2121,6 +2146,65 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
         });
 
         return { success: true, message: "Onboarding concluído com sucesso!" };
+      }),
+  }),
+
+  // ============= CONFIGURAÇÃO DA LOJA (TENANT) =============
+  tenants: router({
+    getCurrent: protectedProcedure.query(async ({ ctx }) => {
+      const database = await getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      
+      const [tenant] = await database
+        .select()
+        .from(tenants)
+        .where(eq(tenants.id, ctx.user.tenantId))
+        .limit(1);
+      
+      return tenant || null;
+    }),
+
+    updateCurrent: protectedProcedure
+      .input(z.object({
+        name: z.string().optional(),
+        cnpj: z.string().optional(),
+        razaoSocial: z.string().optional(),
+        inscricaoEstadual: z.string().optional(),
+        inscricaoMunicipal: z.string().optional(),
+        cep: z.string().optional(),
+        logradouro: z.string().optional(),
+        numero: z.string().optional(),
+        complemento: z.string().optional(),
+        bairro: z.string().optional(),
+        cidade: z.string().optional(),
+        estado: z.string().optional(),
+        telefone: z.string().optional(),
+        celular: z.string().optional(),
+        email: z.string().optional(),
+        site: z.string().optional(),
+        regimeTributario: z.enum(["simples_nacional", "lucro_presumido", "lucro_real", "mei"]).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const database = await getDb();
+        if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        
+        // Validar CNPJ se fornecido
+        if (input.cnpj) {
+          const cleanCNPJ = input.cnpj.replace(/[^\d]/g, "");
+          if (cleanCNPJ.length !== 14) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "CNPJ inválido" });
+          }
+        }
+        
+        await database
+          .update(tenants)
+          .set({
+            ...input,
+            updatedAt: new Date(),
+          })
+          .where(eq(tenants.id, ctx.user.tenantId));
+        
+        return { success: true };
       }),
   }),
 });
