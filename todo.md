@@ -1495,3 +1495,4 @@
 - [x] Melhorar interface do Assistente de IA com barra de progresso, tempo estimado e etapas visíveis
 - [x] Ajustar Assistente de IA para permitir seleção visível e editável do tipo de dados (Produtos, Clientes, etc.)
 - [x] Corrigir chatbot flutuante que está cobrindo o conteúdo do Dashboard (transformar em modal acionado por clique)
+- [x] Ajustar validação do campo descrição no sistema de chamados (reduzir mínimo de 20 para 10 caracteres)

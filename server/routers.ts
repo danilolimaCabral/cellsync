@@ -1753,7 +1753,7 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
     analyzeWithAI: protectedProcedure
       .input(z.object({
         subject: z.string().min(5),
-        description: z.string().min(20),
+        description: z.string().min(10),
       }))
       .mutation(async ({ input }) => {
         const analysis = await analyzeTicketWithAI(input.subject, input.description);
@@ -1766,7 +1766,7 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
         subject: z.string().min(5, "Assunto deve ter pelo menos 5 caracteres"),
         category: z.enum(["duvida", "problema_tecnico", "solicitacao_recurso", "bug"]),
         priority: z.enum(["baixa", "media", "alta", "urgente"]).default("media"),
-        description: z.string().min(20, "Descrição deve ter pelo menos 20 caracteres"),
+        description: z.string().min(10, "Descrição deve ter pelo menos 10 caracteres"),
       }))
       .mutation(async ({ ctx, input }) => {
         const ticketId = await db.createSupportTicket({
