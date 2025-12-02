@@ -97,6 +97,14 @@ const menuItems = [
     iconColor: "text-emerald-600"
   },
   { 
+    icon: Sparkles, 
+    label: "Assistente de Importação IA", 
+    path: "/assistente-importacao",
+    gradient: "from-purple-500 to-pink-500",
+    bgGradient: "from-purple-50 to-pink-50",
+    iconColor: "text-purple-600"
+  },
+  { 
     icon: FileSpreadsheet, 
     label: "Relatório Avançado", 
     path: "/relatorio-avancado-estoque",

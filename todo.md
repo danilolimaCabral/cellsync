@@ -517,7 +517,7 @@
 - [ ] Implementar função de armazenamento de XML no S3
 - [ ] Adicionar download de XML e DANFE após emissão
 - [ ] Criar rota /emissao-nfe no App.tsx
-- [ ] Adicionar link no menu lateral
+- [x] Adicionar link no menu lateral
 - [ ] Criar testes para emissão manual
 
 
@@ -1483,7 +1483,7 @@
 - [x] Implementar stepper (Upload → Análise → Ajustes → Confirmar)
 - [x] Adicionar seletor de módulo (Produtos, Clientes, etc)
 - [ ] Mostrar histórico de importações anteriores
-- [ ] Adicionar link no menu lateral
+- [x] Adicionar link no menu lateral
 
 ### Integrações
 - [x] Conectar com endpoints tRPC (analyzeFile, chat, executeImport)
