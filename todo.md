@@ -1534,12 +1534,12 @@
 ## Sistema de Acesso Multi-Tenant para Manutenção Remota
 - [x] Criar sistema de impersonação de tenant (tenant switching)
 - [x] Adicionar endpoint para master admin trocar de tenant
-- [ ] Criar interface de seleção de tenant no dashboard master
-- [ ] Adicionar indicador visual de tenant ativo no header
-- [ ] Adaptar importações (produtos, XML, planilhas) para tenant selecionado
+- [x] Criar interface de seleção de tenant no dashboard master
+- [x] Adicionar indicador visual de tenant ativo no header
+- [x] Adaptar importações (produtos, XML, planilhas) para tenant selecionado
 - [x] Garantir isolamento de dados entre tenants
 - [x] Criar log de auditoria de acesso entre tenants
-- [ ] Testar fluxo completo de manutenção remota
+- [x] Testar fluxo completo de manutenção remota
 
 
 ## Dashboard BI Avançado (Superior ao Concorrente)
@@ -1563,9 +1563,9 @@
 - [x] Criar página de cadastro/listagem de vendedores
 - [x] Adicionar seleção de vendedor no PDV
 - [ ] Criar PDV mobile responsivo (para usar no celular)
-- [ ] Criar relatório de vendas por vendedor com filtros avançados
-- [ ] Implementar gráfico de produtos vendidos por vendedor
-- [ ] Implementar gráfico de vendas vs garantias por vendedor
+- [x] Criar relatório de vendas por vendedor com filtros avançados
+- [x] Implementar gráfico de produtos vendidos por vendedor
+- [x] Implementar gráfico de vendas vs garantias por vendedor
 - [ ] Integrar cálculo automático de comissões nas vendas
 - [ ] Adicionar histórico de comissões por vendedor
 - [ ] Testar fluxo completo de venda com comissão

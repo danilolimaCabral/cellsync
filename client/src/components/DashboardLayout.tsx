@@ -30,6 +30,7 @@ import { useLocation } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
+import { TenantSwitcher } from "./TenantSwitcher";
 
 import { Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag } from "lucide-react";
 
@@ -493,6 +494,7 @@ function DashboardLayoutContent({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <TenantSwitcher />
               <NotificationBell />
               <ThemeToggle />
             </div>
