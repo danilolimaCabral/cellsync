@@ -16,7 +16,14 @@ export type NotificationType =
   | "conta_pagar_vencendo"
   | "meta_vendas_atingida"
   | "aniversario_cliente"
-  | "nfe_emitida";
+  | "nfe_emitida"
+  | "novo_usuario"
+  | "nova_venda"
+  | "novo_produto"
+  | "novo_servico"
+  | "cliente_cadastrado"
+  | "resumo_diario"
+  | "alerta_seguranca";
 
 /**
  * Criar notificação no sistema
@@ -276,4 +283,157 @@ export async function deleteNotification(notificationId: number) {
   if (!db) return;
   
   await db.delete(notifications).where(eq(notifications.id, notificationId));
+}
+
+/**
+ * Criar notificação para o usuário master sobre nova venda
+ */
+export async function notifyMasterNewSale(saleId: number, totalAmount: number, customerName: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Buscar usuário master (admin)
+  const { users } = await import("../drizzle/schema");
+  const masterUsers = await db
+    .select()
+    .from(users)
+    .where(eq(users.role, "admin"))
+    .limit(1);
+  
+  if (masterUsers.length === 0) return null;
+  
+  return await createNotification({
+    userId: masterUsers[0].id,
+    type: "nova_venda",
+    title: "💰 Nova Venda Realizada",
+    message: `Venda #${saleId} realizada para ${customerName} no valor de R$ ${(totalAmount / 100).toFixed(2)}.`,
+    channel: "sistema",
+    referenceType: "sale",
+    referenceId: saleId,
+  });
+}
+
+/**
+ * Criar notificação para o usuário master sobre novo produto
+ */
+export async function notifyMasterNewProduct(productId: number, productName: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const { users } = await import("../drizzle/schema");
+  const masterUsers = await db
+    .select()
+    .from(users)
+    .where(eq(users.role, "admin"))
+    .limit(1);
+  
+  if (masterUsers.length === 0) return null;
+  
+  return await createNotification({
+    userId: masterUsers[0].id,
+    type: "novo_produto",
+    title: "📦 Novo Produto Cadastrado",
+    message: `Produto "${productName}" foi adicionado ao estoque.`,
+    channel: "sistema",
+    referenceType: "product",
+    referenceId: productId,
+  });
+}
+
+/**
+ * Criar notificação para o usuário master sobre nova OS
+ */
+export async function notifyMasterNewServiceOrder(orderId: number, customerName: string, device: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const { users } = await import("../drizzle/schema");
+  const masterUsers = await db
+    .select()
+    .from(users)
+    .where(eq(users.role, "admin"))
+    .limit(1);
+  
+  if (masterUsers.length === 0) return null;
+  
+  return await createNotification({
+    userId: masterUsers[0].id,
+    type: "novo_servico",
+    title: "🔧 Nova Ordem de Serviço",
+    message: `OS #${orderId} aberta para ${customerName} - Aparelho: ${device}.`,
+    channel: "sistema",
+    referenceType: "service_order",
+    referenceId: orderId,
+  });
+}
+
+/**
+ * Gerar resumo diário de atividades para o usuário master
+ */
+export async function generateDailySummary() {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const { users, customers } = await import("../drizzle/schema");
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  // Contar vendas do dia
+  const salesResult = await db
+    .select({
+      count: sql<number>`COUNT(*)`,
+      total: sql<number>`SUM(${sales.totalAmount})`,
+    })
+    .from(sales)
+    .where(gte(sales.createdAt, startOfDay));
+  
+  const salesCount = salesResult[0]?.count || 0;
+  const salesTotal = salesResult[0]?.total || 0;
+  
+  // Contar novos clientes do dia
+  const customersResult = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(customers)
+    .where(gte(customers.createdAt, startOfDay));
+  
+  const newCustomers = customersResult[0]?.count || 0;
+  
+  // Contar novos produtos do dia
+  const productsResult = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(products)
+    .where(gte(products.createdAt, startOfDay));
+  
+  const newProducts = productsResult[0]?.count || 0;
+  
+  // Contar novas OS do dia
+  const ordersResult = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(serviceOrders)
+    .where(gte(serviceOrders.openedAt, startOfDay));
+  
+  const newOrders = ordersResult[0]?.count || 0;
+  
+  // Buscar usuário master
+  const masterUsers = await db
+    .select()
+    .from(users)
+    .where(eq(users.role, "admin"))
+    .limit(1);
+  
+  if (masterUsers.length === 0) return null;
+  
+  const message = `📊 **Resumo do Dia**\n\n` +
+    `💰 Vendas: ${salesCount} (R$ ${(salesTotal / 100).toFixed(2)})\n` +
+    `👥 Novos Clientes: ${newCustomers}\n` +
+    `📦 Novos Produtos: ${newProducts}\n` +
+    `🔧 Novas OS: ${newOrders}`;
+  
+  return await createNotification({
+    userId: masterUsers[0].id,
+    type: "resumo_diario",
+    title: "📊 Resumo Diário de Atividades",
+    message,
+    channel: "sistema",
+  });
 }
