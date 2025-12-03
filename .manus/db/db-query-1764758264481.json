@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, name, slug, price_monthly, price_yearly, \n  ROUND(price_monthly / 100, 2) as preco_mensal_reais,\n  ROUND(price_yearly / 100, 2) as preco_anual_reais,\n  ROUND(((price_monthly * 12) - price_yearly) / 100, 2) as economia_reais\nFROM plans ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute SELECT id, name, slug, price_monthly, price_yearly, \n  ROUND(price_monthly / 100, 2) as preco_mensal_reais,\n  ROUND(price_yearly / 100, 2) as preco_anual_reais,\n  ROUND(((price_monthly * 12) - price_yearly) / 100, 2) as economia_reais\nFROM plans ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Plano Básico",
+      "slug": "basico",
+      "price_monthly": "9700",
+      "price_yearly": "93120",
+      "preco_mensal_reais": "97.00",
+      "preco_anual_reais": "931.20",
+      "economia_reais": "232.80"
+    },
+    {
+      "id": "2",
+      "name": "Plano Profissional",
+      "slug": "profissional",
+      "price_monthly": "19700",
+      "price_yearly": "189120",
+      "preco_mensal_reais": "197.00",
+      "preco_anual_reais": "1891.20",
+      "economia_reais": "472.80"
+    },
+    {
+      "id": "3",
+      "name": "Plano Enterprise",
+      "slug": "empresarial",
+      "price_monthly": "59900",
+      "price_yearly": "381120",
+      "preco_mensal_reais": "599.00",
+      "preco_anual_reais": "3811.20",
+      "economia_reais": "3376.80"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\tprice_monthly\tprice_yearly\tpreco_mensal_reais\tpreco_anual_reais\teconomia_reais\n1\tPlano Básico\tbasico\t9700\t93120\t97.00\t931.20\t232.80\n2\tPlano Profissional\tprofissional\t19700\t189120\t197.00\t1891.20\t472.80\n3\tPlano Enterprise\tempresarial\t59900\t381120\t599.00\t3811.20\t3376.80\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

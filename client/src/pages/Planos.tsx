@@ -26,14 +26,16 @@ export default function Planos() {
         billingPeriod,
       });
 
-      // Abrir checkout em nova aba
+      // Redirecionar para checkout do Stripe
       if (result.checkoutUrl) {
         window.location.href = result.checkoutUrl;
       }
     } catch (error: any) {
-      // Se usuário não autenticado, redirecionar para login
+      // Se usuário não autenticado, redirecionar para ONBOARDING (criar conta)
       if (error.message.includes("não autenticado") || error.message.includes("UNAUTHORIZED")) {
-        window.location.href = `/login?plan=${planSlug}&billing=${billingPeriod}`;
+        // Salvar plano escolhido no localStorage para usar após criar conta
+        localStorage.setItem('selectedPlan', JSON.stringify({ planSlug, billingPeriod }));
+        window.location.href = `/onboarding?plan=${planSlug}&billing=${billingPeriod}`;
         return;
       }
       
