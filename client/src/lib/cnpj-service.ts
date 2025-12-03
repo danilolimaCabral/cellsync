@@ -39,7 +39,17 @@ export async function fetchCnpjData(cnpj: string): Promise<CnpjData> {
   const complemento = data.complemento ? ` - ${data.complemento}` : "";
   
   // Remove espaços extras e garante formatação limpa
-  const enderecoCompleto = `${tipo} ${logradouro}, ${numero}${complemento}`.trim().replace(/^, /, "").replace(/ ,/, ",");
+  const partesEndereco = [
+    tipo,
+    logradouro
+  ].filter(Boolean).join(" ");
+
+  const numeroEComplemento = [
+    numero,
+    complemento ? complemento.replace(/^ - /, "") : ""
+  ].filter(Boolean).join(" - ");
+
+  const enderecoCompleto = [partesEndereco, numeroEComplemento].filter(Boolean).join(", ");
 
   return {
     razao_social: data.razao_social,
