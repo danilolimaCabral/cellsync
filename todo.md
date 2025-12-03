@@ -1621,7 +1621,7 @@
 - [x] Testar nova versão
 
 ## Atualização do GitHub
-- [ ] Criar checkpoint com melhorias
+- [x] Criar checkpoint com melhorias
 - [ ] Verificar repositório GitHub
 - [ ] Push das alterações
 - [ ] Atualizar README com novas funcionalidades
