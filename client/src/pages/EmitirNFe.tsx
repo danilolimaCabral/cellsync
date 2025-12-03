@@ -180,7 +180,7 @@ export default function EmitirNFe() {
         ...prev,
         emitterName: data.razao_social,
         emitterFantasyName: data.nome_fantasia,
-        emitterAddress: `${data.logradouro}, ${data.numero} ${data.complemento ? `- ${data.complemento}` : ""}, ${data.bairro}`,
+        emitterAddress: data.endereco,
         emitterCity: data.municipio,
         emitterState: data.uf,
         emitterZipCode: data.cep,
