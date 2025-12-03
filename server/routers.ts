@@ -286,9 +286,29 @@ export const appRouter = router({
         zipCode: z.string().optional(),
         notes: z.string().optional(),
       }))
-      .mutation(async () => {
-        // TODO: Implementar criação de cliente
-        return { success: true };
+      .mutation(async ({ input, ctx }) => {
+        try {
+          console.log('[Customers] Criando cliente:', input.name);
+          const result = await db.createCustomer(input);
+          console.log('[Customers] Cliente criado com sucesso:', result);
+          
+          // Criar notificação para o usuário
+          const notificationsModule = await import("./notifications");
+          await notificationsModule.createNotification({
+            userId: ctx.user.id,
+            type: "info",
+            title: "Cliente cadastrado",
+            message: `Cliente "${input.name}" foi cadastrado com sucesso!`,
+          }).catch((err: any) => console.error('[Customers] Erro ao criar notificação:', err));
+          
+          return { success: true, customer: result };
+        } catch (error) {
+          console.error('[Customers] Erro ao criar cliente:', error);
+          throw new TRPCError({ 
+            code: "INTERNAL_SERVER_ERROR", 
+            message: "Erro ao cadastrar cliente. Por favor, tente novamente." 
+          });
+        }
       }),
   }),
 
