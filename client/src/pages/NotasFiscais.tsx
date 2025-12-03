@@ -52,10 +52,9 @@ export default function NotasFiscais() {
   const [endDate, setEndDate] = useState<string>("");
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [showEmitir, setShowEmitir] = useState(false);
+  const [, setLocation] = useLocation();
   const [showCancelar, setShowCancelar] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  const [, setLocation] = useLocation();
 
   // Queries
   const { user, loading } = useAuth();
@@ -227,16 +226,12 @@ export default function NotasFiscais() {
           backTo="/dashboard"
         />
         <div className="flex gap-2">
-          <Button onClick={() => setShowEmitir(true)} variant="outline">
-            <Plus className="mr-2 h-4 w-4" />
-            Emitir NF-e (Venda)
-          </Button>
           <Button 
             onClick={() => setLocation("/emitir-nfe")}
             className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600"
           >
-            <Edit className="mr-2 h-4 w-4" />
-            Emissão Manual
+            <Plus className="mr-2 h-4 w-4" />
+            Emitir Nova NF-e
           </Button>
         </div>
       </div>
@@ -647,24 +642,7 @@ export default function NotasFiscais() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog de Emissão (placeholder) */}
-      <Dialog open={showEmitir} onOpenChange={setShowEmitir}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Emitir Nova NF-e</DialogTitle>
-            <DialogDescription>
-              Funcionalidade em desenvolvimento. Use o PDV para emitir NF-e automaticamente.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex items-center gap-2 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-blue-600" />
-            <p className="text-sm">
-              A emissão manual de NF-e será implementada em breve. Por enquanto, as NF-e são
-              emitidas automaticamente através do PDV ao finalizar vendas.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }
