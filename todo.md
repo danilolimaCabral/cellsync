@@ -1575,3 +1575,54 @@
 - [x] Adicionar campos de peso e dimensões do pacote
 - [x] Adicionar itens de menu no DashboardLayout
 - [ ] Integrar calculadora com geração de etiquetas
+
+## 📮 Aprimoramento do Módulo de Etiquetas de Envio
+- [ ] Adicionar campos de peso e dimensões do pacote
+- [ ] Implementar botão "Calcular Frete" na página de etiquetas
+- [ ] Integrar seleção de transportadora com cotações das APIs
+- [ ] Exibir preço e prazo de entrega calculados
+- [ ] Gerar código de rastreamento real via API
+- [ ] Salvar envio no banco ao gerar etiqueta
+- [ ] Vincular etiqueta com cotação selecionada
+- [ ] Adicionar link para rastreamento após gerar etiqueta
+
+
+## Testes Automatizados do Sistema
+- [ ] Criar script de teste automatizado para validar todas as funcionalidades
+- [ ] Testar módulo de vendas (PDV)
+- [ ] Testar gestão de estoque
+- [ ] Testar ordem de serviço
+- [ ] Testar CRM de clientes
+- [ ] Testar financeiro
+- [ ] Testar comissões
+- [ ] Testar notas fiscais
+- [ ] Testar etiquetas de envio
+- [ ] Gerar relatório de cobertura de testes
+
+## Correção de Etiquetas de Envio
+- [x] Investigar código atual de geração de PDF de etiquetas
+- [x] Implementar geração de PDF com layout dos Correios
+- [x] Adicionar código de barras na etiqueta
+- [x] Testar download de PDF
+
+## Avaliação de Custo de Desenvolvimento
+- [x] Criar teste unitário para geração de PDF de etiquetas
+- [x] Validar funcionalidade de download de PDF
+- [x] Calcular horas de desenvolvimento do sistema
+- [x] Estimar custo total de desenvolvimento
+- [x] Comparar com soluções de mercado
+
+## Melhoria de Layout de Etiquetas
+- [x] Melhorar espaçamento e margens
+- [x] Adicionar logo dos Correios
+- [x] Melhorar tipografia e tamanhos de fonte
+- [x] Adicionar bordas e separadores mais visíveis
+- [x] Otimizar código de barras
+- [x] Testar nova versão
+
+## Atualização do GitHub
+- [ ] Criar checkpoint com melhorias
+- [ ] Verificar repositório GitHub
+- [ ] Push das alterações
+- [ ] Atualizar README com novas funcionalidades
+- [ ] Criar release notes

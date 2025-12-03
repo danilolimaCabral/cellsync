@@ -59,8 +59,9 @@ function generateSimpleLabel(pdf: jsPDF, data: ShippingLabelData, x: number, y: 
   const width = 90;
   const height = 120;
   
-  // Borda
-  pdf.setDrawColor(200);
+  // Borda externa mais grossa
+  pdf.setDrawColor(0);
+  pdf.setLineWidth(0.5);
   pdf.rect(x, y, width, height);
   
   // Conteúdo
@@ -130,107 +131,131 @@ function generateSimpleLabel(pdf: jsPDF, data: ShippingLabelData, x: number, y: 
 }
 
 /**
- * Gera etiqueta formato Correios (formato 2 da imagem)
+ * Gera etiqueta formato Correios (formato melhorado)
  */
 function generateCorreiosLabel(pdf: jsPDF, data: ShippingLabelData, x: number, y: number) {
   const width = 90;
   const height = 120;
   
-  // Borda
+  // Borda externa dupla para destaque
   pdf.setDrawColor(0);
+  pdf.setLineWidth(0.8);
   pdf.rect(x, y, width, height);
+  pdf.setLineWidth(0.3);
+  pdf.rect(x + 1, y + 1, width - 2, height - 2);
   
-  let currentY = y + 5;
+  let currentY = y + 6;
+  
+  // Cabeçalho com logo dos Correios (simulado com texto)
+  pdf.setFillColor(255, 204, 0); // Amarelo dos Correios
+  pdf.rect(x + 2, currentY, width - 4, 8, 'F');
+  pdf.setTextColor(0, 51, 153); // Azul dos Correios
+  pdf.setFontSize(11);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('CORREIOS', x + width / 2, currentY + 5.5, { align: 'center' });
+  pdf.setTextColor(0, 0, 0);
+  currentY += 10;
   
   // Código de barras de rastreamento (topo)
   if (data.trackingCode) {
     try {
       const barcodeImg = generateBarcode(data.trackingCode, 'CODE128');
-      pdf.addImage(barcodeImg, 'PNG', x + 5, currentY, width - 10, 15);
+      pdf.addImage(barcodeImg, 'PNG', x + 8, currentY, width - 16, 16);
       currentY += 18;
     } catch (error) {
       console.error('Erro ao gerar código de barras:', error);
-      currentY += 5;
+      currentY += 3;
     }
   }
   
-  // Linha separadora
+  // Linha separadora grossa
   pdf.setDrawColor(0);
-  pdf.line(x, currentY, x + width, currentY);
-  currentY += 3;
+  pdf.setLineWidth(0.5);
+  pdf.line(x + 2, currentY, x + width - 2, currentY);
+  currentY += 4;
   
   // Seção DESTINATÁRIO
   pdf.setFillColor(0, 0, 0);
-  pdf.rect(x, currentY, width, 6, 'F');
+  pdf.rect(x + 2, currentY, width - 4, 7, 'F');
   pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(9);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text('DESTINATÁRIO', x + 3, currentY + 4);
-  pdf.setTextColor(0, 0, 0);
-  currentY += 8;
-  
-  // Nome do destinatário
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(data.recipientName, x + 3, currentY);
-  currentY += 5;
+  pdf.text('DESTINATÁRIO', x + 5, currentY + 5);
+  pdf.setTextColor(0, 0, 0);
+  currentY += 9;
+  
+  // Nome do destinatário em destaque
+  pdf.setFontSize(11);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(data.recipientName.toUpperCase(), x + 4, currentY, { maxWidth: width - 8 });
+  currentY += 6;
   
   // Endereço completo
-  pdf.setFontSize(8);
+  pdf.setFontSize(9);
   pdf.setFont('helvetica', 'normal');
   const destAddress = `${data.recipientAddress}, ${data.recipientNumber}`;
-  pdf.text(destAddress, x + 3, currentY, { maxWidth: width - 6 });
+  pdf.text(destAddress, x + 4, currentY, { maxWidth: width - 8 });
   currentY += 4;
   
   if (data.recipientComplement) {
-    pdf.text(data.recipientComplement, x + 3, currentY);
+    pdf.text(data.recipientComplement, x + 4, currentY, { maxWidth: width - 8 });
     currentY += 4;
   }
   
-  pdf.text(data.recipientNeighborhood, x + 3, currentY);
+  pdf.text(data.recipientNeighborhood, x + 4, currentY);
   currentY += 6;
   
-  // CEP + Cidade/Estado
-  pdf.setFontSize(9);
+  // CEP + Cidade/Estado em destaque
+  pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
   const zipCityState = `${data.recipientZipCode} - ${data.recipientCity}/${data.recipientState}`;
-  pdf.text(zipCityState, x + 3, currentY);
-  currentY += 6;
+  pdf.text(zipCityState, x + 4, currentY);
+  currentY += 7;
   
   // Código de barras do CEP
   try {
     const zipBarcode = generateBarcode(data.recipientZipCode.replace(/\D/g, ''), 'CODE128');
-    pdf.addImage(zipBarcode, 'PNG', x + 5, currentY, width - 10, 12);
+    pdf.addImage(zipBarcode, 'PNG', x + 8, currentY, width - 16, 13);
     currentY += 15;
   } catch (error) {
     console.error('Erro ao gerar código de barras do CEP:', error);
-    currentY += 5;
+    currentY += 3;
   }
   
   // Linha separadora
-  pdf.setDrawColor(0);
-  pdf.line(x, currentY, x + width, currentY);
-  currentY += 3;
+  pdf.setDrawColor(200);
+  pdf.setLineWidth(0.3);
+  pdf.line(x + 2, currentY, x + width - 2, currentY);
+  currentY += 4;
   
   // Seção REMETENTE
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'bold');
-  pdf.text('Remetente:', x + 3, currentY);
+  pdf.text('Remetente:', x + 4, currentY);
   currentY += 4;
   
+  pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(data.senderName, x + 3, currentY);
-  currentY += 3;
+  pdf.text(data.senderName, x + 4, currentY, { maxWidth: width - 8 });
+  currentY += 3.5;
   
   const senderAddress = `${data.senderAddress}, ${data.senderNumber}`;
-  pdf.text(senderAddress, x + 3, currentY, { maxWidth: width - 6 });
-  currentY += 3;
+  pdf.text(senderAddress, x + 4, currentY, { maxWidth: width - 8 });
+  currentY += 3.5;
   
   const senderCityState = `${data.senderNeighborhood} - ${data.senderCity}/${data.senderState}`;
-  pdf.text(senderCityState, x + 3, currentY, { maxWidth: width - 6 });
-  currentY += 3;
+  pdf.text(senderCityState, x + 4, currentY, { maxWidth: width - 8 });
+  currentY += 3.5;
   
-  pdf.text(`CEP: ${data.senderZipCode}`, x + 3, currentY);
+  pdf.text(`CEP: ${data.senderZipCode}`, x + 4, currentY);
+  
+  // Telefone do destinatário no rodapé
+  if (data.recipientPhone) {
+    currentY += 5;
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'italic');
+    pdf.text(`Tel: ${data.recipientPhone}`, x + 4, currentY);
+  }
 }
 
 /**
