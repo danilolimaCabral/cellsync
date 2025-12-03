@@ -176,6 +176,169 @@ export const appRouter = router({
 
   // ============= DASHBOARD / BI =============
   dashboard: router({
+    // Dashboard executivo para usuário master
+    executive: adminProcedure.query(async () => {
+      const database = await db.getDb();
+      if (!database) {
+        return {
+          salesMetrics: {},
+          topProducts: [],
+          topSellers: [],
+          vipCustomers: [],
+          kpis: {},
+        };
+      }
+
+      const { sales, products, customers, users, salesItems } = await import("../drizzle/schema");
+      const { sql, desc, eq } = await import("drizzle-orm");
+
+      try {
+        // Métricas de vendas
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const firstDayOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+
+        // Vendas do mês atual
+        const currentMonthSalesResult = await database
+          .select({
+            count: sql<number>`COUNT(*)`,
+            total: sql<number>`SUM(${sales.finalAmount})`,
+          })
+          .from(sales)
+          .where(sql`${sales.createdAt} >= ${firstDayOfMonth}`);
+
+        const currentMonthSales = Number(currentMonthSalesResult[0]?.count) || 0;
+        const currentMonthRevenue = Number(currentMonthSalesResult[0]?.total) || 0;
+
+        // Vendas do mês anterior
+        const lastMonthSalesResult = await database
+          .select({
+            count: sql<number>`COUNT(*)`,
+            total: sql<number>`SUM(${sales.finalAmount})`,
+          })
+          .from(sales)
+          .where(
+            sql`${sales.createdAt} >= ${firstDayOfLastMonth} AND ${sales.createdAt} <= ${lastDayOfLastMonth}`
+          );
+
+        const lastMonthSales = Number(lastMonthSalesResult[0]?.count) || 0;
+        const lastMonthRevenue = Number(lastMonthSalesResult[0]?.total) || 0;
+
+        // Calcular crescimento
+        const salesGrowth = lastMonthSales > 0
+          ? ((currentMonthSales - lastMonthSales) / lastMonthSales) * 100
+          : 0;
+        const revenueGrowth = lastMonthRevenue > 0
+          ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+          : 0;
+
+        // Ticket médio
+        const averageTicket = currentMonthSales > 0
+          ? currentMonthRevenue / currentMonthSales
+          : 0;
+
+        // Top 10 produtos mais vendidos
+        const topProductsResult = await database
+          .select({
+            productId: salesItems.productId,
+            productName: products.name,
+            quantity: sql<number>`SUM(${salesItems.quantity})`,
+            revenue: sql<number>`SUM(${salesItems.subtotal})`,
+          })
+          .from(salesItems)
+          .innerJoin(products, eq(salesItems.productId, products.id))
+          .innerJoin(sales, eq(salesItems.saleId, sales.id))
+          .where(sql`${sales.createdAt} >= ${firstDayOfMonth}`)
+          .groupBy(salesItems.productId, products.name)
+          .orderBy(desc(sql`SUM(${salesItems.quantity})`));
+
+        const topProducts = topProductsResult.slice(0, 10).map((p) => ({
+          id: p.productId,
+          name: p.productName,
+          quantity: Number(p.quantity),
+          revenue: Number(p.revenue),
+        }));
+
+        // Top vendedores
+        const topSellersResult = await database
+          .select({
+            sellerId: sales.sellerId,
+            sellerName: users.name,
+            salesCount: sql<number>`COUNT(*)`,
+            revenue: sql<number>`SUM(${sales.finalAmount})`,
+          })
+          .from(sales)
+          .innerJoin(users, eq(sales.sellerId, users.id))
+          .where(sql`${sales.createdAt} >= ${firstDayOfMonth}`)
+          .groupBy(sales.sellerId, users.name)
+          .orderBy(desc(sql`SUM(${sales.finalAmount})`));
+
+        const topSellers = topSellersResult.slice(0, 10).map((s) => ({
+          id: s.sellerId,
+          name: s.sellerName,
+          salesCount: Number(s.salesCount),
+          revenue: Number(s.revenue),
+        }));
+
+        // Clientes VIP (top 10 por valor de compra)
+        const vipCustomersResult = await database
+          .select({
+            customerId: sales.customerId,
+            customerName: customers.name,
+            purchaseCount: sql<number>`COUNT(*)`,
+            totalSpent: sql<number>`SUM(${sales.finalAmount})`,
+          })
+          .from(sales)
+          .innerJoin(customers, eq(sales.customerId, customers.id))
+          .groupBy(sales.customerId, customers.name)
+          .orderBy(desc(sql`SUM(${sales.finalAmount})`));
+
+        const vipCustomers = vipCustomersResult.slice(0, 10).map((c) => ({
+          id: c.customerId,
+          name: c.customerName,
+          purchaseCount: Number(c.purchaseCount),
+          totalSpent: Number(c.totalSpent),
+        }));
+
+        return {
+          salesMetrics: {
+            currentMonth: {
+              sales: currentMonthSales,
+              revenue: currentMonthRevenue,
+            },
+            lastMonth: {
+              sales: lastMonthSales,
+              revenue: lastMonthRevenue,
+            },
+            growth: {
+              sales: salesGrowth,
+              revenue: revenueGrowth,
+            },
+            averageTicket,
+          },
+          topProducts,
+          topSellers,
+          vipCustomers,
+          kpis: {
+            salesGrowth,
+            revenueGrowth,
+            averageTicket,
+          },
+        };
+      } catch (error) {
+        console.error("[Dashboard Executive] Error fetching data:", error);
+        return {
+          salesMetrics: {},
+          topProducts: [],
+          topSellers: [],
+          vipCustomers: [],
+          kpis: {},
+        };
+      }
+    }),
+
     overview: protectedProcedure.query(async () => {
       const database = await db.getDb();
       if (!database) {

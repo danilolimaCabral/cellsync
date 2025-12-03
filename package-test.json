@@ -1,0 +1,17 @@
+{
+  "name": "cellsync-test-scripts",
+  "version": "1.0.0",
+  "description": "Scripts de teste para validação de cancelamento e reembolso no CellSync",
+  "type": "module",
+  "scripts": {
+    "test:cancelamento": "node test-cancelamento-reembolso.mjs",
+    "test:help": "echo 'Configure as variáveis de ambiente antes de executar os testes. Veja GUIA_EXECUCAO_TESTES.md'"
+  },
+  "dependencies": {
+    "stripe": "^14.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {},
+  "author": "Manus AI",
+  "license": "MIT"
+}
