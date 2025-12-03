@@ -1003,8 +1003,42 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
         role: z.enum(["admin", "vendedor", "tecnico", "gerente"]).optional(),
         active: z.boolean().optional(),
       }))
-      .mutation(async () => {
-        // TODO: Implementar atualização de usuário
+      .mutation(async ({ input }) => {
+        const { userId, ...data } = input;
+        await db.updateUser(userId, data);
+        return { success: true };
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().min(6),
+        name: z.string().min(2),
+        role: z.enum(["admin", "vendedor", "tecnico", "gerente"]).default("vendedor"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Verificar se email já existe
+        const existingUser = await db.getUserByEmail(input.email);
+        if (existingUser) {
+          throw new TRPCError({ 
+            code: "CONFLICT", 
+            message: "Email já cadastrado" 
+          });
+        }
+
+        // Hash da senha
+        const hashedPassword = await bcrypt.hash(input.password, 10);
+
+        // Criar usuário vinculado ao tenant do usuário atual
+        await db.createUser({
+          tenantId: ctx.user.tenantId,
+          email: input.email,
+          password: hashedPassword,
+          name: input.name,
+          role: input.role,
+          active: true,
+        });
+
         return { success: true };
       }),
   }),
