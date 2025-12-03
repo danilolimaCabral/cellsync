@@ -30,7 +30,7 @@ import {
   Search,
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { fetchCnpjData } from "@/lib/cnpj-service";
+import { InputCNPJ } from "@/components/InputCNPJ";
 import { validateIE } from "@/lib/ie-validator";
 
 interface NFe {
@@ -161,38 +161,17 @@ export default function EmitirNFe() {
     }
   };
 
-  const [isLoadingCnpj, setIsLoadingCnpj] = useState(false);
-
-  const handleSearchCnpj = async (cnpjValue?: string) => {
-    const cnpjToSearch = cnpjValue || nfe.emitterCnpj;
-    const cnpj = cnpjToSearch.replace(/\D/g, "");
-    
-    if (cnpj.length !== 14) {
-      if (!cnpjValue) toast.error("CNPJ inválido. Digite 14 números.");
-      return;
-    }
-
-    setIsLoadingCnpj(true);
-    try {
-      const data = await fetchCnpjData(cnpj);
-      
-      setNfe(prev => ({
-        ...prev,
-        emitterName: data.razao_social,
-        emitterFantasyName: data.nome_fantasia,
-        emitterAddress: data.endereco,
-        emitterCity: data.municipio,
-        emitterState: data.uf,
-        emitterZipCode: data.cep,
-        emitterIE: "" // Limpa IE ao trocar de empresa
-      }));
-      
-      toast.success("Dados da empresa carregados!");
-    } catch (error) {
-      toast.error("Erro ao buscar CNPJ. Verifique o número ou a API configurada.");
-    } finally {
-      setIsLoadingCnpj(false);
-    }
+  const handleCnpjDataFetched = (data: any) => {
+    setNfe(prev => ({
+      ...prev,
+      emitterName: data.razao_social,
+      emitterFantasyName: data.nome_fantasia,
+      emitterAddress: data.endereco,
+      emitterCity: data.municipio,
+      emitterState: data.uf,
+      emitterZipCode: data.cep,
+      emitterIE: "" // Limpa IE ao trocar de empresa
+    }));
   };
 
   const addItem = () => {
@@ -383,35 +362,11 @@ export default function EmitirNFe() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>CNPJ *</Label>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Input
-                          placeholder="00.000.000/0000-00"
-                          value={nfe.emitterCnpj}
-                          onChange={(e) => updateField("emitterCnpj", e.target.value)}
-                          onBlur={() => {
-                            const cleanValue = nfe.emitterCnpj.replace(/\D/g, "");
-                            if (cleanValue.length === 14) {
-                              handleSearchCnpj(nfe.emitterCnpj);
-                            }
-                          }}
-                          className={isLoadingCnpj ? "pr-10" : ""}
-                        />
-                        {isLoadingCnpj && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-                          </div>
-                        )}
-                      </div>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => handleSearchCnpj()}
-                        disabled={isLoadingCnpj}
-                      >
-                        <Search className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <InputCNPJ
+                      value={nfe.emitterCnpj}
+                      onChange={(value) => updateField("emitterCnpj", value)}
+                      onDataFetched={handleCnpjDataFetched}
+                    />
                   </div>
                   <div>
                     <Label>Razão Social *</Label>

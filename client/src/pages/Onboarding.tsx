@@ -11,17 +11,15 @@ import {
   CheckCircle2, 
   Loader2,
   ArrowRight,
-  ArrowLeft,
-  Search
+  ArrowLeft
 } from "lucide-react";
+import { InputCNPJ } from "@/components/InputCNPJ";
 import { toast } from "sonner";
 
 export default function Onboarding() {
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [searchingCNPJ, setSearchingCNPJ] = useState(false);
-
   // Dados do formulário
   const [formData, setFormData] = useState({
     // Etapa 1: Dados da Empresa (preenchido automaticamente via CNPJ)
@@ -42,47 +40,24 @@ export default function Onboarding() {
     whatsapp: "",
   });
 
-  const lookupCNPJ = trpc.cnpj.lookup.useMutation();
-
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSearchCNPJ = async () => {
-    const cnpj = formData.cnpj.replace(/\D/g, "");
-    
-    if (cnpj.length !== 14) {
-      toast.error("Digite um CNPJ válido com 14 dígitos");
-      return;
-    }
-
-    setSearchingCNPJ(true);
-    try {
-      const result = await lookupCNPJ.mutateAsync({ cnpj });
-      
-      if (result.success && result.data) {
-        setFormData(prev => ({
-          ...prev,
-          cnpj: result.data.cnpj,
-          razaoSocial: result.data.razaoSocial,
-          nomeFantasia: result.data.nomeFantasia,
-          cep: result.data.cep,
-          logradouro: result.data.logradouro,
-          numero: result.data.numero,
-          complemento: result.data.complemento,
-          bairro: result.data.bairro,
-          cidade: result.data.municipio,
-          estado: result.data.uf,
-          telefone: result.data.telefone || "",
-          email: result.data.email || "",
-        }));
-        toast.success("Dados da empresa encontrados!");
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao buscar CNPJ");
-    } finally {
-      setSearchingCNPJ(false);
-    }
+  const handleCnpjDataFetched = (data: any) => {
+    setFormData(prev => ({
+      ...prev,
+      razaoSocial: data.razao_social,
+      nomeFantasia: data.nome_fantasia,
+      cep: data.cep,
+      // Extrair logradouro do endereço completo se possível, ou usar o retornado
+      logradouro: data.endereco.split(",")[0] || "",
+      numero: data.endereco.split(",")[1]?.split("-")[0]?.trim() || "",
+      complemento: "", // O serviço unificado já inclui complemento no endereço, mas aqui separa
+      bairro: data.bairro,
+      cidade: data.municipio,
+      estado: data.uf,
+    }));
   };
 
   const validateStep = (step: number): boolean => {
@@ -164,27 +139,11 @@ export default function Onboarding() {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="cnpj">CNPJ *</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="cnpj"
-                    placeholder="00.000.000/0000-00"
-                    value={formData.cnpj}
-                    onChange={(e) => handleInputChange("cnpj", e.target.value)}
-                    maxLength={18}
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleSearchCNPJ}
-                    disabled={searchingCNPJ}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  >
-                    {searchingCNPJ ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Search className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
+                <InputCNPJ
+                  value={formData.cnpj}
+                  onChange={(value) => handleInputChange("cnpj", value)}
+                  onDataFetched={handleCnpjDataFetched}
+                />
                 <p className="text-xs text-gray-500 mt-1">
                   Digite o CNPJ e clique na lupa para buscar automaticamente
                 </p>
