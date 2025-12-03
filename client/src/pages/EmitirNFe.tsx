@@ -384,22 +384,32 @@ export default function EmitirNFe() {
                   <div>
                     <Label>CNPJ *</Label>
                     <div className="flex gap-2">
-                      <Input
-                        placeholder="00.000.000/0000-00"
-                        value={nfe.emitterCnpj}
-                        onChange={(e) => updateField("emitterCnpj", e.target.value)}
-                      />
+                      <div className="relative flex-1">
+                        <Input
+                          placeholder="00.000.000/0000-00"
+                          value={nfe.emitterCnpj}
+                          onChange={(e) => updateField("emitterCnpj", e.target.value)}
+                          onBlur={() => {
+                            const cleanValue = nfe.emitterCnpj.replace(/\D/g, "");
+                            if (cleanValue.length === 14) {
+                              handleSearchCnpj(nfe.emitterCnpj);
+                            }
+                          }}
+                          className={isLoadingCnpj ? "pr-10" : ""}
+                        />
+                        {isLoadingCnpj && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                          </div>
+                        )}
+                      </div>
                       <Button 
                         type="button" 
                         variant="outline" 
                         onClick={() => handleSearchCnpj()}
                         disabled={isLoadingCnpj}
                       >
-                        {isLoadingCnpj ? (
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        ) : (
-                          <Search className="h-4 w-4" />
-                        )}
+                        <Search className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
