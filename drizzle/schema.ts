@@ -11,6 +11,7 @@ export const tenants = mysqlTable("tenants", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(), // Nome da empresa cliente
   subdomain: varchar("subdomain", { length: 63 }).notNull().unique(), // cliente.cellsync.com
+  cnpj: varchar("cnpj", { length: 14 }).unique(), // CNPJ da empresa (apenas números)
   customDomain: varchar("customDomain", { length: 255 }), // domínio personalizado
   logo: text("logo"), // URL do logo
   planId: int("plan_id").notNull(), // Referência ao plano
@@ -692,3 +693,18 @@ export const importSessions = mysqlTable("import_sessions", {
 
 export type ImportSession = typeof importSessions.$inferSelect;
 export type InsertImportSession = typeof importSessions.$inferInsert;
+
+// ============= STRIPE PENDING SESSIONS =============
+// Tabela para vincular sessions do Stripe com tenants criados após pagamento
+export const stripePendingSessions = mysqlTable("stripe_pending_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("session_id", { length: 255 }).notNull().unique(),
+  tenantId: int("tenant_id").notNull(),
+  userId: int("user_id").notNull(),
+  processed: boolean("processed").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  processedAt: timestamp("processed_at"),
+});
+
+export type StripePendingSession = typeof stripePendingSessions.$inferSelect;
+export type InsertStripePendingSession = typeof stripePendingSessions.$inferInsert;

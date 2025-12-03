@@ -1496,3 +1496,26 @@
 - [x] Ajustar Assistente de IA para permitir seleção visível e editável do tipo de dados (Produtos, Clientes, etc.)
 - [x] Corrigir chatbot flutuante que está cobrindo o conteúdo do Dashboard (transformar em modal acionado por clique)
 - [x] Ajustar validação do campo descrição no sistema de chamados (reduzir mínimo de 20 para 10 caracteres)
+
+
+## 🔄 Correção Urgente - Fluxo de Assinatura (Checkout Direto)
+
+- [ ] Modificar botão "Assinar Agora" para criar checkout Stripe SEM autenticação
+- [ ] Passar metadata no checkout (plano, período) para identificar depois
+- [ ] Criar formulário de cadastro na página /assinatura/sucesso
+- [ ] Implementar procedure para criar tenant + usuário após pagamento
+- [ ] Webhook do Stripe deve salvar session_id para vincular depois
+- [ ] Testar fluxo completo: Planos → Checkout → Pagamento → Criar Conta → Dashboard
+
+
+## 🔥 URGENTE - Checkout Direto Sem Login
+
+- [x] Modificar Planos.tsx: botão "Assinar Agora" cria checkout Stripe direto (sem verificar autenticação)
+- [x] Passar metadata no checkout: planSlug, billingPeriod, timestamp
+- [x] Criar página /assinatura/sucesso com formulário de cadastro completo
+- [x] Implementar procedure createTenantFromCheckout (email, senha, nome loja, CNPJ, session_id)
+- [x] Adicionar campo cnpj à tabela tenants
+- [x] Criar tabela stripe_pending_sessions no banco
+- [x] Criar testes unitários (7 testes passando)
+- [ ] Webhook salva session_id e aguarda criação de tenant para ativar (futuro)
+- [x] Testar: Planos → Checkout → Pagar → Criar Conta → Dashboard

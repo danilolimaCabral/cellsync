@@ -23,9 +23,9 @@ export async function createCheckoutSession({
 }: {
   planSlug: string;
   billingPeriod: 'monthly' | 'yearly';
-  customerEmail: string;
-  customerName: string;
-  userId: number;
+  customerEmail?: string;
+  customerName?: string;
+  userId?: number;
   successUrl: string;
   cancelUrl: string;
 }) {
@@ -50,7 +50,7 @@ export async function createCheckoutSession({
   }
 
   // Criar sessão de checkout
-  const session = await stripe.checkout.sessions.create({
+  const sessionData: Stripe.Checkout.SessionCreateParams = {
     mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [
@@ -59,25 +59,44 @@ export async function createCheckoutSession({
         quantity: 1,
       },
     ],
-    customer_email: customerEmail,
-    client_reference_id: userId.toString(),
-    metadata: {
-      user_id: userId.toString(),
-      customer_email: customerEmail,
-      customer_name: customerName,
-      plan_slug: planSlug,
-      billing_period: billingPeriod,
-    },
     success_url: successUrl,
     cancel_url: cancelUrl,
     allow_promotion_codes: true,
-    subscription_data: {
+    metadata: {
+      plan_slug: planSlug,
+      billing_period: billingPeriod,
+    },
+  };
+  
+  // Adicionar email se fornecido
+  if (customerEmail) {
+    sessionData.customer_email = customerEmail;
+  }
+  
+  // Adicionar referência do usuário se fornecido
+  if (userId) {
+    sessionData.client_reference_id = userId.toString();
+    if (sessionData.metadata) {
+      sessionData.metadata.user_id = userId.toString();
+    }
+  }
+  
+  // Adicionar nome do cliente se fornecido
+  if (customerName && sessionData.metadata) {
+    sessionData.metadata.customer_name = customerName;
+  }
+  
+  // Adicionar metadata na subscription
+  if (userId) {
+    sessionData.subscription_data = {
       metadata: {
         user_id: userId.toString(),
         plan_slug: planSlug,
       },
-    },
-  });
+    };
+  }
+  
+  const session = await stripe.checkout.sessions.create(sessionData);
 
   return session;
 }

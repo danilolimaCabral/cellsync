@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `stripe_pending_sessions` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`session_id` varchar(255) NOT NULL,\n\t`tenant_id` int NOT NULL,\n\t`user_id` int NOT NULL,\n\t`processed` boolean NOT NULL DEFAULT false,\n\t`created_at` timestamp NOT NULL DEFAULT (now()),\n\t`processed_at` timestamp,\n\tCONSTRAINT `stripe_pending_sessions_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `stripe_pending_sessions_session_id_unique` UNIQUE(`session_id`)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GH8MCSqhpmNowN.8b38cb53c5b2 --database Yjfe3xkLCJuR2SeJ7FBWQ4 --execute CREATE TABLE IF NOT EXISTS `stripe_pending_sessions` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`session_id` varchar(255) NOT NULL,\n\t`tenant_id` int NOT NULL,\n\t`user_id` int NOT NULL,\n\t`processed` boolean NOT NULL DEFAULT false,\n\t`created_at` timestamp NOT NULL DEFAULT (now()),\n\t`processed_at` timestamp,\n\tCONSTRAINT `stripe_pending_sessions_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `stripe_pending_sessions_session_id_unique` UNIQUE(`session_id`)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 223
+}

@@ -1,245 +1,338 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
+import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   CheckCircle,
-  Sparkles,
-  ArrowRight,
+  Loader2,
+  Store,
+  User,
   Mail,
-  Calendar,
-  CreditCard,
-  Zap,
+  Lock,
+  FileText,
+  Building2,
 } from "lucide-react";
 
 export default function AssinaturaSucesso() {
   const [, setLocation] = useLocation();
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [step, setStep] = useState<"loading" | "form" | "success">("loading");
+  
+  // Dados do formulário
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    storeName: "",
+    cnpj: "",
+    ownerName: "",
+  });
+  
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  const createTenantMutation = trpc.tenants.createFromCheckout.useMutation();
 
   useEffect(() => {
     // Pegar session_id da URL
     const params = new URLSearchParams(window.location.search);
     const sid = params.get("session_id");
-    setSessionId(sid);
-
-    // Confetti animation
-    const duration = 3 * 1000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-    function randomInRange(min: number, max: number) {
-      return Math.random() * (max - min) + min;
+    
+    if (!sid) {
+      alert("Sessão inválida. Redirecionando para planos...");
+      setLocation("/planos");
+      return;
     }
+    
+    setSessionId(sid);
+    
+    // Recuperar dados do plano do localStorage
+    const pendingSubscription = localStorage.getItem('pendingSubscription');
+    if (pendingSubscription) {
+      console.log("Plano selecionado:", JSON.parse(pendingSubscription));
+    }
+    
+    // Mostrar formulário
+    setStep("form");
+  }, [setLocation]);
 
-    const interval: any = setInterval(function () {
-      const timeLeft = animationEnd - Date.now();
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Email inválido";
+    }
+    
+    if (!formData.password || formData.password.length < 6) {
+      newErrors.password = "Senha deve ter no mínimo 6 caracteres";
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Senhas não conferem";
+    }
+    
+    if (!formData.storeName || formData.storeName.length < 3) {
+      newErrors.storeName = "Nome da loja deve ter no mínimo 3 caracteres";
+    }
+    
+    if (!formData.cnpj || formData.cnpj.replace(/\D/g, "").length !== 14) {
+      newErrors.cnpj = "CNPJ inválido (14 dígitos)";
+    }
+    
+    if (!formData.ownerName || formData.ownerName.length < 3) {
+      newErrors.ownerName = "Nome do responsável deve ter no mínimo 3 caracteres";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
-      }
-
-      const particleCount = 50 * (timeLeft / duration);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    if (!sessionId) {
+      alert("Sessão inválida");
+      return;
+    }
+    
+    try {
+      setStep("loading");
       
-      // Simular confetti (pode adicionar biblioteca real se desejar)
-      console.log("🎉 Confetti!", particleCount);
-    }, 250);
+      await createTenantMutation.mutateAsync({
+        email: formData.email,
+        password: formData.password,
+        storeName: formData.storeName,
+        cnpj: formData.cnpj.replace(/\D/g, ""),
+        ownerName: formData.ownerName,
+        stripeSessionId: sessionId,
+      });
+      
+      // Limpar localStorage
+      localStorage.removeItem('pendingSubscription');
+      
+      setStep("success");
+      
+      // Redirecionar para login após 3 segundos
+      setTimeout(() => {
+        setLocation("/login");
+      }, 3000);
+      
+    } catch (error: any) {
+      setStep("form");
+      alert(`Erro ao criar conta: ${error.message || "Tente novamente"}`);
+    }
+  };
 
-    return () => clearInterval(interval);
-  }, []);
+  const formatCNPJ = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 14) {
+      return numbers
+        .replace(/^(\d{2})(\d)/, "$1.$2")
+        .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+        .replace(/\.(\d{3})(\d)/, ".$1/$2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
+    }
+    return value;
+  };
 
-  const nextSteps = [
-    {
-      icon: Zap,
-      title: "Acesse o Dashboard",
-      description: "Explore todas as funcionalidades do sistema",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-    },
-    {
-      icon: Calendar,
-      title: "Configure sua Loja",
-      description: "Adicione produtos, clientes e configure as preferências",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-    },
-    {
-      icon: Mail,
-      title: "Verifique seu Email",
-      description: "Enviamos um guia completo para começar",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
-  ];
+  if (step === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-purple-600" />
+      </div>
+    );
+  }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full">
-        {/* Animação de Sucesso */}
+  if (step === "success") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center p-4">
         <motion.div
-          initial={{ scale: 0, opacity: 0 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{
-            type: "spring",
-            stiffness: 260,
-            damping: 20,
-            delay: 0.1,
-          }}
-          className="text-center mb-8"
+          className="text-center"
         >
-          <div className="relative inline-block">
+          <div className="relative inline-block mb-6">
             <motion.div
-              animate={{
-                scale: [1, 1.2, 1],
-                rotate: [0, 360],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                repeatDelay: 3,
-              }}
+              animate={{ scale: [1, 1.2, 1], rotate: [0, 360] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
               className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-2xl opacity-50"
             />
             <div className="relative bg-gradient-to-r from-green-500 to-emerald-600 rounded-full p-8 shadow-2xl">
               <CheckCircle className="h-24 w-24 text-white" strokeWidth={2.5} />
             </div>
           </div>
-        </motion.div>
-
-        {/* Título Principal */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-center mb-12"
-        >
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
-            🎉 Assinatura Confirmada!
+          
+          <h1 className="text-4xl font-black text-gray-900 mb-4">
+            🎉 Conta Criada com Sucesso!
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-gray-600 mb-2">
             Bem-vindo ao <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">CellSync</span>
           </p>
-        </motion.div>
-
-        {/* Card de Informações */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Card className="mb-8 border-2 border-green-200 shadow-xl">
-            <CardContent className="p-8">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <CreditCard className="h-6 w-6 text-green-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    Pagamento Processado com Sucesso
-                  </h3>
-                  <p className="text-gray-600">
-                    Sua assinatura foi ativada e você já pode começar a usar todas as funcionalidades do sistema.
-                  </p>
-                  {sessionId && (
-                    <p className="text-xs text-gray-400 mt-2">
-                      ID da Sessão: {sessionId.substring(0, 20)}...
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
-                <div className="flex items-center gap-2 text-blue-700 mb-2">
-                  <Mail className="h-5 w-5" />
-                  <span className="font-semibold">Confirmação Enviada</span>
-                </div>
-                <p className="text-sm text-blue-600">
-                  Enviamos um email com os detalhes da sua assinatura e um guia de primeiros passos.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Próximos Passos */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          className="mb-8"
-        >
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            Próximos Passos
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {nextSteps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.8 + index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-              >
-                <Card className="h-full hover:shadow-xl transition-shadow cursor-pointer">
-                  <CardContent className="p-6">
-                    <div className={`${step.bgColor} rounded-lg p-3 w-fit mb-4`}>
-                      <step.icon className={`h-6 w-6 ${step.color}`} />
-                    </div>
-                    <h3 className="font-bold text-gray-900 mb-2">{step.title}</h3>
-                    <p className="text-sm text-gray-600">{step.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Botões de Ação */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.1 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-        >
-          <Button
-            size="lg"
-            onClick={() => setLocation("/dashboard")}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-6 text-lg shadow-lg group"
-          >
-            <Zap className="mr-2 h-5 w-5 group-hover:animate-pulse" />
-            Acessar Dashboard
-            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
-
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={() => setLocation("/configuracoes")}
-            className="border-2 border-purple-300 text-purple-700 hover:bg-purple-50 px-8 py-6 text-lg"
-          >
-            <Sparkles className="mr-2 h-5 w-5" />
-            Configurar Loja
-          </Button>
-        </motion.div>
-
-        {/* Informação Adicional */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.3 }}
-          className="text-center mt-8"
-        >
-          <p className="text-sm text-gray-500">
-            Precisa de ajuda? Entre em contato com nosso{" "}
-            <button
-              onClick={() => setLocation("/meus-chamados")}
-              className="text-blue-600 hover:text-blue-700 font-semibold underline"
-            >
-              suporte técnico
-            </button>
+          <p className="text-gray-500">
+            Redirecionando para o login em 3 segundos...
           </p>
         </motion.div>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="max-w-2xl w-full"
+      >
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full mb-4 shadow-lg">
+            <CheckCircle className="h-10 w-10 text-white" strokeWidth={2.5} />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
+            Pagamento Confirmado! 🎉
+          </h1>
+          <p className="text-lg text-gray-600">
+            Agora crie sua conta para acessar o sistema
+          </p>
+          {sessionId && (
+            <p className="text-xs text-gray-400 mt-2">
+              Sessão: {sessionId.substring(0, 20)}...
+            </p>
+          )}
+        </div>
+
+        {/* Formulário */}
+        <Card className="shadow-xl border-2 border-purple-200">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">Criar Minha Conta</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Dados da Loja */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <Store className="h-5 w-5 text-purple-600" />
+                  Dados da Loja
+                </h3>
+                
+                <div>
+                  <Label htmlFor="storeName">Nome da Loja *</Label>
+                  <Input
+                    id="storeName"
+                    placeholder="Ex: Loja do João"
+                    value={formData.storeName}
+                    onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
+                    className={errors.storeName ? "border-red-500" : ""}
+                  />
+                  {errors.storeName && <p className="text-xs text-red-500 mt-1">{errors.storeName}</p>}
+                </div>
+                
+                <div>
+                  <Label htmlFor="cnpj">CNPJ *</Label>
+                  <Input
+                    id="cnpj"
+                    placeholder="00.000.000/0000-00"
+                    value={formData.cnpj}
+                    onChange={(e) => setFormData({ ...formData, cnpj: formatCNPJ(e.target.value) })}
+                    className={errors.cnpj ? "border-red-500" : ""}
+                    maxLength={18}
+                  />
+                  {errors.cnpj && <p className="text-xs text-red-500 mt-1">{errors.cnpj}</p>}
+                </div>
+                
+                <div>
+                  <Label htmlFor="ownerName">Nome do Responsável *</Label>
+                  <Input
+                    id="ownerName"
+                    placeholder="Seu nome completo"
+                    value={formData.ownerName}
+                    onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+                    className={errors.ownerName ? "border-red-500" : ""}
+                  />
+                  {errors.ownerName && <p className="text-xs text-red-500 mt-1">{errors.ownerName}</p>}
+                </div>
+              </div>
+
+              {/* Dados de Acesso */}
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-blue-600" />
+                  Dados de Acesso
+                </h3>
+                
+                <div>
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className={errors.email ? "border-red-500" : ""}
+                  />
+                  {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+                </div>
+                
+                <div>
+                  <Label htmlFor="password">Senha *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Mínimo 6 caracteres"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className={errors.password ? "border-red-500" : ""}
+                  />
+                  {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
+                </div>
+                
+                <div>
+                  <Label htmlFor="confirmPassword">Confirmar Senha *</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Digite a senha novamente"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    className={errors.confirmPassword ? "border-red-500" : ""}
+                  />
+                  {errors.confirmPassword && <p className="text-xs text-red-500 mt-1">{errors.confirmPassword}</p>}
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg py-6"
+                disabled={createTenantMutation.isPending}
+              >
+                {createTenantMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Criando conta...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="mr-2 h-5 w-5" />
+                    Criar Conta e Acessar Sistema
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Ao criar sua conta, você concorda com nossos Termos de Uso e Política de Privacidade
+        </p>
+      </motion.div>
     </div>
   );
 }

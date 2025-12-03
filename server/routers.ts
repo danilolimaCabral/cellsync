@@ -1586,8 +1586,8 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
       return allPlans;
     }),
 
-    // Criar checkout do Stripe
-    createCheckout: protectedProcedure
+    // Criar checkout do Stripe (PÚBLICO - sem autenticação)
+    createCheckout: publicProcedure
       .input(z.object({
         planSlug: z.string(),
         billingPeriod: z.enum(["monthly", "yearly"]),
@@ -1597,12 +1597,17 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
         
         const origin = ctx.req.headers.origin || "http://localhost:3000";
         
+        // Se usuário está logado, usar seus dados
+        const customerEmail = ctx.user?.email || undefined;
+        const customerName = ctx.user?.name || undefined;
+        const userId = ctx.user?.id || undefined;
+        
         const session = await createCheckoutSession({
           planSlug: input.planSlug,
           billingPeriod: input.billingPeriod,
-          customerEmail: ctx.user.email,
-          customerName: ctx.user.name,
-          userId: ctx.user.id,
+          customerEmail,
+          customerName,
+          userId,
           successUrl: `${origin}/assinatura/sucesso?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${origin}/planos`,
         });
@@ -2158,6 +2163,97 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
         });
 
         return { success: true, message: "Onboarding concluído com sucesso!" };
+      }),
+  }),
+  
+  // ============= TENANTS (MULTI-LOJA) =============
+  tenants: router({
+    // Criar tenant após pagamento bem-sucedido no Stripe
+    createFromCheckout: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().min(6),
+        storeName: z.string().min(3),
+        cnpj: z.string().length(14), // Apenas números
+        ownerName: z.string().min(3),
+        stripeSessionId: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const database = await getDb();
+        if (!database) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao conectar ao banco" });
+        }
+        
+        // 1. Verificar se email já existe
+        const existingUser = await db.getUserByEmail(input.email);
+        if (existingUser) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Email já cadastrado" });
+        }
+        
+        // 2. Verificar se CNPJ já existe (usando Drizzle)
+        const existingTenant = await database
+          .select({ id: tenants.id })
+          .from(tenants)
+          .where(eq(tenants.cnpj, input.cnpj))
+          .limit(1);
+        
+        if (existingTenant.length > 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "CNPJ já cadastrado" });
+        }
+        
+        // 3. Criar tenant (usando Drizzle)
+        const [newTenant] = await database.insert(tenants).values({
+          name: input.storeName,
+          subdomain: `loja-${Date.now()}`, // Gerar subdomain único
+          cnpj: input.cnpj,
+          planId: 1, // Plano básico por padrão
+          status: "trial",
+          trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 dias
+        });
+        
+        const tenantId = newTenant.insertId;
+        if (!tenantId) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao criar loja" });
+        }
+        
+        // 4. Criar usuário admin (usando Drizzle)
+        const hashedPassword = await bcrypt.hash(input.password, 10);
+        const [newUser] = await database.insert(users).values({
+          tenantId: Number(tenantId),
+          name: input.ownerName,
+          email: input.email,
+          password: hashedPassword,
+          role: "admin",
+          active: true,
+        });
+        
+        const userId = newUser.insertId;
+        if (!userId) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao criar usuário" });
+        }
+        
+        // 5. Salvar session_id para vincular com webhook (usando Drizzle)
+        const { stripePendingSessions } = await import("../drizzle/schema");
+        await database.insert(stripePendingSessions).values({
+          sessionId: input.stripeSessionId,
+          tenantId: Number(tenantId),
+          userId: Number(userId),
+          processed: false,
+        });
+        
+        console.log("[Tenant] Criado com sucesso:", {
+          tenantId,
+          userId,
+          email: input.email,
+          storeName: input.storeName,
+        });
+        
+        return {
+          success: true,
+          message: "Conta criada com sucesso! Faça login para acessar.",
+          tenantId: Number(tenantId),
+          userId: Number(userId),
+        };
       }),
   }),
 });
