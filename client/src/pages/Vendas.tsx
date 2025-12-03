@@ -36,6 +36,8 @@ export default function Vendas() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastSaleId, setLastSaleId] = useState<number | null>(null);
   const [emitirNFe, setEmitirNFe] = useState(false);
+  const [emitirCupom, setEmitirCupom] = useState(false);
+  const [cpfNota, setCpfNota] = useState("");
   const [emitindoNFe, setEmitindoNFe] = useState(false);
   const [saleType, setSaleType] = useState<"retail" | "wholesale">("retail");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -316,6 +318,8 @@ export default function Vendas() {
       paymentMethod,
       saleType,
       appliedDiscount: savedAmount,
+      emitirNfce: emitirCupom,
+      cpfNota: cpfNota.replace(/\D/g, ""),
       items: cart.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -712,19 +716,70 @@ export default function Vendas() {
                 />
               </div>
 
-              <div className="flex items-center space-x-2 pt-2 border-t">
-                <input
-                  type="checkbox"
-                  id="emitir-nfe"
-                  checked={emitirNFe}
-                  onChange={(e) => setEmitirNFe(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300"
-                  disabled={!selectedCustomerId}
-                />
-                <Label htmlFor="emitir-nfe" className="cursor-pointer">
-                  Emitir NF-e automaticamente
-                  {!selectedCustomerId && " (selecione um cliente)"}
-                </Label>
+              {/* Opções Fiscais */}
+              <div className="space-y-3 pt-2 border-t">
+                {/* NF-e */}
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="emitir-nfe"
+                    checked={emitirNFe}
+                    onChange={(e) => {
+                      setEmitirNFe(e.target.checked);
+                      if (e.target.checked) setEmitirCupom(false);
+                    }}
+                    className="h-4 w-4 rounded border-gray-300"
+                    disabled={!selectedCustomerId}
+                  />
+                  <Label htmlFor="emitir-nfe" className="cursor-pointer">
+                    Emitir NF-e (Nota Grande)
+                    {!selectedCustomerId && " (selecione um cliente)"}
+                  </Label>
+                </div>
+
+                {/* NFC-e (Cupom) */}
+                <div className="bg-blue-50 p-3 rounded-lg space-y-3 border border-blue-100">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="emitir-cupom" className="text-base font-medium text-blue-900 cursor-pointer">
+                        Emitir Cupom Fiscal (NFC-e)
+                      </Label>
+                      <p className="text-xs text-blue-700">
+                        Gera o documento fiscal simplificado
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      id="emitir-cupom"
+                      checked={emitirCupom}
+                      onChange={(e) => {
+                        setEmitirCupom(e.target.checked);
+                        if (e.target.checked) setEmitirNFe(false);
+                      }}
+                      className="h-5 w-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {emitirCupom && (
+                    <div className="pt-2 animate-in slide-in-from-top-2">
+                      <Label htmlFor="cpf-nota" className="text-sm font-medium mb-1.5 block text-blue-900">
+                        CPF na Nota (Opcional)
+                      </Label>
+                      <Input
+                        id="cpf-nota"
+                        placeholder="000.000.000-00"
+                        value={cpfNota}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\D/g, "");
+                          if (v.length <= 11) {
+                            setCpfNota(v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"));
+                          }
+                        }}
+                        className="bg-white border-blue-200 focus-visible:ring-blue-500"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
