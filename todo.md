@@ -1622,7 +1622,34 @@
 
 ## Atualização do GitHub
 - [x] Criar checkpoint com melhorias
-- [ ] Verificar repositório GitHub
-- [ ] Push das alterações
+- [x] Verificar repositório GitHub
+- [x] Push das alterações
 - [ ] Atualizar README com novas funcionalidades
 - [ ] Criar release notes
+
+## App Mobile React Native
+- [x] Planejar arquitetura e funcionalidades
+- [x] Configurar projeto React Native com Expo
+- [x] Criar estrutura completa de pastas
+- [x] Criar tipos TypeScript
+- [x] Criar utilitários de formatação
+- [x] Criar serviço de armazenamento local
+- [x] Configurar cliente tRPC
+- [x] Criar contexto de autenticação
+- [x] Criar contexto do carrinho
+- [x] Criar tema e cores
+- [x] Configurar App.tsx principal
+- [x] Criar documentação completa (MOBILE_APP_DOCUMENTATION.md)
+- [x] Criar README com guia de desenvolvimento
+- [ ] Implementar navegação (React Navigation)
+- [ ] Criar componentes comuns (Button, Card, Input, Loading)
+- [ ] Desenvolver telas de autenticação (Login, Splash)
+- [ ] Desenvolver telas do PDV mobile
+- [ ] Desenvolver telas de consulta de estoque
+- [ ] Desenvolver telas de ordem de serviço
+- [ ] Desenvolver telas de clientes
+- [ ] Desenvolver Dashboard
+- [ ] Implementar scanner de código de barras/IMEI
+- [ ] Adicionar notificações push
+- [ ] Testar em Android e iOS
+- [ ] Criar build de produção
