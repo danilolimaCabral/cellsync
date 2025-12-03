@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -54,6 +56,8 @@ export default function PDVMobile() {
   const [paymentMethod, setPaymentMethod] = useState<string>("money");
   const [showCheckout, setShowCheckout] = useState(false);
   const [discount, setDiscount] = useState(0);
+  const [emitirCupom, setEmitirCupom] = useState(false);
+  const [cpfNota, setCpfNota] = useState("");
 
   // Queries
   const { data: productsData, isLoading: loadingProducts } = trpc.products.list.useQuery({
@@ -74,6 +78,8 @@ export default function PDVMobile() {
       setSelectedVendorId(null);
       setSelectedClientId(null);
       setDiscount(0);
+      setEmitirCupom(false);
+      setCpfNota("");
       setShowCheckout(false);
     },
     onError: (error) => {
@@ -173,6 +179,8 @@ export default function PDVMobile() {
       discount,
       saleType: "retail",
       appliedDiscount: discount,
+      emitirNfce: emitirCupom,
+      cpfNota: cpfNota.replace(/\D/g, ""),
     });
   };
 
@@ -431,6 +439,45 @@ export default function PDVMobile() {
                 value={discount}
                 onChange={(e) => setDiscount(Number(e.target.value))}
               />
+            </div>
+
+            {/* Cupom Fiscal */}
+            <div className="bg-blue-50 p-3 rounded-lg space-y-3 border border-blue-100">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="emitir-cupom" className="text-base font-medium text-blue-900">
+                    Emitir Cupom Fiscal (NFC-e)
+                  </Label>
+                  <p className="text-xs text-blue-700">
+                    Gera o documento fiscal automaticamente
+                  </p>
+                </div>
+                <Switch
+                  id="emitir-cupom"
+                  checked={emitirCupom}
+                  onCheckedChange={setEmitirCupom}
+                />
+              </div>
+
+              {emitirCupom && (
+                <div className="pt-2 animate-in slide-in-from-top-2">
+                  <Label htmlFor="cpf-nota" className="text-sm font-medium mb-1.5 block text-blue-900">
+                    CPF na Nota (Opcional)
+                  </Label>
+                  <Input
+                    id="cpf-nota"
+                    placeholder="000.000.000-00"
+                    value={cpfNota}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, "");
+                      if (v.length <= 11) {
+                        setCpfNota(v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"));
+                      }
+                    }}
+                    className="bg-white border-blue-200 focus-visible:ring-blue-500"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Resumo */}
