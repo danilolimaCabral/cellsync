@@ -151,14 +151,24 @@ export default function EmitirNFe() {
 
   const updateField = (field: keyof NFe, value: any) => {
     setNfe((prev) => ({ ...prev, [field]: value }));
+    
+    // Auto-busca de CNPJ ao completar 14 dígitos
+    if (field === "emitterCnpj") {
+      const cleanValue = String(value).replace(/\D/g, "");
+      if (cleanValue.length === 14) {
+        handleSearchCnpj(String(value));
+      }
+    }
   };
 
   const [isLoadingCnpj, setIsLoadingCnpj] = useState(false);
 
-  const handleSearchCnpj = async () => {
-    const cnpj = nfe.emitterCnpj.replace(/\D/g, "");
+  const handleSearchCnpj = async (cnpjValue?: string) => {
+    const cnpjToSearch = cnpjValue || nfe.emitterCnpj;
+    const cnpj = cnpjToSearch.replace(/\D/g, "");
+    
     if (cnpj.length !== 14) {
-      toast.error("CNPJ inválido. Digite 14 números.");
+      if (!cnpjValue) toast.error("CNPJ inválido. Digite 14 números.");
       return;
     }
 
@@ -382,7 +392,7 @@ export default function EmitirNFe() {
                       <Button 
                         type="button" 
                         variant="outline" 
-                        onClick={handleSearchCnpj}
+                        onClick={() => handleSearchCnpj()}
                         disabled={isLoadingCnpj}
                       >
                         {isLoadingCnpj ? (
