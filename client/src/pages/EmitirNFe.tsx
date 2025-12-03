@@ -27,8 +27,11 @@ import {
   Trash2,
   Download,
   Send,
+  Search,
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { fetchCnpjData } from "@/lib/cnpj-service";
+import { validateIE } from "@/lib/ie-validator";
 
 interface NFe {
   // Emitente
@@ -39,6 +42,7 @@ interface NFe {
   emitterCity?: string;
   emitterState?: string;
   emitterZipCode?: string;
+  emitterIE?: string;
   
   // Destinatário
   recipientDocument: string;
@@ -149,6 +153,38 @@ export default function EmitirNFe() {
     setNfe((prev) => ({ ...prev, [field]: value }));
   };
 
+  const [isLoadingCnpj, setIsLoadingCnpj] = useState(false);
+
+  const handleSearchCnpj = async () => {
+    const cnpj = nfe.emitterCnpj.replace(/\D/g, "");
+    if (cnpj.length !== 14) {
+      toast.error("CNPJ inválido. Digite 14 números.");
+      return;
+    }
+
+    setIsLoadingCnpj(true);
+    try {
+      const data = await fetchCnpjData(cnpj);
+      
+      setNfe(prev => ({
+        ...prev,
+        emitterName: data.razao_social,
+        emitterFantasyName: data.nome_fantasia,
+        emitterAddress: `${data.logradouro}, ${data.numero} ${data.complemento ? `- ${data.complemento}` : ""}, ${data.bairro}`,
+        emitterCity: data.municipio,
+        emitterState: data.uf,
+        emitterZipCode: data.cep,
+        emitterIE: "" // Limpa IE ao trocar de empresa
+      }));
+      
+      toast.success("Dados da empresa carregados!");
+    } catch (error) {
+      toast.error("Erro ao buscar CNPJ. Verifique o número ou a API configurada.");
+    } finally {
+      setIsLoadingCnpj(false);
+    }
+  };
+
   const addItem = () => {
     setNfe((prev) => ({
       ...prev,
@@ -210,6 +246,10 @@ export default function EmitirNFe() {
     if (currentStep === 1) {
       if (!nfe.emitterCnpj || !nfe.emitterName) {
         toast.error("Preencha CNPJ e Razão Social do emitente");
+        return;
+      }
+      if (nfe.emitterIE && nfe.emitterState && !validateIE(nfe.emitterIE, nfe.emitterState)) {
+        toast.error(`Inscrição Estadual inválida para o estado ${nfe.emitterState}`);
         return;
       }
     } else if (currentStep === 2) {
@@ -333,11 +373,25 @@ export default function EmitirNFe() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>CNPJ *</Label>
-                    <Input
-                      placeholder="00.000.000/0000-00"
-                      value={nfe.emitterCnpj}
-                      onChange={(e) => updateField("emitterCnpj", e.target.value)}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="00.000.000/0000-00"
+                        value={nfe.emitterCnpj}
+                        onChange={(e) => updateField("emitterCnpj", e.target.value)}
+                      />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={handleSearchCnpj}
+                        disabled={isLoadingCnpj}
+                      >
+                        {isLoadingCnpj ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        ) : (
+                          <Search className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                   <div>
                     <Label>Razão Social *</Label>
@@ -387,6 +441,18 @@ export default function EmitirNFe() {
                       value={nfe.emitterZipCode || ""}
                       onChange={(e) => updateField("emitterZipCode", e.target.value)}
                     />
+                  </div>
+                  <div>
+                    <Label>Inscrição Estadual</Label>
+                    <Input
+                      placeholder="Isento ou número"
+                      value={nfe.emitterIE || ""}
+                      onChange={(e) => updateField("emitterIE", e.target.value)}
+                      className={nfe.emitterIE && nfe.emitterState && !validateIE(nfe.emitterIE, nfe.emitterState) ? "border-red-500 focus-visible:ring-red-500" : ""}
+                    />
+                    {nfe.emitterIE && nfe.emitterState && !validateIE(nfe.emitterIE, nfe.emitterState) && (
+                      <span className="text-xs text-red-500 mt-1">IE inválida para {nfe.emitterState}</span>
+                    )}
                   </div>
                 </div>
               </CardContent>
