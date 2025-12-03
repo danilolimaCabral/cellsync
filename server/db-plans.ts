@@ -20,3 +20,13 @@ export async function getPlanBySlug(slug: string) {
   const result = await db.select().from(plans).where(eq(plans.slug, slug)).limit(1);
   return result[0] || null;
 }
+
+/**
+ * Buscar plano por ID
+ */
+export async function getPlanById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(plans).where(eq(plans.id, id)).limit(1);
+  return result[0] || null;
+}

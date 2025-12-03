@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "ef3e2d33-c834-4792-babd-3a43b1fe62d7",
-  "prevId": "8e4082f8-17c7-4ffb-b68e-774ddb6cff4c",
+  "id": "24e2f86d-c45c-4e88-a847-4590876cef93",
+  "prevId": "6a99b826-268c-4c41-a297-2e60eecfc80b",
   "tables": {
     "accountsPayable": {
       "name": "accountsPayable",
@@ -2184,22 +2184,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "ai_imports_limit": {
-          "name": "ai_imports_limit",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 50
-        },
-        "ai_trial_days": {
-          "name": "ai_trial_days",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 60
-        },
         "is_active": {
           "name": "is_active",
           "type": "boolean",
@@ -3552,118 +3536,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "cnpj": {
-          "name": "cnpj",
-          "type": "varchar(18)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "razao_social": {
-          "name": "razao_social",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "inscricao_estadual": {
-          "name": "inscricao_estadual",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "inscricao_municipal": {
-          "name": "inscricao_municipal",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "cep": {
-          "name": "cep",
-          "type": "varchar(9)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "logradouro": {
-          "name": "logradouro",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "numero": {
-          "name": "numero",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "complemento": {
-          "name": "complemento",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "bairro": {
-          "name": "bairro",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "cidade": {
-          "name": "cidade",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "estado": {
-          "name": "estado",
-          "type": "varchar(2)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "telefone": {
-          "name": "telefone",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "celular": {
-          "name": "celular",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "email": {
-          "name": "email",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "site": {
-          "name": "site",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "regime_tributario": {
-          "name": "regime_tributario",
-          "type": "enum('simples_nacional','lucro_presumido','lucro_real','mei')",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "plan_id": {
           "name": "plan_id",
           "type": "int",
@@ -3699,22 +3571,6 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "ai_imports_used": {
-          "name": "ai_imports_used",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "ai_imports_reset_at": {
-          "name": "ai_imports_reset_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
         },
         "createdAt": {
           "name": "createdAt",

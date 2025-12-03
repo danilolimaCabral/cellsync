@@ -19,7 +19,6 @@ import Comissoes from "@/pages/Comissoes";
 import NotasFiscais from "@/pages/NotasFiscais";
 import EmitirNFe from "@/pages/EmitirNFe";
 import Configuracoes from "./pages/Configuracoes";
-import ConfiguracaoLoja from "./pages/ConfiguracaoLoja";
 import Notificacoes from "./pages/Notificacoes";
 import RelatorioAvancadoEstoque from "./pages/RelatorioAvancadoEstoque";
 import ImportarProdutos from "./pages/ImportarProdutos";
@@ -36,14 +35,9 @@ import Vendedores from "./pages/Vendedores";
 import ImportarXML from "./pages/ImportarXML";
 import ImportarPlanilha from "./pages/ImportarPlanilha";
 import AssistenteImportacao from "./pages/AssistenteImportacao";
-import CadastrarProduto from "./pages/CadastrarProduto";
-import CadastrarCliente from "./pages/CadastrarCliente";
-import Comparacao from "./pages/Comparacao";
-import EtiquetasEnvio from "./pages/EtiquetasEnvio";
-import CalculadoraFrete from "./pages/CalculadoraFrete";
-import RastreamentoEnvios from "./pages/RastreamentoEnvios";
 import LiberacaoModulos from "./pages/LiberacaoModulos";
 import AssinaturaSucesso from "./pages/AssinaturaSucesso";
+import Assinatura from "./pages/Assinatura";
 import Onboarding from "./pages/Onboarding";
 import CriarConta from "./pages/CriarConta";
 import DashboardLayout from "./components/DashboardLayout";
@@ -72,10 +66,20 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/comparacao" component={Comparacao} />
       <Route path="/login" component={Login} />
       <Route path="/planos" component={Planos} />
       <Route path="/assinatura/sucesso" component={AssinaturaSucesso} />
+      <Route path="/assinatura">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Assinatura />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
       <Route path="/onboarding" component={Onboarding} />
       <Route path="/criar-conta" component={CriarConta} />
       
@@ -164,18 +168,6 @@ function Router() {
         )}
       </Route>
 
-      <Route path="/cadastrar-produto">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <CadastrarProduto />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-
       <Route path="/pdv-mobile">
         {() => (
           <ProtectedRoute
@@ -206,18 +198,6 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Clientes />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-
-      <Route path="/cadastrar-cliente">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <CadastrarCliente />
               </DashboardLayout>
             )}
           />
@@ -302,54 +282,6 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Configuracoes />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-
-      <Route path="/configuracao-loja">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <ConfiguracaoLoja />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-
-      <Route path="/etiquetas-envio">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <EtiquetasEnvio />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-
-      <Route path="/calculadora-frete">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <CalculadoraFrete />
-              </DashboardLayout>
-            )}
-          />
-        )}
-      </Route>
-
-      <Route path="/rastreamento-envios">
-        {() => (
-          <ProtectedRoute
-            component={() => (
-              <DashboardLayout>
-                <RastreamentoEnvios />
               </DashboardLayout>
             )}
           />

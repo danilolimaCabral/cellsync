@@ -15,8 +15,6 @@ import { ENV } from "./_core/env";
 import { analyzeProductWithAI } from "./ai-product-assistant";
 import { diagnoseServiceOrder } from "./ai-os-assistant";
 import { analyzeTicketWithAI } from "./ai-ticket-assistant";
-import { analyzeProductImage, analyzeDocumentImage, analyzeInvoiceImage } from "./ai-image-analyzer";
-import { storagePut } from "./storage";
 import { generateLabel, generateBarcode, generateQRCode } from "./label-generator";
 import { tenantSwitchingRouter } from "./routers/tenantSwitching";
 import { tenantManagementRouter } from "./routers/tenantManagement";
@@ -42,50 +40,6 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 export const appRouter = router({
   system: systemRouter,
   aiAssistant: aiAssistantRouter,
-  
-  // ============= ANÁLISE DE IMAGENS COM IA =============
-  imageAnalysis: router({
-    analyzeProduct: protectedProcedure
-      .input(z.object({
-        imageBase64: z.string(),
-      }))
-      .mutation(async ({ input }) => {
-        // Upload da imagem para S3
-        const imageBuffer = Buffer.from(input.imageBase64.split(',')[1], 'base64');
-        const fileName = `ai-analysis/product-${Date.now()}.jpg`;
-        const { url } = await storagePut(fileName, imageBuffer, 'image/jpeg');
-        
-        // Analisar com IA
-        const result = await analyzeProductImage(url);
-        return result;
-      }),
-    
-    analyzeDocument: protectedProcedure
-      .input(z.object({
-        imageBase64: z.string(),
-      }))
-      .mutation(async ({ input }) => {
-        const imageBuffer = Buffer.from(input.imageBase64.split(',')[1], 'base64');
-        const fileName = `ai-analysis/document-${Date.now()}.jpg`;
-        const { url } = await storagePut(fileName, imageBuffer, 'image/jpeg');
-        
-        const result = await analyzeDocumentImage(url);
-        return result;
-      }),
-    
-    analyzeInvoice: protectedProcedure
-      .input(z.object({
-        imageBase64: z.string(),
-      }))
-      .mutation(async ({ input }) => {
-        const imageBuffer = Buffer.from(input.imageBase64.split(',')[1], 'base64');
-        const fileName = `ai-analysis/invoice-${Date.now()}.jpg`;
-        const { url } = await storagePut(fileName, imageBuffer, 'image/jpeg');
-        
-        const result = await analyzeInvoiceImage(url);
-        return result;
-      }),
-  }),
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
@@ -521,30 +475,6 @@ export const appRouter = router({
         // Buscar itens da venda
         const items = await db.getSaleItems(input.saleId);
         
-        // Buscar dados da loja (tenant)
-        const database = await getDb();
-        let storeData = undefined;
-        if (database) {
-          const [tenant] = await database
-            .select()
-            .from(tenants)
-            .where(eq(tenants.id, ctx.user.tenantId))
-            .limit(1);
-          
-          if (tenant) {
-            storeData = {
-              name: tenant.name,
-              cnpj: tenant.cnpj || undefined,
-              phone: tenant.telefone || tenant.celular || undefined,
-              address: tenant.logradouro && tenant.numero 
-                ? `${tenant.logradouro}, ${tenant.numero}${tenant.complemento ? ' - ' + tenant.complemento : ''}`
-                : undefined,
-              city: tenant.cidade || undefined,
-              state: tenant.estado || undefined,
-            };
-          }
-        }
-        
         // Preparar dados para o recibo
         const receiptData = {
           saleId: sale.id.toString(),
@@ -556,7 +486,6 @@ export const appRouter = router({
             document: customer.cpf || customer.cnpj || undefined,
             phone: customer.phone || undefined,
           } : undefined,
-          store: storeData,
           products: items.map((item: any) => ({
             name: item.productName,
             sku: item.productSku || "N/A",
@@ -1686,8 +1615,91 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
 
     // Obter assinatura atual do usuário
     mySubscription: protectedProcedure.query(async ({ ctx }) => {
-      // TODO: Implementar lógica de buscar assinatura do tenant do usuário
-      return null;
+      const database = await db.getDb();
+      if (!database) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao conectar ao banco" });
+      }
+
+      const { tenants } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+
+      // Buscar tenant do usuário
+      const [tenant] = await database
+        .select()
+        .from(tenants)
+        .where(eq(tenants.id, ctx.user.tenantId))
+        .limit(1);
+
+      if (!tenant) {
+        return null;
+      }
+
+      // Buscar plano
+      const { getPlanById } = await import("./db-plans");
+      const plan = await getPlanById(tenant.planId);
+
+      return {
+        tenant: {
+          id: tenant.id,
+          name: tenant.name,
+          status: tenant.status,
+          trialEndsAt: tenant.trialEndsAt,
+          stripeCustomerId: tenant.stripeCustomerId,
+          stripeSubscriptionId: tenant.stripeSubscriptionId,
+        },
+        plan: plan
+          ? {
+              id: plan.id,
+              name: plan.name,
+              slug: plan.slug,
+              description: plan.description,
+              priceMonthly: plan.priceMonthly,
+              priceYearly: plan.priceYearly,
+              maxUsers: plan.maxUsers,
+              maxProducts: plan.maxProducts,
+              features: plan.features as string[],
+            }
+          : null,
+      };
+    }),
+
+    // Criar portal de gerenciamento de assinatura
+    createBillingPortal: protectedProcedure.mutation(async ({ ctx }) => {
+      const database = await db.getDb();
+      if (!database) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao conectar ao banco" });
+      }
+
+      const { tenants } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+
+      // Buscar tenant do usuário
+      const [tenant] = await database
+        .select()
+        .from(tenants)
+        .where(eq(tenants.id, ctx.user.tenantId))
+        .limit(1);
+
+      if (!tenant) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Tenant não encontrado" });
+      }
+
+      if (!tenant.stripeCustomerId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Nenhuma assinatura ativa encontrada" });
+      }
+
+      // Criar sessão do portal
+      const { createCustomerPortalSession } = await import("./stripe-integration");
+      const origin = ctx.req.headers.origin || "http://localhost:3000";
+      
+      const session = await createCustomerPortalSession({
+        stripeCustomerId: tenant.stripeCustomerId,
+        returnUrl: `${origin}/assinatura`,
+      });
+
+      return {
+        portalUrl: session.url,
+      };
     }),
   }),
 
@@ -2146,252 +2158,6 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
         });
 
         return { success: true, message: "Onboarding concluído com sucesso!" };
-      }),
-  }),
-
-  // ============= CONFIGURAÇÃO DA LOJA (TENANT) =============
-  tenants: router({
-    getCurrent: protectedProcedure.query(async ({ ctx }) => {
-      const database = await getDb();
-      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-      
-      const [tenant] = await database
-        .select()
-        .from(tenants)
-        .where(eq(tenants.id, ctx.user.tenantId))
-        .limit(1);
-      
-      return tenant || null;
-    }),
-
-    updateCurrent: protectedProcedure
-      .input(z.object({
-        name: z.string().optional(),
-        cnpj: z.string().optional(),
-        razaoSocial: z.string().optional(),
-        inscricaoEstadual: z.string().optional(),
-        inscricaoMunicipal: z.string().optional(),
-        cep: z.string().optional(),
-        logradouro: z.string().optional(),
-        numero: z.string().optional(),
-        complemento: z.string().optional(),
-        bairro: z.string().optional(),
-        cidade: z.string().optional(),
-        estado: z.string().optional(),
-        telefone: z.string().optional(),
-        celular: z.string().optional(),
-        email: z.string().optional(),
-        site: z.string().optional(),
-        regimeTributario: z.enum(["simples_nacional", "lucro_presumido", "lucro_real", "mei"]).optional(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const database = await getDb();
-        if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        
-        // Validar CNPJ se fornecido
-        if (input.cnpj) {
-          const cleanCNPJ = input.cnpj.replace(/[^\d]/g, "");
-          if (cleanCNPJ.length !== 14) {
-            throw new TRPCError({ code: "BAD_REQUEST", message: "CNPJ inválido" });
-          }
-        }
-        
-        await database
-          .update(tenants)
-          .set({
-            ...input,
-            updatedAt: new Date(),
-          })
-          .where(eq(tenants.id, ctx.user.tenantId));
-        
-        return { success: true };
-      }),
-  }),
-
-  // ============= COTAÇÃO DE FRETE E RASTREAMENTO =============
-  shipping: router({
-    // Calcular cotações de frete
-    calculateQuotes: protectedProcedure
-      .input(z.object({
-        fromPostalCode: z.string().length(8),
-        toPostalCode: z.string().length(8),
-        weight: z.number().positive(), // gramas
-        length: z.number().positive(), // cm
-        width: z.number().positive(), // cm
-        height: z.number().positive(), // cm
-        insuranceValue: z.number().optional(), // centavos
-        receipt: z.boolean().optional(),
-        ownHand: z.boolean().optional(),
-      }))
-      .mutation(async ({ input, ctx }) => {
-        const { calculateAllQuotes, sortByPrice } = await import("./shipping-service");
-        
-        const quotes = await calculateAllQuotes(input);
-        const sortedQuotes = sortByPrice(quotes);
-        
-        // Salvar cotações no banco
-        for (const quote of sortedQuotes.filter(q => !q.error)) {
-          try {
-            await db.createShippingQuote({
-              tenantId: ctx.user.tenantId,
-              userId: ctx.user.id,
-              fromPostalCode: input.fromPostalCode,
-              toPostalCode: input.toPostalCode,
-              weight: input.weight,
-              length: input.length,
-              width: input.width,
-              height: input.height,
-              carrier: quote.carrier,
-              service: quote.service,
-              price: quote.price,
-              deliveryTime: quote.deliveryTime,
-              insuranceValue: input.insuranceValue,
-              receipt: input.receipt || false,
-              ownHand: input.ownHand || false,
-              source: quote.source,
-            });
-          } catch (error) {
-            console.error("Erro ao salvar cotação:", error);
-          }
-        }
-        
-        return sortedQuotes;
-      }),
-    
-    // Verificar status das APIs
-    checkApisStatus: protectedProcedure
-      .query(async () => {
-        const { getApisStatus } = await import("./shipping-service");
-        return getApisStatus();
-      }),
-    
-    // Criar envio
-    createShipment: protectedProcedure
-      .input(z.object({
-        saleId: z.number().optional(),
-        trackingCode: z.string(),
-        carrier: z.string(),
-        service: z.string().optional(),
-        fromName: z.string(),
-        fromPostalCode: z.string(),
-        fromAddress: z.string().optional(),
-        fromCity: z.string().optional(),
-        fromState: z.string().optional(),
-        toName: z.string(),
-        toPostalCode: z.string(),
-        toAddress: z.string().optional(),
-        toCity: z.string().optional(),
-        toState: z.string().optional(),
-        toPhone: z.string().optional(),
-        weight: z.number().optional(),
-        length: z.number().optional(),
-        width: z.number().optional(),
-        height: z.number().optional(),
-        shippingCost: z.number(),
-        insuranceValue: z.number().optional(),
-        estimatedDelivery: z.date().optional(),
-        notes: z.string().optional(),
-      }))
-      .mutation(async ({ input, ctx }) => {
-        const shipmentId = await db.createShipment({
-          tenantId: ctx.user.tenantId,
-          ...input,
-        });
-        
-        return { id: shipmentId, success: true };
-      }),
-    
-    // Listar envios
-    listShipments: protectedProcedure
-      .input(z.object({
-        limit: z.number().optional(),
-      }))
-      .query(async ({ input, ctx }) => {
-        return await db.listShipmentsByTenant(ctx.user.tenantId, input.limit);
-      }),
-    
-    // Rastrear envio
-    trackShipment: protectedProcedure
-      .input(z.object({
-        trackingCode: z.string(),
-      }))
-      .query(async ({ input }) => {
-        const { rastrearEncomenda } = await import("./correios-api");
-        const { rastrearPorCodigo } = await import("./melhor-envio-api");
-        
-        // Tentar rastrear pelos Correios primeiro
-        const correiosResult = await rastrearEncomenda(input.trackingCode);
-        if (correiosResult.sucesso && correiosResult.eventos.length > 0) {
-          return {
-            source: "correios" as const,
-            events: correiosResult.eventos,
-          };
-        }
-        
-        // Tentar rastrear pelo Melhor Envio
-        const melhorEnvioResult = await rastrearPorCodigo(input.trackingCode);
-        if (melhorEnvioResult) {
-          return {
-            source: "melhor_envio" as const,
-            data: melhorEnvioResult,
-          };
-        }
-        
-        return {
-          source: "none" as const,
-          error: "Código de rastreamento não encontrado",
-        };
-      }),
-    
-    // Listar histórico de cotações
-    listQuotes: protectedProcedure
-      .input(z.object({
-        limit: z.number().optional(),
-      }))
-      .query(async ({ input, ctx }) => {
-        return await db.listShippingQuotesByTenant(ctx.user.tenantId, input.limit);
-      }),
-  }),
-
-  // ============= ETIQUETAS DE ENVIO =============
-  shippingLabels: router({
-    generate: protectedProcedure
-      .input(z.object({
-        labels: z.array(z.object({
-          recipientName: z.string(),
-          recipientCpf: z.string().optional(),
-          recipientAddress: z.string(),
-          recipientNumber: z.string(),
-          recipientComplement: z.string().optional(),
-          recipientNeighborhood: z.string(),
-          recipientCity: z.string(),
-          recipientState: z.string(),
-          recipientZipCode: z.string(),
-          recipientPhone: z.string(),
-          senderName: z.string(),
-          senderAddress: z.string(),
-          senderNumber: z.string(),
-          senderComplement: z.string().optional(),
-          senderNeighborhood: z.string(),
-          senderCity: z.string(),
-          senderState: z.string(),
-          senderZipCode: z.string(),
-          senderPhone: z.string().optional(),
-          carrier: z.string().optional(),
-          trackingCode: z.string().optional(),
-          labelType: z.enum(["simple", "correios"]),
-        })),
-      }))
-      .mutation(async ({ input }) => {
-        const { generateShippingLabels } = await import("./shipping-label-generator");
-        
-        const pdfBuffer = await generateShippingLabels(input.labels);
-        const base64Pdf = pdfBuffer.toString("base64");
-        
-        return {
-          success: true,
-          pdf: base64Pdf,
-        };
       }),
   }),
 });

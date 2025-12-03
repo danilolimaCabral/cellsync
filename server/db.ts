@@ -10,15 +10,13 @@ import {
   chatbotEvents,
   supportTickets,
   supportTicketMessages,
-  shipments, shipmentEvents, shippingQuotes,
   type InsertCommissionRule, type InsertCommission,
   type InsertInvoice, type InsertInvoiceItem,
   type InsertChatbotConversation,
   type InsertChatbotMessage,
   type InsertChatbotEvent,
   type InsertSupportTicket,
-  type InsertSupportTicketMessage,
-  type InsertShipment, type InsertShipmentEvent, type InsertShippingQuote
+  type InsertSupportTicketMessage
 } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1977,141 +1975,4 @@ export async function getSupportTicketStats() {
     emAndamento: emAndamento[0]?.count || 0,
     resolvidos: resolvidos[0]?.count || 0,
   };
-}
-
-
-// ============= RASTREAMENTO DE ENVIOS =============
-
-/**
- * Cria um novo envio
- */
-export async function createShipment(shipment: InsertShipment) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  
-  const result = await db.insert(shipments).values(shipment);
-  return result[0].insertId;
-}
-
-/**
- * Busca envio por ID
- */
-export async function getShipmentById(id: number) {
-  const db = await getDb();
-  if (!db) return null;
-  
-  const result = await db.select().from(shipments).where(eq(shipments.id, id)).limit(1);
-  return result.length > 0 ? result[0] : null;
-}
-
-/**
- * Busca envio por código de rastreamento
- */
-export async function getShipmentByTrackingCode(trackingCode: string) {
-  const db = await getDb();
-  if (!db) return null;
-  
-  const result = await db.select().from(shipments)
-    .where(eq(shipments.trackingCode, trackingCode))
-    .limit(1);
-  return result.length > 0 ? result[0] : null;
-}
-
-/**
- * Lista envios por tenant
- */
-export async function listShipmentsByTenant(tenantId: number, limit = 50) {
-  const db = await getDb();
-  if (!db) return [];
-  
-  return await db.select().from(shipments)
-    .where(eq(shipments.tenantId, tenantId))
-    .orderBy(desc(shipments.createdAt))
-    .limit(limit);
-}
-
-/**
- * Lista envios por venda
- */
-export async function listShipmentsBySale(saleId: number) {
-  const db = await getDb();
-  if (!db) return [];
-  
-  return await db.select().from(shipments)
-    .where(eq(shipments.saleId, saleId))
-    .orderBy(desc(shipments.createdAt));
-}
-
-/**
- * Atualiza status do envio
- */
-export async function updateShipmentStatus(id: number, status: string, deliveredAt?: Date) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  
-  const updateData: any = { status };
-  if (deliveredAt) {
-    updateData.deliveredAt = deliveredAt;
-  }
-  
-  await db.update(shipments).set(updateData).where(eq(shipments.id, id));
-}
-
-/**
- * Adiciona evento de rastreamento
- */
-export async function createShipmentEvent(event: InsertShipmentEvent) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  
-  const result = await db.insert(shipmentEvents).values(event);
-  return result[0].insertId;
-}
-
-/**
- * Lista eventos de um envio
- */
-export async function listShipmentEvents(shipmentId: number) {
-  const db = await getDb();
-  if (!db) return [];
-  
-  return await db.select().from(shipmentEvents)
-    .where(eq(shipmentEvents.shipmentId, shipmentId))
-    .orderBy(desc(shipmentEvents.date));
-}
-
-/**
- * Salva cotação de frete
- */
-export async function createShippingQuote(quote: InsertShippingQuote) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  
-  const result = await db.insert(shippingQuotes).values(quote);
-  return result[0].insertId;
-}
-
-/**
- * Lista cotações por tenant
- */
-export async function listShippingQuotesByTenant(tenantId: number, limit = 100) {
-  const db = await getDb();
-  if (!db) return [];
-  
-  return await db.select().from(shippingQuotes)
-    .where(eq(shippingQuotes.tenantId, tenantId))
-    .orderBy(desc(shippingQuotes.createdAt))
-    .limit(limit);
-}
-
-/**
- * Marca cotação como utilizada
- */
-export async function markQuoteAsUsed(quoteId: number, shipmentId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  
-  await db.update(shippingQuotes)
-    .set({ used: true, shipmentId })
-    .where(eq(shippingQuotes.id, quoteId));
 }

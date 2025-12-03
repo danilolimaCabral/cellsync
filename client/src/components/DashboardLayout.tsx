@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag, Headphones, FileInput, Table, Wallet, Shield, Database, Bell, FileText, UserCog, Lock, Store, Truck, Calculator, MapPin } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag, Headphones, FileInput, Table, Wallet, Shield, Database, Bell, FileText, UserCog, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { TenantSwitcher } from "./TenantSwitcher";
@@ -193,38 +193,6 @@ const menuItems = [
     gradient: "from-slate-500 to-gray-500",
     bgGradient: "from-slate-50 to-gray-50",
     iconColor: "text-slate-600"
-  },
-  { 
-    icon: Store, 
-    label: "Configuração da Loja", 
-    path: "/configuracao-loja",
-    gradient: "from-indigo-500 to-blue-500",
-    bgGradient: "from-indigo-50 to-blue-50",
-    iconColor: "text-indigo-600"
-  },
-  { 
-    icon: Truck, 
-    label: "Etiquetas de Envio", 
-    path: "/etiquetas-envio",
-    gradient: "from-orange-500 to-red-500",
-    bgGradient: "from-orange-50 to-red-50",
-    iconColor: "text-orange-600"
-  },
-  { 
-    icon: Calculator, 
-    label: "Calculadora de Frete", 
-    path: "/calculadora-frete",
-    gradient: "from-sky-500 to-blue-500",
-    bgGradient: "from-sky-50 to-blue-50",
-    iconColor: "text-sky-600"
-  },
-  { 
-    icon: MapPin, 
-    label: "Rastreamento de Envios", 
-    path: "/rastreamento-envios",
-    gradient: "from-teal-500 to-green-500",
-    bgGradient: "from-teal-50 to-green-50",
-    iconColor: "text-teal-600"
   },
   { 
     icon: Lock, 
