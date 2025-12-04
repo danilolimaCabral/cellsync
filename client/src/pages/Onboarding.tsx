@@ -131,8 +131,8 @@ export default function Onboarding() {
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Dados da Empresa</h2>
-                <p className="text-gray-600">Busque pelo CNPJ para preencher automaticamente</p>
+                <h2 className="text-2xl font-bold text-gray-900"><span>Dados da Empresa</span></h2>
+                <p className="text-gray-600"><span>Busque pelo CNPJ para preencher automaticamente</span></p>
               </div>
             </div>
 
@@ -258,8 +258,8 @@ export default function Onboarding() {
                 <Phone className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Contato</h2>
-                <p className="text-gray-600">Como podemos entrar em contato?</p>
+                <h2 className="text-2xl font-bold text-gray-900"><span>Contato</span></h2>
+                <p className="text-gray-600"><span>Como podemos entrar em contato?</span></p>
               </div>
             </div>
 
@@ -311,8 +311,8 @@ export default function Onboarding() {
                 <CheckCircle2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Confirmação</h2>
-                <p className="text-gray-600">Revise seus dados antes de finalizar</p>
+                <h2 className="text-2xl font-bold text-gray-900"><span>Confirmação</span></h2>
+                <p className="text-gray-600"><span>Revise seus dados antes de finalizar</span></p>
               </div>
             </div>
 
