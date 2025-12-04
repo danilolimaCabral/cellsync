@@ -790,7 +790,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         } catch (error: any) {
           console.error("Erro no chatbot:", error);
           return {
-            response: "Desculpe, estou enfrentando uma instabilidade momentânea na minha conexão. Por favor, verifique se a chave de API está configurada corretamente no painel do sistema.",
+            response: `[ERRO GOOGLE] ${error.message || JSON.stringify(error)}`,
           };
         }
       }),
