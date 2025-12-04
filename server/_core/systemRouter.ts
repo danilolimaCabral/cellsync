@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { notifyOwner } from "./notification";
-import { adminProcedure, publicProcedure, router } from "./trpc";
+import { adminProcedure, masterProcedure, publicProcedure, router } from "./trpc";
 import { getDb } from "../db";
 import { users, tenants, plans } from "../../drizzle/schema";
 import { sql, eq, and, or } from "drizzle-orm";
@@ -17,7 +17,7 @@ export const systemRouter = router({
       ok: true,
     })),
 
-  getStats: adminProcedure.query(async () => {
+  getStats: masterProcedure.query(async () => {
     const db = await getDb();
     if (!db) {
       return {
@@ -78,7 +78,7 @@ export const systemRouter = router({
     };
   }),
 
-  getAllTenants: adminProcedure.query(async () => {
+  getAllTenants: masterProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
 

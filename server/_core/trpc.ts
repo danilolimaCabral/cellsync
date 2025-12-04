@@ -31,8 +31,26 @@ export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;
 
-    if (!ctx.user || ctx.user.role !== 'admin') {
+    // Aceita admin OU master_admin
+    if (!ctx.user || (ctx.user.role !== 'admin' && ctx.user.role !== 'master_admin')) {
       throw new TRPCError({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
+    }
+
+    return next({
+      ctx: {
+        ...ctx,
+        user: ctx.user,
+      },
+    });
+  }),
+);
+
+export const masterProcedure = t.procedure.use(
+  t.middleware(async opts => {
+    const { ctx, next } = opts;
+
+    if (!ctx.user || ctx.user.role !== 'master_admin') {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito a Master Admin" });
     }
 
     return next({
