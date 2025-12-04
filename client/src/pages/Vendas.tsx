@@ -77,9 +77,13 @@ export default function Vendas() {
         // await emitirNFeParaVenda(result.saleId, selectedCustomerId);
         // Nova abordagem: Abrir diálogo de emissão
         setShowNFeDialog(true);
+      } else if (emitirCupom && selectedCustomerId) {
+        // Se for NFC-e (Cupom Fiscal), emitir automaticamente
+        await emitirNFeParaVenda(result.saleId, selectedCustomerId);
+      } else {
+        // Se não for fiscal, mostrar recibo simples
+        setShowReceipt(true);
       }
-      
-      setShowReceipt(true);
       setCart([]);
       setSelectedCustomerId(null);
       setDiscount(0);
