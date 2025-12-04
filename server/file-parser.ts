@@ -47,15 +47,51 @@ export function parseExcel(fileBuffer: Buffer): ParsedData {
 
   for (const sheetName of workbook.SheetNames) {
     const worksheet = workbook.Sheets[sheetName];
-    const sheetData = XLSX.utils.sheet_to_json(worksheet, {
-      raw: false,
+    
+    // Ler como array de arrays para inspecionar estrutura
+    const rawData = XLSX.utils.sheet_to_json(worksheet, {
+      header: 1,
       defval: "",
-    }) as Record<string, any>[];
+      blankrows: false
+    }) as any[][];
 
-    if (sheetData.length > 0) {
-      data = sheetData;
-      columns = Object.keys(data[0]);
-      break; // Encontrou dados, para de procurar
+    if (rawData.length === 0) continue;
+
+    // Heurística: Encontrar a linha de cabeçalho
+    // Procuramos a primeira linha que tenha pelo menos 2 colunas preenchidas com texto
+    let headerRowIndex = -1;
+    
+    for (let i = 0; i < Math.min(rawData.length, 20); i++) {
+      const row = rawData[i];
+      const nonEmptyCells = row.filter(cell => cell && typeof cell === 'string' && cell.trim().length > 0).length;
+      
+      if (nonEmptyCells >= 2) {
+        headerRowIndex = i;
+        break;
+      }
+    }
+
+    // Se não achou cabeçalho claro, tenta usar a primeira linha não vazia
+    if (headerRowIndex === -1 && rawData.length > 0) {
+      headerRowIndex = 0;
+    }
+
+    if (headerRowIndex !== -1) {
+      // Re-ler a planilha usando a linha detectada como cabeçalho
+      const range = XLSX.utils.decode_range(worksheet['!ref'] || "A1");
+      range.s.r = headerRowIndex; // Ajustar início para a linha do cabeçalho
+      
+      const finalData = XLSX.utils.sheet_to_json(worksheet, {
+        range: range,
+        raw: false,
+        defval: ""
+      }) as Record<string, any>[];
+
+      if (finalData.length > 0) {
+        data = finalData;
+        columns = Object.keys(data[0]);
+        break;
+      }
     }
   }
 
