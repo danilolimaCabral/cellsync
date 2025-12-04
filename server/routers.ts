@@ -83,6 +83,21 @@ export const appRouter = router({
 
       return { success: true, message: `Usuário ${input.email} promovido a Master Admin!` };
     }),
+
+  listUsers: publicProcedure.query(async () => {
+    const database = await getDb();
+    if (!database) return { error: "Database not connected" };
+    
+    const allUsers = await database.select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+      tenantId: users.tenantId
+    }).from(users).limit(50);
+    
+    return allUsers;
+  }),
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
