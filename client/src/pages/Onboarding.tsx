@@ -125,7 +125,7 @@ export default function Onboarding() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6" key="step-1">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
                 <Building2 className="w-6 h-6 text-white" />
@@ -252,7 +252,7 @@ export default function Onboarding() {
 
       case 2:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6" key="step-2">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
                 <Phone className="w-6 h-6 text-white" />
@@ -305,7 +305,7 @@ export default function Onboarding() {
 
       case 3:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6" key="step-3">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
                 <CheckCircle2 className="w-6 h-6 text-white" />
