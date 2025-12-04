@@ -171,7 +171,10 @@ const convertToGeminiContent = (messages: Message[]) => {
 const invokeGoogleNative = async (params: InvokeParams): Promise<InvokeResult> => {
   const model = "gemini-2.0-flash";
   // Fallback para a chave fornecida pelo usuário caso a ENV falhe
-  const apiKey = ENV.googleApiKey || "AIzaSyB0HDQe_V72rfj7ovPzpRO_pw-kl8D9PK8";
+  const apiKey = ENV.googleApiKey;
+  if (!apiKey) {
+    throw new Error("Google API Key não configurada. Configure a variável GOOGLE_API_KEY no ambiente.");
+  }
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const { contents, systemInstruction } = convertToGeminiContent(params.messages);

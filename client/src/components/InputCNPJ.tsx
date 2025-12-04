@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { fetchCnpjData, CnpjData } from "@/lib/cnpj-service";
 import { toast } from "sonner";
 
@@ -49,7 +49,7 @@ export function InputCNPJ({
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      <div className="relative flex-1">
+      <div className="flex-1">
         <Input
           placeholder={placeholder}
           value={value}
@@ -61,15 +61,8 @@ export function InputCNPJ({
             }
           }}
           disabled={disabled || isLoading}
-          className={isLoading ? "pr-10" : ""}
+          // Removido qualquer elemento filho ou manipulação complexa
         />
-        {/* Usar opacity em vez de renderização condicional para evitar erro de removeChild */}
-        <div 
-          className={`absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-200 ${isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          aria-hidden={!isLoading}
-        >
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-        </div>
       </div>
       <Button
         type="button"
@@ -77,8 +70,13 @@ export function InputCNPJ({
         onClick={() => handleSearch()}
         disabled={disabled || isLoading}
         title="Buscar dados do CNPJ"
+        className="w-10 px-0" // Tamanho fixo para evitar pulo de layout
       >
-        <Search className="h-4 w-4" />
+        {isLoading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Search className="h-4 w-4" />
+        )}
       </Button>
     </div>
   );
