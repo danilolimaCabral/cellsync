@@ -121,8 +121,7 @@ export default function AssistenteImportacao() {
         await analyzeMutation.mutateAsync({
           fileContent: content,
           fileName: file.name,
-          fileType: file.type,
-          importType
+          moduleType: importType as any // Casting para garantir compatibilidade com enum do backend
         });
         clearInterval(interval);
         setProgress(100);
