@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { EditProductDialog } from "@/components/EditProductDialog";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/useAuth";
@@ -72,6 +73,9 @@ export default function Estoque() {
     minStock: "10",
     requiresImei: false,
   });
+
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const { user } = useAuth();
   const { data: products, isLoading, refetch } = trpc.products.list.useQuery(undefined, {
@@ -222,6 +226,12 @@ export default function Estoque() {
 
   return (
     <div className="p-8 space-y-6">
+      <EditProductDialog 
+        product={editingProduct}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSuccess={() => refetch()}
+      />
       <div className="flex items-center justify-between">
         <PageHeader 
           title="Estoque" 
@@ -573,7 +583,13 @@ export default function Estoque() {
       {/* Tabela de Produtos */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <EditProductDialog 
+        product={editingProduct}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSuccess={() => refetch()}
+      />
+      <div className="flex items-center justify-between">
             <CardTitle>Lista de Produtos</CardTitle>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -649,8 +665,14 @@ export default function Estoque() {
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-center">
-                      <Button variant="ghost" size="sm">
+                    <TableCell className="text-center"                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => {
+                          setEditingProduct(product);
+                          setShowEditDialog(true);
+                        }}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                     </TableCell>
