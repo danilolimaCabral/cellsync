@@ -2479,14 +2479,25 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           });
         }
 
-        // Verificar se email já existe
-        const existingUser = await getUserByEmail(userData.email);
+        // Limpar CNPJ (apenas números)
+        const cleanCnpj = tenantData.cnpj ? tenantData.cnpj.replace(/\D/g, "").substring(0, 14) : null;
 
+        // Verificar se email ou CNPJ já existem e limpar dados antigos (solicitação do usuário)
+        const existingUser = await getUserByEmail(userData.email);
         if (existingUser) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Email já cadastrado",
-          });
+          console.log("[Tenant] Email já existe, removendo usuário antigo:", userData.email);
+          await db.delete(users).where(eq(users.id, existingUser.id));
+          // Se o usuário era dono de um tenant, deveríamos limpar o tenant também, mas por segurança vamos focar no email/cnpj
+        }
+
+        if (cleanCnpj) {
+          const existingTenant = await db.select().from(tenants).where(eq(tenants.cnpj, cleanCnpj)).limit(1);
+          if (existingTenant.length > 0) {
+             console.log("[Tenant] CNPJ já existe, removendo tenant antigo:", cleanCnpj);
+             // Remover usuários desse tenant primeiro para evitar erro de FK
+             await db.delete(users).where(eq(users.tenantId, existingTenant[0].id));
+             await db.delete(tenants).where(eq(tenants.id, existingTenant[0].id));
+          }
         }
 
         // Criar tenant
@@ -2505,7 +2516,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         const [newTenant] = await db.insert(tenants).values({
           name: tenantData.nomeFantasia,
           subdomain,
-          cnpj: tenantData.cnpj || null,
+          cnpj: cleanCnpj,
           planId: plan.id,
           status: "trial",
           trialEndsAt,
