@@ -32,7 +32,7 @@ export const aiAssistantRouter = router({
   }),
 
   // Analisar arquivo enviado
-  analyzeFile: protectedProcedure
+  analyzeImportFile: protectedProcedure
     .input(
       z.object({
         fileContent: z.string(), // Base64 ou texto
