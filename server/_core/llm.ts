@@ -170,7 +170,9 @@ const convertToGeminiContent = (messages: Message[]) => {
 
 const invokeGoogleNative = async (params: InvokeParams): Promise<InvokeResult> => {
   const model = "gemini-2.0-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${ENV.googleApiKey}`;
+  // Fallback para a chave fornecida pelo usuário caso a ENV falhe
+  const apiKey = ENV.googleApiKey || "AIzaSyB0HDQe_V72rfj7ovPzpRO_pw-kl8D9PK8";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const { contents, systemInstruction } = convertToGeminiContent(params.messages);
 
@@ -218,15 +220,20 @@ const invokeGoogleNative = async (params: InvokeParams): Promise<InvokeResult> =
 // --- MAIN INVOKE FUNCTION ---
 
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  // Se tiver chave do Google, usa a implementação nativa
+  // Se tiver chave do Google (ou fallback hardcoded), usa a implementação nativa
+  // Forçando o uso do Google Native já que o usuário forneceu a chave
+  return invokeGoogleNative(params);
+
+  /* 
+  // Código antigo desativado para garantir que use o Google
   if (ENV.googleApiKey) {
     return invokeGoogleNative(params);
   }
-
-  // Fallback para implementação original (OpenAI/Forge)
+  
   if (!ENV.forgeApiKey) {
     throw new Error("Nenhuma chave de API configurada (OPENAI_API_KEY ou GOOGLE_API_KEY)");
   }
+  */
 
   const payload: Record<string, unknown> = {
     model: "gpt-4o-mini", // Default fallback
