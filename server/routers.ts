@@ -1689,6 +1689,119 @@ Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formata�
         };
       }),
 
+    importXml: protectedProcedure
+      .input(z.object({
+        xmlContent: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { parseNFeXML } = await import("./nfe-xml");
+        
+        try {
+          // Parsear o XML
+          const nfeData = parseNFeXML(input.xmlContent);
+          
+          // Verificar se já existe nota com este número e série
+          const existingInvoice = await db.getInvoiceByNumberAndSeries(
+            parseInt(nfeData.number),
+            parseInt(nfeData.series)
+          );
+          
+          if (existingInvoice) {
+            throw new Error(`Nota fiscal ${nfeData.number} série ${nfeData.series} já existe no sistema.`);
+          }
+          
+          // Criar a NF-e no banco
+          const invoiceId = await db.createInvoice({
+            series: parseInt(nfeData.series),
+            model: nfeData.model,
+            type: "entrada", // Assumindo entrada ao importar, mas poderia ser saída dependendo do emitente
+            emitterCnpj: nfeData.emitter.cnpj,
+            emitterName: nfeData.emitter.name,
+            emitterFantasyName: nfeData.emitter.fantasyName,
+            emitterAddress: nfeData.emitter.address,
+            emitterCity: nfeData.emitter.city,
+            emitterState: nfeData.emitter.state,
+            emitterZipCode: nfeData.emitter.zipCode,
+            emitterIE: nfeData.emitter.ie,
+            recipientDocument: nfeData.recipient.document,
+            recipientName: nfeData.recipient.name,
+            recipientAddress: nfeData.recipient.address,
+            recipientCity: nfeData.recipient.city,
+            recipientState: nfeData.recipient.state,
+            recipientZipCode: nfeData.recipient.zipCode,
+            recipientPhone: nfeData.recipient.phone,
+            recipientEmail: nfeData.recipient.email,
+            cfop: nfeData.items[0]?.cfop || "5102", // Pega do primeiro item ou padrão
+            natureOperation: nfeData.natureOperation,
+            paymentMethod: "outros", // Simplificação, ideal seria mapear do XML
+            paymentIndicator: "outros",
+            totalProducts: nfeData.totals.products,
+            totalDiscount: nfeData.totals.discount,
+            totalFreight: nfeData.totals.freight,
+            totalInvoice: nfeData.totals.invoice,
+            additionalInfo: nfeData.additionalInfo,
+            number: parseInt(nfeData.number),
+            status: "emitida", // Já vem emitida do XML
+            accessKey: nfeData.accessKey,
+            protocol: nfeData.protocol,
+            authorizationDate: nfeData.authorizationDate ? new Date(nfeData.authorizationDate) : new Date(),
+            issuedBy: ctx.user.id,
+          });
+          
+          // Criar os itens
+          for (const item of nfeData.items) {
+            await db.createInvoiceItem({
+              invoiceId,
+              code: item.code,
+              ean: item.ean,
+              description: item.description,
+              ncm: item.ncm,
+              cfop: item.cfop,
+              unit: item.unit,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              totalPrice: item.totalPrice,
+              discount: item.discount,
+              icmsOrigin: "0",
+              icmsCst: "102",
+              icmsBase: item.totalPrice,
+              icmsRate: 0, // Simplificado
+              icmsValue: 0,
+              ipiCst: "99",
+              ipiBase: item.totalPrice,
+              ipiRate: 0,
+              ipiValue: 0,
+              pisCst: "99",
+              pisBase: item.totalPrice,
+              pisRate: 0,
+              pisValue: 0,
+              cofinsCst: "99",
+              cofinsBase: item.totalPrice,
+              cofinsRate: 0,
+              cofinsValue: 0,
+            });
+          }
+          
+          return {
+            success: true,
+            invoiceId,
+            number: nfeData.number,
+            series: nfeData.series,
+            accessKey: nfeData.accessKey,
+            emitterName: nfeData.emitter.name,
+            emitterCnpj: nfeData.emitter.cnpj,
+            totalValue: nfeData.totals.invoice,
+            issueDate: nfeData.issueDate
+          };
+        } catch (error: any) {
+          console.error("Erro ao importar XML:", error);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message || "Erro ao processar o arquivo XML"
+          });
+        }
+      }),
+
     emit: protectedProcedure
       .input(z.object({
         id: z.number(),

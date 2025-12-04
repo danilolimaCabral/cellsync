@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background-color: #F2F2F2;
+            display: grid;
+            grid-template-columns: 35% 65%;
+            padding: 0;
+        }
+        .header-section {
+            background-color: #1A1A1A;
+            color: #FFFFFF;
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        .content-section {
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        h1 {
+            font-size: 56px;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            color: #FFFFFF;
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: 400;
+            opacity: 0.8;
+            margin-bottom: 60px;
+            line-height: 1.4;
+        }
+        .big-icon-container {
+            margin-top: auto;
+            display: flex;
+            justify-content: center;
+            opacity: 0.1;
+        }
+        .big-icon {
+            font-size: 200px;
+            color: #FFFFFF;
+        }
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+        }
+        .alert-card {
+            background-color: #FFFFFF;
+            padding: 32px;
+            border-left: 4px solid #0052CC;
+            display: flex;
+            align-items: flex-start;
+            transition: transform 0.3s ease;
+        }
+        .alert-icon-box {
+            width: 48px;
+            height: 48px;
+            background-color: #E6EEFA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        .alert-icon {
+            font-size: 20px;
+            color: #0052CC;
+        }
+        .alert-content {
+            display: flex;
+            flex-direction: column;
+        }
+        .alert-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .alert-desc {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.4;
+        }
+        .decorative-dot {
+            position: absolute;
+            top: 80px;
+            right: 60px;
+            width: 20px;
+            height: 20px;
+            background-color: #0052CC;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="header-section">
+            <div class="decorative-dot"></div>
+            <h1>Sistema de<br>Notificações</h1>
+            <h2>Nunca perca um evento importante com monitoramento em tempo real.</h2>
+            
+            <div class="big-icon-container">
+                <i class="fas fa-bell big-icon"></i>
+            </div>
+        </div>
+        
+        <div class="content-section">
+            <div class="alerts-grid">
+                <div class="alert-card">
+                    <div class="alert-icon-box">
+                        <i class="fas fa-shopping-cart alert-icon"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">Nova Venda</div>
+                        <div class="alert-desc">Notificação instantânea a cada venda realizada.</div>
+                    </div>
+                </div>
+                
+                <div class="alert-card">
+                    <div class="alert-icon-box">
+                        <i class="fas fa-user-plus alert-icon"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">Cliente Novo</div>
+                        <div class="alert-desc">Boas-vindas automáticas para novos cadastros.</div>
+                    </div>
+                </div>
+                
+                <div class="alert-card">
+                    <div class="alert-icon-box">
+                        <i class="fas fa-box-open alert-icon"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">Estoque Baixo</div>
+                        <div class="alert-desc">Aviso para reposição preventiva de produtos.</div>
+                    </div>
+                </div>
+                
+                <div class="alert-card">
+                    <div class="alert-icon-box">
+                        <i class="fas fa-exclamation-triangle alert-icon"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">OS Vencida</div>
+                        <div class="alert-desc">Alerta de prioridade para serviços atrasados.</div>
+                    </div>
+                </div>
+                
+                <div class="alert-card">
+                    <div class="alert-icon-box">
+                        <i class="fas fa-file-invoice-dollar alert-icon"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">Conta a Pagar</div>
+                        <div class="alert-desc">Lembrete de vencimento para evitar multas.</div>
+                    </div>
+                </div>
+                
+                <div class="alert-card">
+                    <div class="alert-icon-box">
+                        <i class="fas fa-chart-pie alert-icon"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">Resumo Diário</div>
+                        <div class="alert-desc">Visão completa do dia enviada às 18h.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

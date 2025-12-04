@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background-color: #F2F2F2;
+            display: grid;
+            grid-template-columns: 40% 60%;
+            overflow: hidden;
+        }
+        .left-panel {
+            background-color: #1A1A1A;
+            color: #FFFFFF;
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .right-panel {
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        h1 {
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: 400;
+            opacity: 0.8;
+            margin-bottom: 60px;
+            line-height: 1.4;
+        }
+        .impact-block {
+            border-top: 4px solid #0052CC;
+            padding-top: 32px;
+        }
+        .impact-value {
+            font-size: 80px;
+            font-weight: 900;
+            color: #0052CC;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .impact-label {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px 40px;
+        }
+        .feature-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .feature-icon {
+            font-size: 28px;
+            color: #0052CC;
+            margin-bottom: 24px;
+            background-color: #E6EEFA;
+            padding: 20px;
+            display: inline-block;
+        }
+        .feature-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .feature-desc {
+            font-size: 16px;
+            color: #666666;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="left-panel">
+            <div>
+                <h1>CRM<br>Gestão de<br>Clientes</h1>
+                <h2>Fidelize clientes e aumente suas vendas com dados inteligentes.</h2>
+            </div>
+            <div class="impact-block">
+                <div class="impact-value">+35%</div>
+                <div class="impact-label">Vendas Recorrentes</div>
+            </div>
+        </div>
+        <div class="right-panel">
+            <div class="features-grid">
+                <div class="feature-item">
+                    <i class="fas fa-history feature-icon"></i>
+                    <div class="feature-title">Histórico Completo</div>
+                    <div class="feature-desc">Registro automático de todas as compras, interações e preferências de cada cliente.</div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-star feature-icon"></i>
+                    <div class="feature-title">Fidelidade</div>
+                    <div class="feature-desc">Sistema de pontuação automática que recompensa clientes frequentes e aumenta retenção.</div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-crown feature-icon"></i>
+                    <div class="feature-title">Clientes VIP</div>
+                    <div class="feature-desc">Identificação automática dos top 10% clientes que geram maior receita para a loja.</div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-pie feature-icon"></i>
+                    <div class="feature-title">Análise Comportamental</div>
+                    <div class="feature-desc">Insights sobre frequência de compra e ticket médio para campanhas direcionadas.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

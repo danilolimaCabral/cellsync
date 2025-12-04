@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background-color: #F2F2F2;
+            display: grid;
+            grid-template-columns: 65% 35%;
+        }
+        .action-area {
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+        }
+        .support-area {
+            background-color: #1A1A1A;
+            color: #FFFFFF;
+            padding: 80px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        h1 {
+            font-size: 64px;
+            font-weight: 900;
+            color: #1A1A1A;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #666666;
+            margin-bottom: 60px;
+        }
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+        }
+        .step-number {
+            font-size: 64px;
+            font-weight: 900;
+            color: #E0E0E0;
+            line-height: 0.8;
+            margin-right: 32px;
+            min-width: 80px;
+        }
+        .step-content {
+            padding-top: 8px;
+        }
+        .step-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+        .step-desc {
+            font-size: 18px;
+            color: #666666;
+            line-height: 1.4;
+        }
+        .step-link {
+            color: #0052CC;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 8px;
+            border-bottom: 2px solid #0052CC;
+        }
+        .support-title {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 40px;
+            color: #FFFFFF;
+        }
+        .resource-list {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+        .resource-item {
+            display: flex;
+            align-items: center;
+        }
+        .resource-icon {
+            width: 48px;
+            height: 48px;
+            background-color: #0052CC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            font-size: 20px;
+            color: #FFFFFF;
+        }
+        .resource-text h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .resource-text p {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        .decorative-line {
+            width: 60px;
+            height: 6px;
+            background-color: #0052CC;
+            margin-bottom: 32px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="action-area">
+            <h1>Próximos<br>Passos</h1>
+            <h2>Comece a transformar sua loja agora mesmo.</h2>
+            
+            <div class="steps-list">
+                <div class="step-item">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <div class="step-title">Crie sua Conta Gratuita</div>
+                        <div class="step-desc">Acesse o site e cadastre-se em menos de 2 minutos. Sem cartão de crédito.</div>
+                        <a href="#" class="step-link">www.cellsync.com.br</a>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <div class="step-title">Configure o Sistema</div>
+                        <div class="step-desc">Siga este tutorial para cadastrar seus primeiros produtos e clientes.</div>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <div class="step-title">Veja os Resultados</div>
+                        <div class="step-desc">Comece a usar no dia a dia e acompanhe o crescimento no dashboard.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="support-area">
+            <div class="decorative-line"></div>
+            <div class="support-title">Suporte<br>Disponível</div>
+            
+            <div class="resource-list">
+                <div class="resource-item">
+                    <div class="resource-icon"><i class="fas fa-book"></i></div>
+                    <div class="resource-text">
+                        <h3>Documentação</h3>
+                        <p>help.manus.im</p>
+                    </div>
+                </div>
+                
+                <div class="resource-item">
+                    <div class="resource-icon"><i class="fab fa-youtube"></i></div>
+                    <div class="resource-text">
+                        <h3>Tutoriais em Vídeo</h3>
+                        <p>Canal CellSync Oficial</p>
+                    </div>
+                </div>
+                
+                <div class="resource-item">
+                    <div class="resource-icon"><i class="fas fa-headset"></i></div>
+                    <div class="resource-text">
+                        <h3>Suporte Direto</h3>
+                        <p>Chat e Email 24/7</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

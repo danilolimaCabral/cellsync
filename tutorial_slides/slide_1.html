@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background-color: #F2F2F2;
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 65% 35%;
+        }
+        .content-area {
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .accent-area {
+            background-color: #0052CC;
+            color: #FFFFFF;
+            padding: 80px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        h1 {
+            font-size: 80px;
+            font-weight: 900;
+            color: #1A1A1A;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -2px;
+        }
+        h2 {
+            font-size: 32px;
+            font-weight: 400;
+            color: #333333;
+            margin-bottom: 60px;
+            line-height: 1.4;
+        }
+        .benefit-list {
+            list-style: none;
+        }
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 20px;
+            color: #1A1A1A;
+            font-weight: 700;
+        }
+        .benefit-icon {
+            color: #0052CC;
+            margin-right: 16px;
+            font-size: 24px;
+        }
+        .stat-block {
+            margin-bottom: 40px;
+        }
+        .stat-value {
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .stat-label {
+            font-size: 18px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        .decorative-line {
+            width: 100px;
+            height: 8px;
+            background-color: #1A1A1A;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="content-area">
+            <div class="decorative-line"></div>
+            <h1>Bem-vindo ao<br>CellSync</h1>
+            <h2>O Sistema Completo de Gestão<br>para Lojas de Celular</h2>
+            
+            <ul class="benefit-list">
+                <li class="benefit-item">
+                    <i class="fas fa-check-circle benefit-icon"></i>
+                    Integração Total: Vendas, Estoque, CRM, OS
+                </li>
+                <li class="benefit-item">
+                    <i class="fas fa-bolt benefit-icon"></i>
+                    PDV Rápido: Vendas em < 30 segundos
+                </li>
+                <li class="benefit-item">
+                    <i class="fas fa-chart-line benefit-icon"></i>
+                    BI em Tempo Real para Decisões Inteligentes
+                </li>
+            </ul>
+        </div>
+        <div class="accent-area">
+            <div class="stat-block">
+                <div class="stat-value">+60%</div>
+                <div class="stat-label">Eficiência Operacional</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-value">-40%</div>
+                <div class="stat-label">Perdas de Estoque</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-value">+35%</div>
+                <div class="stat-label">Retenção de Clientes</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

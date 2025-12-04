@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,9 @@ import {
   Download,
   Send,
   Search,
+  AlertCircle,
+  Truck,
+  ShoppingBag
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { InputCNPJ } from "@/components/InputCNPJ";
@@ -87,11 +90,11 @@ interface NFe {
 }
 
 const STEPS = [
-  { id: 1, title: "Emitente", icon: Building2 },
-  { id: 2, title: "Destinatário", icon: User },
-  { id: 3, title: "Produtos", icon: Package },
-  { id: 4, title: "Impostos", icon: Calculator },
-  { id: 5, title: "Confirmação", icon: Eye },
+  { id: 1, title: "Emitente", icon: Building2, description: "Dados da sua empresa" },
+  { id: 2, title: "Destinatário", icon: User, description: "Cliente ou fornecedor" },
+  { id: 3, title: "Produtos", icon: Package, description: "Itens da nota" },
+  { id: 4, title: "Impostos", icon: Calculator, description: "Tributação e totais" },
+  { id: 5, title: "Confirmação", icon: Eye, description: "Revisão final" },
 ];
 
 const PAYMENT_METHODS = [
@@ -151,14 +154,6 @@ export default function EmitirNFe() {
 
   const updateField = (field: keyof NFe, value: any) => {
     setNfe((prev) => ({ ...prev, [field]: value }));
-    
-    // Auto-busca de CNPJ ao completar 14 dígitos
-    if (field === "emitterCnpj") {
-      const cleanValue = String(value).replace(/\D/g, "");
-      if (cleanValue.length === 14) {
-        handleSearchCnpj(String(value));
-      }
-    }
   };
 
   const handleCnpjDataFetched = (data: any) => {
@@ -166,7 +161,7 @@ export default function EmitirNFe() {
       ...prev,
       emitterName: data.razao_social,
       emitterFantasyName: data.nome_fantasia,
-      emitterAddress: data.endereco,
+      emitterAddress: `${data.logradouro}, ${data.numero}${data.complemento ? ` - ${data.complemento}` : ''} - ${data.bairro}`,
       emitterCity: data.municipio,
       emitterState: data.uf,
       emitterZipCode: data.cep,
@@ -219,7 +214,8 @@ export default function EmitirNFe() {
     });
   };
 
-  const calculateTotals = () => {
+  // Recalcular totais sempre que itens ou valores mudarem
+  useEffect(() => {
     const totalProducts = nfe.items.reduce((sum, item) => sum + item.totalPrice, 0);
     const totalInvoice = totalProducts - nfe.totalDiscount + nfe.totalFreight;
     
@@ -228,7 +224,7 @@ export default function EmitirNFe() {
       totalProducts,
       totalInvoice,
     }));
-  };
+  }, [nfe.items, nfe.totalDiscount, nfe.totalFreight]);
 
   const handleNext = () => {
     // Validações por etapa
@@ -251,7 +247,6 @@ export default function EmitirNFe() {
         toast.error("Adicione pelo menos um produto");
         return;
       }
-      calculateTotals();
     }
     
     setCurrentStep((prev) => Math.min(prev + 1, 5));
@@ -278,89 +273,71 @@ export default function EmitirNFe() {
   };
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="container mx-auto p-6 max-w-5xl space-y-8 pb-24">
       <PageHeader
         title="Emitir NF-e Manual"
-        description="Preencha os dados para emitir uma nota fiscal eletrônica"
+        description="Preencha os dados passo a passo para emitir sua nota fiscal"
         backTo="/notas-fiscais"
       />
 
-      {/* Stepper */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            {STEPS.map((step, index) => {
-              const Icon = step.icon;
-              const isActive = currentStep === step.id;
-              const isCompleted = currentStep > step.id;
-              
-              return (
-                <div key={step.id} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center flex-1">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                        isCompleted
-                          ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-                          : isActive
-                          ? "bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white"
-                          : "bg-gray-200 text-gray-500"
-                      }`}
-                    >
-                      {isCompleted ? (
-                        <Check className="h-6 w-6" />
-                      ) : (
-                        <Icon className="h-6 w-6" />
-                      )}
-                    </div>
-                    <span
-                      className={`text-sm mt-2 font-medium ${
-                        isActive ? "text-purple-600" : "text-gray-500"
-                      }`}
-                    >
-                      {step.title}
-                    </span>
-                  </div>
-                  
-                  {index < STEPS.length - 1 && (
-                    <div
-                      className={`h-1 flex-1 mx-2 rounded transition-all ${
-                        currentStep > step.id
-                          ? "bg-gradient-to-r from-green-500 to-emerald-500"
-                          : "bg-gray-200"
-                      }`}
-                    />
-                  )}
+      {/* Stepper Moderno */}
+      <div className="relative">
+        <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-200 -z-10 transform -translate-y-1/2 hidden md:block" />
+        <div className="flex justify-between items-center overflow-x-auto pb-4 md:pb-0">
+          {STEPS.map((step, index) => {
+            const Icon = step.icon;
+            const isActive = currentStep === step.id;
+            const isCompleted = currentStep > step.id;
+            
+            return (
+              <div key={step.id} className="flex flex-col items-center min-w-[100px] bg-white px-2 z-10">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2 ${
+                    isCompleted
+                      ? "bg-green-500 border-green-500 text-white shadow-md shadow-green-200"
+                      : isActive
+                      ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200 scale-110"
+                      : "bg-white border-gray-300 text-gray-400"
+                  }`}
+                >
+                  {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                <span
+                  className={`text-xs mt-2 font-medium transition-colors duration-300 ${
+                    isActive ? "text-blue-700" : isCompleted ? "text-green-600" : "text-gray-400"
+                  }`}
+                >
+                  {step.title}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-      {/* Formulário */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentStep}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
         >
           {/* Etapa 1: Emitente */}
           {currentStep === 1 && (
-            <Card>
+            <Card className="border-t-4 border-t-blue-500 shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-blue-500" />
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Building2 className="h-5 w-5 text-blue-600" />
                   Dados do Emitente
                 </CardTitle>
                 <CardDescription>
                   Informações da empresa que está emitindo a nota fiscal
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
                     <Label>CNPJ *</Label>
                     <InputCNPJ
                       value={nfe.emitterCnpj}
@@ -368,31 +345,44 @@ export default function EmitirNFe() {
                       onDataFetched={handleCnpjDataFetched}
                     />
                   </div>
-                  <div>
-                    <Label>Razão Social *</Label>
+                  <div className="space-y-2">
+                    <Label>Inscrição Estadual</Label>
                     <Input
-                      placeholder="Empresa LTDA"
-                      value={nfe.emitterName}
-                      onChange={(e) => updateField("emitterName", e.target.value)}
+                      placeholder="Isento ou número da IE"
+                      value={nfe.emitterIE || ""}
+                      onChange={(e) => updateField("emitterIE", e.target.value)}
                     />
                   </div>
-                  <div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Razão Social *</Label>
+                    <Input
+                      placeholder="Nome da empresa"
+                      value={nfe.emitterName}
+                      onChange={(e) => updateField("emitterName", e.target.value)}
+                      className="bg-gray-50"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
                     <Label>Nome Fantasia</Label>
                     <Input
-                      placeholder="Nome Fantasia"
+                      placeholder="Nome fantasia"
                       value={nfe.emitterFantasyName || ""}
                       onChange={(e) => updateField("emitterFantasyName", e.target.value)}
                     />
                   </div>
-                  <div>
-                    <Label>Endereço</Label>
-                    <Input
-                      placeholder="Rua, número"
-                      value={nfe.emitterAddress || ""}
-                      onChange={(e) => updateField("emitterAddress", e.target.value)}
-                    />
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Endereço Completo</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        className="pl-10"
+                        placeholder="Rua, número, bairro"
+                        value={nfe.emitterAddress || ""}
+                        onChange={(e) => updateField("emitterAddress", e.target.value)}
+                      />
+                    </div>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label>Cidade</Label>
                     <Input
                       placeholder="Cidade"
@@ -400,34 +390,14 @@ export default function EmitirNFe() {
                       onChange={(e) => updateField("emitterCity", e.target.value)}
                     />
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label>UF</Label>
                     <Input
-                      placeholder="GO"
+                      placeholder="UF"
                       maxLength={2}
                       value={nfe.emitterState || ""}
                       onChange={(e) => updateField("emitterState", e.target.value.toUpperCase())}
                     />
-                  </div>
-                  <div>
-                    <Label>CEP</Label>
-                    <Input
-                      placeholder="00000-000"
-                      value={nfe.emitterZipCode || ""}
-                      onChange={(e) => updateField("emitterZipCode", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label>Inscrição Estadual</Label>
-                    <Input
-                      placeholder="Isento ou número"
-                      value={nfe.emitterIE || ""}
-                      onChange={(e) => updateField("emitterIE", e.target.value)}
-                      className={nfe.emitterIE && nfe.emitterState && !validateIE(nfe.emitterIE, nfe.emitterState) ? "border-red-500 focus-visible:ring-red-500" : ""}
-                    />
-                    {nfe.emitterIE && nfe.emitterState && !validateIE(nfe.emitterIE, nfe.emitterState) && (
-                      <span className="text-xs text-red-500 mt-1">IE inválida para {nfe.emitterState}</span>
-                    )}
                   </div>
                 </div>
               </CardContent>
@@ -436,43 +406,47 @@ export default function EmitirNFe() {
 
           {/* Etapa 2: Destinatário */}
           {currentStep === 2 && (
-            <Card>
+            <Card className="border-t-4 border-t-purple-500 shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-purple-500" />
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <User className="h-5 w-5 text-purple-600" />
                   Dados do Destinatário
                 </CardTitle>
                 <CardDescription>
-                  Informações do cliente que está recebendo a nota fiscal
+                  Para quem a nota fiscal será emitida
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>CPF/CNPJ *</Label>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label>CPF / CNPJ *</Label>
                     <Input
-                      placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                      placeholder="000.000.000-00"
                       value={nfe.recipientDocument}
                       onChange={(e) => updateField("recipientDocument", e.target.value)}
                     />
                   </div>
-                  <div>
-                    <Label>Nome/Razão Social *</Label>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Nome / Razão Social *</Label>
                     <Input
                       placeholder="Nome do cliente"
                       value={nfe.recipientName}
                       onChange={(e) => updateField("recipientName", e.target.value)}
                     />
                   </div>
-                  <div>
+                  <div className="space-y-2 md:col-span-2">
                     <Label>Endereço</Label>
-                    <Input
-                      placeholder="Rua, número"
-                      value={nfe.recipientAddress || ""}
-                      onChange={(e) => updateField("recipientAddress", e.target.value)}
-                    />
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        className="pl-10"
+                        placeholder="Rua, número, bairro"
+                        value={nfe.recipientAddress || ""}
+                        onChange={(e) => updateField("recipientAddress", e.target.value)}
+                      />
+                    </div>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label>Cidade</Label>
                     <Input
                       placeholder="Cidade"
@@ -480,24 +454,16 @@ export default function EmitirNFe() {
                       onChange={(e) => updateField("recipientCity", e.target.value)}
                     />
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label>UF</Label>
                     <Input
-                      placeholder="GO"
+                      placeholder="UF"
                       maxLength={2}
                       value={nfe.recipientState || ""}
                       onChange={(e) => updateField("recipientState", e.target.value.toUpperCase())}
                     />
                   </div>
-                  <div>
-                    <Label>CEP</Label>
-                    <Input
-                      placeholder="00000-000"
-                      value={nfe.recipientZipCode || ""}
-                      onChange={(e) => updateField("recipientZipCode", e.target.value)}
-                    />
-                  </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label>Telefone</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -509,7 +475,7 @@ export default function EmitirNFe() {
                       />
                     </div>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label>E-mail</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -529,185 +495,177 @@ export default function EmitirNFe() {
 
           {/* Etapa 3: Produtos */}
           {currentStep === 3 && (
-            <Card>
+            <Card className="border-t-4 border-t-orange-500 shadow-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Package className="h-5 w-5 text-orange-500" />
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <Package className="h-5 w-5 text-orange-600" />
                       Produtos e Serviços
                     </CardTitle>
                     <CardDescription>
                       Adicione os itens que serão incluídos na nota fiscal
                     </CardDescription>
                   </div>
-                  <Button onClick={addItem} size="sm">
+                  <Button onClick={addItem} size="sm" className="bg-orange-600 hover:bg-orange-700 text-white">
                     <Plus className="h-4 w-4 mr-2" />
                     Adicionar Item
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 {nfe.items.length === 0 ? (
-                  <div className="text-center py-12 text-gray-500">
-                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Nenhum item adicionado</p>
-                    <p className="text-sm">Clique em "Adicionar Item" para começar</p>
+                  <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                    <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <ShoppingBag className="h-8 w-8 text-orange-500" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900">Nenhum item adicionado</h3>
+                    <p className="text-sm text-gray-500 mt-1 mb-4">Clique em "Adicionar Item" para começar a preencher sua nota.</p>
+                    <Button onClick={addItem} variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50">
+                      Adicionar Primeiro Item
+                    </Button>
                   </div>
                 ) : (
-                  nfe.items.map((item, index) => (
-                    <Card key={index} className="border-l-4 border-l-orange-500">
-                      <CardContent className="pt-4">
-                        <div className="flex items-start justify-between mb-4">
-                          <h4 className="font-medium">Item {index + 1}</h4>
+                  <div className="space-y-4">
+                    {nfe.items.map((item, index) => (
+                      <Card key={index} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                        <div className="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
+                          <h4 className="font-medium text-sm text-gray-700 flex items-center gap-2">
+                            <span className="bg-white border px-2 py-0.5 rounded text-xs font-bold text-gray-500">#{index + 1}</span>
+                            Item da Nota
+                          </h4>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => removeItem(index)}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 px-2"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Remover
                           </Button>
                         </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="md:col-span-2">
-                            <Label>Descrição *</Label>
-                            <Input
-                              placeholder="Nome do produto"
-                              value={item.description}
-                              onChange={(e) => updateItem(index, "description", e.target.value)}
-                            />
+                        <CardContent className="p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                            <div className="md:col-span-6">
+                              <Label className="text-xs mb-1 block">Descrição *</Label>
+                              <Input
+                                placeholder="Nome do produto"
+                                value={item.description}
+                                onChange={(e) => updateItem(index, "description", e.target.value)}
+                                className="h-9"
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <Label className="text-xs mb-1 block">NCM *</Label>
+                              <Input
+                                placeholder="85171231"
+                                value={item.ncm}
+                                onChange={(e) => updateItem(index, "ncm", e.target.value)}
+                                className="h-9"
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <Label className="text-xs mb-1 block">CFOP *</Label>
+                              <Select
+                                value={item.cfop}
+                                onValueChange={(value) => updateItem(index, "cfop", value)}
+                              >
+                                <SelectTrigger className="h-9">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {CFOP_OPTIONS.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                      {opt.value}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="md:col-span-2">
+                              <Label className="text-xs mb-1 block">Unidade *</Label>
+                              <Input
+                                placeholder="UN"
+                                value={item.unit}
+                                onChange={(e) => updateItem(index, "unit", e.target.value)}
+                                className="h-9"
+                              />
+                            </div>
+                            <div className="md:col-span-3">
+                              <Label className="text-xs mb-1 block">Quantidade *</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={item.quantity}
+                                onChange={(e) => updateItem(index, "quantity", parseFloat(e.target.value) || 1)}
+                                className="h-9"
+                              />
+                            </div>
+                            <div className="md:col-span-3">
+                              <Label className="text-xs mb-1 block">Preço Unit. (R$) *</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={item.unitPrice / 100}
+                                onChange={(e) =>
+                                  updateItem(index, "unitPrice", Math.round(parseFloat(e.target.value) * 100) || 0)
+                                }
+                                className="h-9"
+                              />
+                            </div>
+                            <div className="md:col-span-3">
+                              <Label className="text-xs mb-1 block">Desconto (R$)</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={item.discount / 100}
+                                onChange={(e) =>
+                                  updateItem(index, "discount", Math.round(parseFloat(e.target.value) * 100) || 0)
+                                }
+                                className="h-9"
+                              />
+                            </div>
+                            <div className="md:col-span-3">
+                              <Label className="text-xs mb-1 block">Total</Label>
+                              <div className="h-9 px-3 flex items-center bg-gray-100 rounded-md border font-semibold text-gray-700">
+                                {formatCurrency(item.totalPrice)}
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <Label>Código</Label>
-                            <Input
-                              placeholder="SKU"
-                              value={item.code || ""}
-                              onChange={(e) => updateItem(index, "code", e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label>NCM *</Label>
-                            <Input
-                              placeholder="85171231"
-                              value={item.ncm}
-                              onChange={(e) => updateItem(index, "ncm", e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label>CFOP *</Label>
-                            <Select
-                              value={item.cfop}
-                              onValueChange={(value) => updateItem(index, "cfop", value)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {CFOP_OPTIONS.map((opt) => (
-                                  <SelectItem key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label>Unidade *</Label>
-                            <Input
-                              placeholder="UN"
-                              value={item.unit}
-                              onChange={(e) => updateItem(index, "unit", e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label>Quantidade *</Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              value={item.quantity}
-                              onChange={(e) => updateItem(index, "quantity", parseFloat(e.target.value) || 1)}
-                            />
-                          </div>
-                          <div>
-                            <Label>Preço Unitário (R$) *</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={item.unitPrice / 100}
-                              onChange={(e) =>
-                                updateItem(index, "unitPrice", Math.round(parseFloat(e.target.value) * 100) || 0)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label>Desconto (R$)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={item.discount / 100}
-                              onChange={(e) =>
-                                updateItem(index, "discount", Math.round(parseFloat(e.target.value) * 100) || 0)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label>Total</Label>
-                            <Input
-                              value={formatCurrency(item.totalPrice)}
-                              disabled
-                              className="bg-gray-50"
-                            />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 )}
                 
                 {/* Operação */}
-                <Card className="bg-blue-50 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="text-sm">Informações da Operação</CardTitle>
+                <Card className="bg-blue-50/50 border-blue-100 mt-6">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-blue-800 flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Dados da Operação e Pagamento
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label>CFOP *</Label>
-                        <Select
-                          value={nfe.cfop}
-                          onValueChange={(value) => updateField("cfop", value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {CFOP_OPTIONS.map((opt) => (
-                              <SelectItem key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Natureza da Operação *</Label>
+                        <Label className="text-xs mb-1 block">Natureza da Operação *</Label>
                         <Input
                           placeholder="Venda de mercadoria"
                           value={nfe.natureOperation}
                           onChange={(e) => updateField("natureOperation", e.target.value)}
+                          className="bg-white"
                         />
                       </div>
                       <div>
-                        <Label>Forma de Pagamento *</Label>
+                        <Label className="text-xs mb-1 block">Forma de Pagamento *</Label>
                         <Select
                           value={nfe.paymentMethod}
                           onValueChange={(value) => updateField("paymentMethod", value)}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-white">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -720,12 +678,12 @@ export default function EmitirNFe() {
                         </Select>
                       </div>
                       <div>
-                        <Label>Indicador de Pagamento *</Label>
+                        <Label className="text-xs mb-1 block">Indicador de Pagamento *</Label>
                         <Select
                           value={nfe.paymentIndicator}
                           onValueChange={(value) => updateField("paymentIndicator", value)}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-white">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -744,10 +702,10 @@ export default function EmitirNFe() {
 
           {/* Etapa 4: Impostos */}
           {currentStep === 4 && (
-            <Card>
+            <Card className="border-t-4 border-t-green-500 shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="h-5 w-5 text-green-500" />
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Calculator className="h-5 w-5 text-green-600" />
                   Impostos e Totais
                 </CardTitle>
                 <CardDescription>
@@ -756,73 +714,83 @@ export default function EmitirNFe() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Impostos por item */}
-                {nfe.items.map((item, index) => (
-                  <Card key={index} className="border-l-4 border-l-green-500">
-                    <CardHeader>
-                      <CardTitle className="text-sm">
-                        {item.description || `Item ${index + 1}`}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                          <Label>ICMS (%)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={(item.icmsRate || 0) / 100}
-                            onChange={(e) =>
-                              updateItem(index, "icmsRate", Math.round(parseFloat(e.target.value) * 100) || 0)
-                            }
-                          />
+                <div className="space-y-4">
+                  <h3 className="font-medium text-sm text-gray-500 uppercase tracking-wider">Tributação por Item</h3>
+                  {nfe.items.map((item, index) => (
+                    <Card key={index} className="border border-gray-200">
+                      <CardHeader className="py-3 bg-gray-50 border-b">
+                        <CardTitle className="text-sm font-medium">
+                          {item.description || `Item ${index + 1}`}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div>
+                            <Label className="text-xs mb-1 block">ICMS (%)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={(item.icmsRate || 0) / 100}
+                              onChange={(e) =>
+                                updateItem(index, "icmsRate", Math.round(parseFloat(e.target.value) * 100) || 0)
+                              }
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs mb-1 block">IPI (%)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={(item.ipiRate || 0) / 100}
+                              onChange={(e) =>
+                                updateItem(index, "ipiRate", Math.round(parseFloat(e.target.value) * 100) || 0)
+                              }
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs mb-1 block">PIS (%)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={(item.pisRate || 0) / 100}
+                              onChange={(e) =>
+                                updateItem(index, "pisRate", Math.round(parseFloat(e.target.value) * 100) || 0)
+                              }
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs mb-1 block">COFINS (%)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={(item.cofinsRate || 0) / 100}
+                              onChange={(e) =>
+                                updateItem(index, "cofinsRate", Math.round(parseFloat(e.target.value) * 100) || 0)
+                              }
+                              className="h-9"
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <Label>IPI (%)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={(item.ipiRate || 0) / 100}
-                            onChange={(e) =>
-                              updateItem(index, "ipiRate", Math.round(parseFloat(e.target.value) * 100) || 0)
-                            }
-                          />
-                        </div>
-                        <div>
-                          <Label>PIS (%)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={(item.pisRate || 0) / 100}
-                            onChange={(e) =>
-                              updateItem(index, "pisRate", Math.round(parseFloat(e.target.value) * 100) || 0)
-                            }
-                          />
-                        </div>
-                        <div>
-                          <Label>COFINS (%)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={(item.cofinsRate || 0) / 100}
-                            onChange={(e) =>
-                              updateItem(index, "cofinsRate", Math.round(parseFloat(e.target.value) * 100) || 0)
-                            }
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
                 
                 {/* Valores adicionais */}
-                <Card className="bg-yellow-50 border-yellow-200">
-                  <CardHeader>
-                    <CardTitle className="text-sm">Valores Adicionais</CardTitle>
+                <Card className="bg-yellow-50/50 border-yellow-100">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-yellow-800 flex items-center gap-2">
+                      <Truck className="h-4 w-4" />
+                      Frete e Descontos Globais
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label>Desconto Total (R$)</Label>
+                        <Label className="text-xs mb-1 block">Desconto Total (R$)</Label>
                         <Input
                           type="number"
                           step="0.01"
@@ -831,10 +799,11 @@ export default function EmitirNFe() {
                           onChange={(e) =>
                             updateField("totalDiscount", Math.round(parseFloat(e.target.value) * 100) || 0)
                           }
+                          className="bg-white"
                         />
                       </div>
                       <div>
-                        <Label>Frete (R$)</Label>
+                        <Label className="text-xs mb-1 block">Frete (R$)</Label>
                         <Input
                           type="number"
                           step="0.01"
@@ -843,6 +812,7 @@ export default function EmitirNFe() {
                           onChange={(e) =>
                             updateField("totalFreight", Math.round(parseFloat(e.target.value) * 100) || 0)
                           }
+                          className="bg-white"
                         />
                       </div>
                     </div>
@@ -851,12 +821,13 @@ export default function EmitirNFe() {
                 
                 {/* Informações adicionais */}
                 <div>
-                  <Label>Informações Adicionais</Label>
+                  <Label className="mb-2 block">Informações Adicionais (Observações)</Label>
                   <Textarea
-                    placeholder="Observações, condições de pagamento, etc..."
+                    placeholder="Observações que devem constar na nota, condições de pagamento, etc..."
                     rows={4}
                     value={nfe.additionalInfo || ""}
                     onChange={(e) => updateField("additionalInfo", e.target.value)}
+                    className="resize-none"
                   />
                 </div>
               </CardContent>
@@ -865,10 +836,10 @@ export default function EmitirNFe() {
 
           {/* Etapa 5: Confirmação */}
           {currentStep === 5 && (
-            <Card>
+            <Card className="border-t-4 border-t-pink-500 shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Eye className="h-5 w-5 text-pink-500" />
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Eye className="h-5 w-5 text-pink-600" />
                   Confirmação e Preview
                 </CardTitle>
                 <CardDescription>
@@ -876,103 +847,99 @@ export default function EmitirNFe() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Resumo Emitente */}
-                <div>
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-blue-500" />
-                    Emitente
-                  </h3>
-                  <div className="bg-gray-50 p-4 rounded-lg space-y-1 text-sm">
-                    <p><strong>CNPJ:</strong> {nfe.emitterCnpj}</p>
-                    <p><strong>Razão Social:</strong> {nfe.emitterName}</p>
-                    {nfe.emitterAddress && <p><strong>Endereço:</strong> {nfe.emitterAddress}</p>}
-                    {nfe.emitterCity && <p><strong>Cidade:</strong> {nfe.emitterCity} - {nfe.emitterState}</p>}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Resumo Emitente */}
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <h3 className="font-semibold mb-3 flex items-center gap-2 text-blue-700">
+                      <Building2 className="h-4 w-4" />
+                      Emitente
+                    </h3>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p><span className="font-medium text-gray-900">Razão Social:</span> {nfe.emitterName}</p>
+                      <p><span className="font-medium text-gray-900">CNPJ:</span> {nfe.emitterCnpj}</p>
+                      {nfe.emitterAddress && <p><span className="font-medium text-gray-900">Endereço:</span> {nfe.emitterAddress}</p>}
+                      {nfe.emitterCity && <p><span className="font-medium text-gray-900">Local:</span> {nfe.emitterCity} - {nfe.emitterState}</p>}
+                    </div>
                   </div>
-                </div>
-                
-                {/* Resumo Destinatário */}
-                <div>
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <User className="h-4 w-4 text-purple-500" />
-                    Destinatário
-                  </h3>
-                  <div className="bg-gray-50 p-4 rounded-lg space-y-1 text-sm">
-                    <p><strong>CPF/CNPJ:</strong> {nfe.recipientDocument}</p>
-                    <p><strong>Nome:</strong> {nfe.recipientName}</p>
-                    {nfe.recipientAddress && <p><strong>Endereço:</strong> {nfe.recipientAddress}</p>}
-                    {nfe.recipientCity && <p><strong>Cidade:</strong> {nfe.recipientCity} - {nfe.recipientState}</p>}
-                    {nfe.recipientPhone && <p><strong>Telefone:</strong> {nfe.recipientPhone}</p>}
-                    {nfe.recipientEmail && <p><strong>E-mail:</strong> {nfe.recipientEmail}</p>}
+                  
+                  {/* Resumo Destinatário */}
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <h3 className="font-semibold mb-3 flex items-center gap-2 text-purple-700">
+                      <User className="h-4 w-4" />
+                      Destinatário
+                    </h3>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p><span className="font-medium text-gray-900">Nome:</span> {nfe.recipientName}</p>
+                      <p><span className="font-medium text-gray-900">CPF/CNPJ:</span> {nfe.recipientDocument}</p>
+                      {nfe.recipientAddress && <p><span className="font-medium text-gray-900">Endereço:</span> {nfe.recipientAddress}</p>}
+                      {nfe.recipientCity && <p><span className="font-medium text-gray-900">Local:</span> {nfe.recipientCity} - {nfe.recipientState}</p>}
+                    </div>
                   </div>
                 </div>
                 
                 {/* Resumo Produtos */}
                 <div>
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <Package className="h-4 w-4 text-orange-500" />
+                  <h3 className="font-semibold mb-3 flex items-center gap-2 text-orange-700">
+                    <Package className="h-4 w-4" />
                     Produtos ({nfe.items.length})
                   </h3>
-                  <div className="space-y-2">
-                    {nfe.items.map((item, index) => (
-                      <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p className="font-medium">{item.description}</p>
-                            <p className="text-sm text-gray-600">
-                              {item.quantity} {item.unit} × {formatCurrency(item.unitPrice)}
-                            </p>
-                            {item.discount > 0 && (
-                              <p className="text-sm text-green-600">
-                                Desconto: {formatCurrency(item.discount)}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold">{formatCurrency(item.totalPrice)}</p>
-                            <p className="text-xs text-gray-500">NCM: {item.ncm}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 text-gray-500 font-medium">
+                        <tr>
+                          <td className="px-4 py-2">Descrição</td>
+                          <td className="px-4 py-2 text-right">Qtd</td>
+                          <td className="px-4 py-2 text-right">Unitário</td>
+                          <td className="px-4 py-2 text-right">Total</td>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {nfe.items.map((item, index) => (
+                          <tr key={index}>
+                            <td className="px-4 py-2">{item.description}</td>
+                            <td className="px-4 py-2 text-right">{item.quantity}</td>
+                            <td className="px-4 py-2 text-right">{formatCurrency(item.unitPrice)}</td>
+                            <td className="px-4 py-2 text-right font-medium">{formatCurrency(item.totalPrice)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
                 
                 {/* Totais */}
-                <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Totais da Nota Fiscal</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Total dos Produtos:</span>
-                      <span className="font-semibold">{formatCurrency(nfe.totalProducts)}</span>
-                    </div>
-                    {nfe.totalDiscount > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Desconto:</span>
-                        <span className="font-semibold">- {formatCurrency(nfe.totalDiscount)}</span>
+                <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Total dos Produtos:</span>
+                        <span className="font-medium">{formatCurrency(nfe.totalProducts)}</span>
                       </div>
-                    )}
-                    {nfe.totalFreight > 0 && (
-                      <div className="flex justify-between">
-                        <span>Frete:</span>
-                        <span className="font-semibold">+ {formatCurrency(nfe.totalFreight)}</span>
+                      {nfe.totalDiscount > 0 && (
+                        <div className="flex justify-between text-sm text-green-600">
+                          <span>Desconto:</span>
+                          <span className="font-medium">- {formatCurrency(nfe.totalDiscount)}</span>
+                        </div>
+                      )}
+                      {nfe.totalFreight > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Frete:</span>
+                          <span className="font-medium">+ {formatCurrency(nfe.totalFreight)}</span>
+                        </div>
+                      )}
+                      <div className="border-t border-blue-200 pt-3 mt-1 flex justify-between items-end">
+                        <span className="font-bold text-lg text-blue-900">Valor Total da Nota</span>
+                        <span className="font-bold text-2xl text-blue-700">{formatCurrency(nfe.totalInvoice)}</span>
                       </div>
-                    )}
-                    <div className="border-t pt-2 flex justify-between text-lg">
-                      <span className="font-bold">Total da Nota:</span>
-                      <span className="font-bold text-blue-600">{formatCurrency(nfe.totalInvoice)}</span>
                     </div>
                   </CardContent>
                 </Card>
                 
                 {/* Informações adicionais */}
                 {nfe.additionalInfo && (
-                  <div>
-                    <h3 className="font-semibold mb-2">Informações Adicionais</h3>
-                    <div className="bg-gray-50 p-4 rounded-lg text-sm">
-                      {nfe.additionalInfo}
-                    </div>
+                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-sm">
+                    <h3 className="font-semibold mb-1 text-yellow-800">Informações Adicionais</h3>
+                    <p className="text-gray-700 whitespace-pre-wrap">{nfe.additionalInfo}</p>
                   </div>
                 )}
               </CardContent>
@@ -981,46 +948,49 @@ export default function EmitirNFe() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Navegação */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentStep === 1}
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Anterior
-            </Button>
-            
-            {currentStep < 5 ? (
-              <Button onClick={handleNext}>
-                Próximo
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSubmit}
-                disabled={createNFeMutation.isPending || emitNFeMutation.isPending}
-                className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600"
-              >
-                {createNFeMutation.isPending || emitNFeMutation.isPending ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                    Emitindo...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4 mr-2" />
-                    Emitir NF-e
-                  </>
-                )}
-              </Button>
-            )}
+      {/* Barra de Navegação Fixa */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg z-50 md:pl-64">
+        <div className="container mx-auto max-w-5xl flex justify-between items-center">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 1}
+            className="w-32"
+          >
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Anterior
+          </Button>
+          
+          <div className="text-sm font-medium text-gray-500 hidden md:block">
+            Passo {currentStep} de 5
           </div>
-        </CardContent>
-      </Card>
+          
+          {currentStep < 5 ? (
+            <Button onClick={handleNext} className="w-32 bg-blue-600 hover:bg-blue-700">
+              Próximo
+              <ChevronRight className="h-4 w-4 ml-2" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSubmit}
+              disabled={createNFeMutation.isPending || emitNFeMutation.isPending}
+              className="w-40 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-200"
+            >
+              {createNFeMutation.isPending || emitNFeMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  Emitindo...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Emitir NF-e
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

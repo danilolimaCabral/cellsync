@@ -1,0 +1,124 @@
+{
+  "project_info": {
+    "title": "Bem-vindo ao CellSync",
+    "created": 1764795013.043819,
+    "last_updated": 1764795186.72718,
+    "total_slides": 14
+  },
+  "slides": {
+    "slide_1": "edited",
+    "slide_2": "edited",
+    "slide_3": "edited",
+    "slide_4": "edited",
+    "slide_5": "edited",
+    "slide_6": "edited",
+    "slide_7": "edited",
+    "slide_8": "edited",
+    "slide_9": "edited",
+    "slide_10": "edited",
+    "slide_11": "edited",
+    "slide_12": "edited",
+    "slide_13": "edited",
+    "slide_14": "edited"
+  },
+  "outline": [
+    {
+      "id": "slide_1",
+      "title": "Bem-vindo ao CellSync",
+      "summary": "Introdução ao sistema completo de gestão para lojas de celular, destacando benefícios como aumento de eficiência e redução de perdas.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_2",
+      "title": "Dashboard Principal",
+      "summary": "Visão geral das métricas essenciais do negócio em tempo real, como vendas, receita, clientes e produtos.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_3",
+      "title": "PDV - Vendas em 5 Passos",
+      "summary": "Demonstração do fluxo de vendas rápido e eficiente, desde a busca do produto até a emissão da NF-e.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_4",
+      "title": "Gestão de Estoque",
+      "summary": "Explicação sobre o controle total de estoque com rastreamento individual de IMEI e alertas automáticos.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_5",
+      "title": "CRM - Gestão de Clientes",
+      "summary": "Como fidelizar clientes e aumentar vendas recorrentes através do histórico completo e programa de fidelidade.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_6",
+      "title": "Ordem de Serviço",
+      "summary": "Otimização do tempo de reparo com diagnóstico por IA e acompanhamento de status em tempo real.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_7",
+      "title": "Módulo Financeiro",
+      "summary": "Controle completo do fluxo de caixa, contas a pagar e receber, e relatórios financeiros detalhados.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_8",
+      "title": "Dashboard Executivo",
+      "summary": "Apresentação dos KPIs avançados para decisões estratégicas, exclusivo para usuários master.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_9",
+      "title": "Sistema de Notificações",
+      "summary": "Monitoramento de eventos críticos e alertas automáticos para garantir que nenhuma oportunidade seja perdida.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_10",
+      "title": "Relatórios e BI",
+      "summary": "Transformação de dados em insights acionáveis para aumentar a lucratividade e ajustar estratégias.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_11",
+      "title": "Integrações",
+      "summary": "Conexão nativa com plataformas como Stripe, NF-e e WhatsApp para automatizar processos.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_12",
+      "title": "Boas Práticas",
+      "summary": "Recomendações de rotina diária para maximizar o retorno do investimento e eficiência operacional.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_13",
+      "title": "Próximos Passos",
+      "summary": "Guia rápido para começar a usar o sistema, criar conta e acessar suporte.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "slide_14",
+      "title": "Conclusão",
+      "summary": "Resumo dos benefícios e resultados comprovados do uso do CellSync para transformar a gestão da loja.",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    }
+  ]
+}

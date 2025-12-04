@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background-color: #F2F2F2;
+            display: grid;
+            grid-template-columns: 60% 40%;
+        }
+        .timeline-section {
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        .results-section {
+            background-color: #1A1A1A;
+            color: #FFFFFF;
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        h1 {
+            font-size: 56px;
+            font-weight: 900;
+            color: #1A1A1A;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #666666;
+            margin-bottom: 60px;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background-color: #CCCCCC;
+        }
+        .timeline-item {
+            position: relative;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -40px;
+            top: 6px;
+            width: 24px;
+            height: 24px;
+            background-color: #0052CC;
+            border: 4px solid #F2F2F2;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .time-label {
+            font-size: 14px;
+            font-weight: 900;
+            color: #0052CC;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .task-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 4px;
+        }
+        .task-desc {
+            font-size: 16px;
+            color: #666666;
+        }
+        .result-block {
+            margin-bottom: 60px;
+            border-left: 4px solid #0052CC;
+            padding-left: 32px;
+        }
+        .result-value {
+            font-size: 80px;
+            font-weight: 900;
+            color: #FFFFFF;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .result-label {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0052CC;
+        }
+        .result-desc {
+            font-size: 16px;
+            color: #CCCCCC;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="timeline-section">
+            <h1>Boas Práticas</h1>
+            <h2>Rotina diária para maximizar resultados</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="time-label">Manhã (5 min)</div>
+                    <div class="task-title">Planejamento</div>
+                    <div class="task-desc">Revise o dashboard e notificações pendentes.</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="time-label">Durante o Dia</div>
+                    <div class="task-title">Registro Total</div>
+                    <div class="task-desc">Registre todas as vendas no PDV imediatamente.</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="time-label">Tarde</div>
+                    <div class="task-title">Gestão de OS</div>
+                    <div class="task-desc">Atualize status das ordens em andamento.</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="time-label">Noite (10 min)</div>
+                    <div class="task-title">Fechamento</div>
+                    <div class="task-desc">Confira fluxo de caixa e o resumo diário.</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background-color: #1A1A1A;"></div>
+                    <div class="time-label">Semanal (30 min)</div>
+                    <div class="task-title">Estratégia</div>
+                    <div class="task-desc">Analise relatórios de vendas e ajuste metas.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results-section">
+            <div class="result-block">
+                <div class="result-value">+40%</div>
+                <div class="result-label">Eficiência</div>
+                <div class="result-desc">Aumento na produtividade operacional nos primeiros 3 meses.</div>
+            </div>
+            
+            <div class="result-block">
+                <div class="result-value">+30%</div>
+                <div class="result-label">Satisfação</div>
+                <div class="result-desc">Melhoria na avaliação dos clientes devido à agilidade.</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -29,7 +29,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { DollarSign, TrendingUp, Users, Plus, Edit, Trash2, Info } from "lucide-react";
+import { DollarSign, TrendingUp, Users, Plus, Edit, Trash2, Info, CheckCircle2, Clock, Award } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -159,11 +159,11 @@ export default function Comissoes() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="container mx-auto p-6 max-w-7xl space-y-8">
+      <div className="flex items-center justify-between">
         <PageHeader 
-          title="Gestão de Comissões" 
-          description="Configuração de regras e aprovação de comissões"
+          title="Controle de Comissões" 
+          description="Gerencie regras, aprove pagamentos e acompanhe o desempenho da equipe"
           backTo="/dashboard"
         />
         <Dialog open={showNewRule || !!editingRule} onOpenChange={(open) => {
@@ -171,7 +171,7 @@ export default function Comissoes() {
           if (!open) setEditingRule(null);
         }}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/20 transition-all duration-300">
               <Plus className="h-4 w-4 mr-2" />
               Nova Regra
             </Button>
@@ -180,9 +180,9 @@ export default function Comissoes() {
             <DialogHeader>
               <DialogTitle>{editingRule ? "Editar" : "Nova"} Regra de Comissão</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmitRule} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+            <form onSubmit={handleSubmitRule} className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
                   <Label htmlFor="userId">Vendedor *</Label>
                   <Select name="userId" required defaultValue={editingRule?.userId?.toString()}>
                     <SelectTrigger>
@@ -198,7 +198,7 @@ export default function Comissoes() {
                   </Select>
                 </div>
 
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="name">Nome da Regra *</Label>
                   <Input
                     id="name"
@@ -210,8 +210,8 @@ export default function Comissoes() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
                   <Label htmlFor="type">Tipo de Comissão *</Label>
                   <Select 
                     value={ruleType} 
@@ -229,32 +229,36 @@ export default function Comissoes() {
                   </Select>
                 </div>
 
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="percentage">Percentual (%) *</Label>
-                  <Input
-                    id="percentage"
-                    name="percentage"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    required
-                    defaultValue={editingRule?.percentage || 5}
-                    onChange={(e) => setPreviewPercentage(parseFloat(e.target.value) || 0)}
-                    placeholder="Ex: 5.00"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="percentage"
+                      name="percentage"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      required
+                      defaultValue={editingRule?.percentage || 5}
+                      onChange={(e) => setPreviewPercentage(parseFloat(e.target.value) || 0)}
+                      placeholder="Ex: 5.00"
+                      className="pr-8"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
+                  </div>
                 </div>
               </div>
 
               {/* Descrição do tipo */}
-              <Card className="bg-muted/50">
+              <Card className="bg-blue-50/50 border-blue-100">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
+                  <CardTitle className="text-sm flex items-center gap-2 text-blue-700">
                     <Info className="h-4 w-4" />
                     Sobre {getRuleTypeLabel(ruleType)}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
+                <CardContent className="text-sm text-blue-600/80">
                   {ruleType === "percentual_fixo" && (
                     <p>Aplica um percentual fixo sobre o valor total de cada venda realizada pelo vendedor.</p>
                   )}
@@ -268,47 +272,51 @@ export default function Comissoes() {
               </Card>
 
               {/* Preview de Cálculo */}
-              <Card>
+              <Card className="border-dashed">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Preview de Cálculo</CardTitle>
-                  <CardDescription>Simule o cálculo da comissão</CardDescription>
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Calculator className="h-4 w-4" />
+                    Simulador de Ganhos
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <Label htmlFor="previewAmount">Valor da Venda (R$)</Label>
-                    <Input
-                      id="previewAmount"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={previewAmount}
-                      onChange={(e) => setPreviewAmount(parseFloat(e.target.value) || 0)}
-                      placeholder="Ex: 1000.00"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Comissão Calculada</p>
-                      <p className="text-2xl font-bold text-primary">
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 items-end">
+                    <div className="space-y-2">
+                      <Label>Valor da Venda (Simulação)</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                        <Input
+                          type="number"
+                          value={previewAmount}
+                          onChange={(e) => setPreviewAmount(parseFloat(e.target.value) || 0)}
+                          className="pl-8"
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded-lg border border-green-100">
+                      <p className="text-xs text-green-600 font-medium mb-1">Comissão Estimada</p>
+                      <p className="text-xl font-bold text-green-700">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(calculatePreview())}
                       </p>
                     </div>
-                    <Badge variant="secondary" className="text-lg">
-                      {previewPercentage.toFixed(2)}%
-                    </Badge>
                   </div>
                 </CardContent>
               </Card>
 
-              <div className="flex gap-2">
-                <Button type="submit" className="flex-1" disabled={createRuleMutation.isPending || updateRuleMutation.isPending}>
-                  {(createRuleMutation.isPending || updateRuleMutation.isPending) ? "Salvando..." : editingRule ? "Atualizar" : "Criar Regra"}
-                </Button>
+              <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => {
                   setShowNewRule(false);
                   setEditingRule(null);
                 }}>
                   Cancelar
+                </Button>
+                <Button type="submit" disabled={createRuleMutation.isPending || updateRuleMutation.isPending}>
+                  {createRuleMutation.isPending || updateRuleMutation.isPending ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  ) : (
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                  )}
+                  {editingRule ? "Salvar Alterações" : "Criar Regra"}
                 </Button>
               </div>
             </form>
@@ -316,170 +324,145 @@ export default function Comissoes() {
         </Dialog>
       </div>
 
-      {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
+      {/* Cards de Métricas */}
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="bg-white shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Pendente</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalPendente)}</div>
-            <p className="text-xs text-muted-foreground">{totalComissoes} comissões</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Vendedores Ativos</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{ranking.length}</div>
-            <p className="text-xs text-muted-foreground">com comissões pendentes</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Média por Vendedor</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {ranking.length > 0 ? formatCurrency(totalPendente / ranking.length) : formatCurrency(0)}
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Pendente</CardTitle>
+            <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center">
+              <DollarSign className="h-4 w-4 text-blue-600" />
             </div>
-            <p className="text-xs text-muted-foreground">comissão média</p>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalPendente)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {totalComissoes} comissões aguardando aprovação
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-purple-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Vendedores Ativos</CardTitle>
+            <div className="h-8 w-8 rounded-full bg-purple-50 flex items-center justify-center">
+              <Users className="h-4 w-4 text-purple-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{ranking.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              com comissões pendentes
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-green-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Média por Vendedor</CardTitle>
+            <div className="h-8 w-8 rounded-full bg-green-50 flex items-center justify-center">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">
+              {ranking.length > 0 
+                ? formatCurrency(totalPendente / ranking.length)
+                : formatCurrency(0)
+              }
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              comissão média
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="comissoes" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="comissoes">Comissões Pendentes</TabsTrigger>
-          <TabsTrigger value="regras">Regras de Comissão</TabsTrigger>
-          <TabsTrigger value="ranking">Ranking</TabsTrigger>
+      <Tabs defaultValue="pendentes" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 lg:w-[400px] bg-muted/50 p-1">
+          <TabsTrigger value="pendentes" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            Comissões Pendentes
+          </TabsTrigger>
+          <TabsTrigger value="regras" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            Regras de Comissão
+          </TabsTrigger>
+          <TabsTrigger value="ranking" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            Ranking
+          </TabsTrigger>
         </TabsList>
 
-        {/* Aba de Comissões */}
-        <TabsContent value="comissoes" className="space-y-4">
-          <Card>
+        <TabsContent value="pendentes">
+          <Card className="border-none shadow-sm">
             <CardHeader>
-              <CardTitle>Comissões Pendentes de Aprovação</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {commissions.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    Nenhuma comissão pendente
-                  </p>
-                ) : (
-                  commissions.map((commission) => (
-                    <div
-                      key={commission.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium">{commission.userName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Venda #{commission.saleId} • Cliente: {commission.customerName || "N/A"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(commission.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                        </p>
-                      </div>
-                      <div className="text-right mr-4">
-                        <p className="text-lg font-bold">{formatCurrency(commission.amount)}</p>
-                        {commission.percentage && (
-                          <p className="text-sm text-muted-foreground">
-                            {commission.percentage.toFixed(2)}% de {formatCurrency(commission.baseAmount)}
-                          </p>
-                        )}
-                        <Badge variant="outline" className="mt-1">
-                          Pendente
-                        </Badge>
-                      </div>
-                      {user?.role === "admin" && (
-                        <Button
-                          size="sm"
-                          onClick={() => approveCommissionMutation.mutate({ 
-                            commissionId: commission.id 
-                          })}
-                          disabled={approveCommissionMutation.isPending}
-                        >
-                          Aprovar
-                        </Button>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Aba de Regras */}
-        <TabsContent value="regras" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Regras de Comissão Ativas</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-orange-500" />
+                Comissões Pendentes de Aprovação
+              </CardTitle>
               <CardDescription>
-                Configure percentuais e tipos de comissão por vendedor
+                Aprove as comissões para liberar o pagamento aos vendedores
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {rules.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Nenhuma regra cadastrada. Clique em "Nova Regra" para começar.
-                </p>
+              {commissions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center bg-gray-50/50 rounded-lg border border-dashed">
+                  <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                    <CheckCircle2 className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900">Tudo em dia!</h3>
+                  <p className="text-sm text-gray-500 max-w-sm mt-1">
+                    Nenhuma comissão pendente de aprovação no momento.
+                  </p>
+                </div>
               ) : (
-                <div className="rounded-md border">
+                <div className="rounded-md border overflow-hidden">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-gray-50/50">
                       <TableRow>
+                        <TableHead>Data</TableHead>
                         <TableHead>Vendedor</TableHead>
-                        <TableHead>Nome da Regra</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead className="text-right">Percentual</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>Venda Ref.</TableHead>
+                        <TableHead>Valor Base</TableHead>
+                        <TableHead>Comissão</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {rules.map((rule: any) => (
-                        <TableRow key={rule.id}>
-                          <TableCell className="font-medium">{rule.userName}</TableCell>
-                          <TableCell>{rule.name}</TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">
-                              {getRuleTypeLabel(rule.type)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right font-mono">
-                            {rule.percentage.toFixed(2)}%
+                      {commissions.map((commission) => (
+                        <TableRow key={commission.id} className="hover:bg-gray-50/50 transition-colors">
+                          <TableCell className="font-medium">
+                            {format(new Date(commission.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={rule.active ? "default" : "secondary"}>
-                              {rule.active ? "Ativa" : "Inativa"}
+                            <div className="flex items-center gap-2">
+                              <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700">
+                                {commission.user?.name?.charAt(0).toUpperCase()}
+                              </div>
+                              {commission.user?.name}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="font-mono">
+                              #{commission.saleId}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {/* Valor base não disponível na query atual, mas idealmente mostraria */}
+                            -
+                          </TableCell>
+                          <TableCell>
+                            <span className="font-bold text-green-600">
+                              {formatCurrency(commission.amount)}
+                            </span>
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setEditingRule(rule)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setDeletingRuleId(rule.id)}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => approveCommissionMutation.mutate({ id: commission.id })}
+                              disabled={approveCommissionMutation.isPending}
+                              className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
+                            >
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              Aprovar
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -491,38 +474,140 @@ export default function Comissoes() {
           </Card>
         </TabsContent>
 
-        {/* Aba de Ranking */}
-        <TabsContent value="ranking" className="space-y-4">
-          <Card>
+        <TabsContent value="regras">
+          <Card className="border-none shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Ranking de Vendedores (Comissões Pendentes)
+                <Award className="h-5 w-5 text-purple-500" />
+                Regras Configuradas
               </CardTitle>
+              <CardDescription>
+                Gerencie as porcentagens e regras de comissionamento por vendedor
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {ranking.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    Nenhum vendedor com comissões pendentes
+              {rules.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center bg-gray-50/50 rounded-lg border border-dashed">
+                  <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                    <Info className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900">Nenhuma regra configurada</h3>
+                  <p className="text-sm text-gray-500 max-w-sm mt-1 mb-4">
+                    Crie regras para automatizar o cálculo de comissões dos seus vendedores.
                   </p>
+                  <Button onClick={() => setShowNewRule(true)} variant="outline">
+                    Criar Primeira Regra
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {rules.map((rule) => (
+                    <Card key={rule.id} className="group hover:shadow-md transition-all duration-300 border-l-4 border-l-blue-500">
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-base font-semibold">{rule.name}</CardTitle>
+                            <CardDescription className="mt-1 flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {rule.user?.name}
+                            </CardDescription>
+                          </div>
+                          <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
+                            {rule.percentage}%
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                          <span className="flex items-center gap-1">
+                            <Info className="h-3 w-3" />
+                            {getRuleTypeLabel(rule.type)}
+                          </span>
+                          <Badge variant={rule.active ? "default" : "secondary"} className={rule.active ? "bg-green-500 hover:bg-green-600" : ""}>
+                            {rule.active ? "Ativa" : "Inativa"}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2 pt-2 border-t">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1 h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            onClick={() => setEditingRule(rule)}
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            Editar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1 h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => setDeletingRuleId(rule.id)}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            Excluir
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ranking">
+          <Card className="border-none shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-green-500" />
+                Ranking de Vendas
+              </CardTitle>
+              <CardDescription>
+                Top vendedores por volume de comissões geradas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {ranking.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center bg-gray-50/50 rounded-lg border border-dashed">
+                    <p className="text-muted-foreground">
+                      Nenhum dado suficiente para gerar o ranking
+                    </p>
+                  </div>
                 ) : (
                   ranking.map((vendedor, index) => (
                     <div
                       key={vendedor.id}
-                      className="flex items-center gap-4 p-4 border rounded-lg"
+                      className="flex items-center gap-4 p-4 border rounded-xl bg-white hover:shadow-md transition-all duration-300 group"
                     >
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold">
-                        {index + 1}
+                      <div className={`
+                        flex items-center justify-center w-12 h-12 rounded-full font-bold text-lg shadow-sm
+                        ${index === 0 ? "bg-yellow-100 text-yellow-700 border-2 border-yellow-200" : 
+                          index === 1 ? "bg-gray-100 text-gray-700 border-2 border-gray-200" :
+                          index === 2 ? "bg-orange-100 text-orange-700 border-2 border-orange-200" :
+                          "bg-blue-50 text-blue-700 border-2 border-blue-100"}
+                      `}>
+                        {index + 1}º
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium">{vendedor.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {vendedor.qtdComissoes} {vendedor.qtdComissoes === 1 ? "comissão" : "comissões"}
+                        <p className="font-semibold text-lg text-gray-900 group-hover:text-blue-600 transition-colors">
+                          {vendedor.name}
                         </p>
+                        <div className="flex items-center gap-4 mt-1">
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Award className="h-3 w-3" />
+                            {vendedor.qtdComissoes} {vendedor.qtdComissoes === 1 ? "comissão" : "comissões"}
+                          </p>
+                          <div className="h-1 w-1 rounded-full bg-gray-300" />
+                          <p className="text-sm text-muted-foreground">
+                            Ticket Médio: {formatCurrency(vendedor.totalComissoes / vendedor.qtdComissoes)}
+                          </p>
+                        </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-xl font-bold text-primary">
+                        <p className="text-sm text-muted-foreground mb-1">Total Gerado</p>
+                        <p className="text-xl font-bold text-green-600 bg-green-50 px-3 py-1 rounded-lg">
                           {formatCurrency(vendedor.totalComissoes)}
                         </p>
                       </div>
@@ -541,7 +626,7 @@ export default function Comissoes() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir esta regra de comissão? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir esta regra de comissão? Esta ação não pode ser desfeita e afetará os cálculos futuros.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -552,13 +637,41 @@ export default function Comissoes() {
                   deleteRuleMutation.mutate({ ruleId: deletingRuleId });
                 }
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-red-600 text-white hover:bg-red-700 shadow-sm"
             >
-              Excluir
+              Excluir Regra
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
   );
+}
+
+function Calculator({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="16" height="20" x="4" y="2" rx="2" />
+      <line x1="8" x2="16" y1="6" y2="6" />
+      <line x1="16" x2="16" y1="14" y2="18" />
+      <path d="M16 10h.01" />
+      <path d="M12 10h.01" />
+      <path d="M8 10h.01" />
+      <path d="M12 14h.01" />
+      <path d="M8 14h.01" />
+      <path d="M12 18h.01" />
+      <path d="M8 18h.01" />
+    </svg>
+  )
 }

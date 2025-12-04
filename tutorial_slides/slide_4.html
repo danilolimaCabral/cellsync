@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background-color: #F2F2F2;
+            display: grid;
+            grid-template-columns: 60% 40%;
+        }
+        .content-left {
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .content-right {
+            background-color: #1A1A1A;
+            color: #FFFFFF;
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        .decorative-bar {
+            position: absolute;
+            top: 80px;
+            left: 0;
+            width: 8px;
+            height: 120px;
+            background-color: #0052CC;
+        }
+        h1 {
+            font-size: 64px;
+            font-weight: 900;
+            color: #1A1A1A;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #666666;
+            margin-bottom: 60px;
+            line-height: 1.4;
+            max-width: 80%;
+        }
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+        }
+        .feature-icon-box {
+            width: 48px;
+            height: 48px;
+            background-color: #E6EEFA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 24px;
+            flex-shrink: 0;
+        }
+        .feature-icon {
+            font-size: 20px;
+            color: #0052CC;
+        }
+        .feature-text h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 4px;
+        }
+        .feature-text p {
+            font-size: 16px;
+            color: #666666;
+            line-height: 1.4;
+        }
+        .stat-group {
+            margin-bottom: 60px;
+        }
+        .stat-group:last-child {
+            margin-bottom: 0;
+        }
+        .stat-value {
+            font-size: 96px;
+            font-weight: 900;
+            color: #FFFFFF;
+            line-height: 1;
+            margin-bottom: 8px;
+            letter-spacing: -2px;
+        }
+        .stat-label {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0052CC;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-desc {
+            font-size: 16px;
+            color: #CCCCCC;
+            margin-top: 12px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="content-left">
+            <h1>Gestão de<br>Estoque</h1>
+            <h2>Controle total com rastreamento individual de IMEI e automação inteligente.</h2>
+            
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon-box">
+                        <i class="fas fa-barcode feature-icon"></i>
+                    </div>
+                    <div class="feature-text">
+                        <h3>Rastreamento de IMEI</h3>
+                        <p>Controle individual de cada aparelho para segurança total.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon-box">
+                        <i class="fas fa-file-import feature-icon"></i>
+                    </div>
+                    <div class="feature-text">
+                        <h3>Importação Rápida</h3>
+                        <p>Cadastre centenas de produtos via XML ou CSV em segundos.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon-box">
+                        <i class="fas fa-bell feature-icon"></i>
+                    </div>
+                    <div class="feature-text">
+                        <h3>Alertas Automáticos</h3>
+                        <p>Notificações de estoque baixo para reposição preventiva.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon-box">
+                        <i class="fas fa-history feature-icon"></i>
+                    </div>
+                    <div class="feature-text">
+                        <h3>Histórico Completo</h3>
+                        <p>Rastreabilidade total de todas as movimentações.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-right">
+            <div class="decorative-bar"></div>
+            
+            <div class="stat-group">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Eliminação de<br>Perdas</div>
+                <div class="stat-desc">O controle por IMEI impede desvios e erros de contagem.</div>
+            </div>
+            
+            <div class="stat-group">
+                <div class="stat-value">-40%</div>
+                <div class="stat-label">Tempo de<br>Inventário</div>
+                <div class="stat-desc">Processos automatizados agilizam a conferência.</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

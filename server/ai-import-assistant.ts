@@ -144,6 +144,11 @@ ${JSON.stringify(sampleData, null, 2)}`;
     });
 
     const content = response.choices[0].message.content;
+    
+    if (!content) {
+      throw new Error("IA retornou resposta vazia");
+    }
+
     const analysis = JSON.parse(typeof content === 'string' ? content : JSON.stringify(content));
 
     return {
@@ -156,7 +161,20 @@ ${JSON.stringify(sampleData, null, 2)}`;
     };
   } catch (error) {
     console.error("[AI Import] Erro ao analisar dados:", error);
-    throw new Error("Falha ao analisar dados com IA");
+    
+    // Fallback simples se a IA falhar
+    return {
+      totalRows: data.length,
+      columns,
+      sampleData,
+      suggestedMapping: columns.map(col => ({
+        sourceColumn: col,
+        targetField: suggestFieldByKeyword(col, moduleType),
+        confidence: 50
+      })),
+      detectedPatterns: {},
+      warnings: ["Falha na análise inteligente. Mapeamento sugerido por palavras-chave."]
+    };
   }
 }
 
@@ -283,6 +301,34 @@ function getAvailableFields(moduleType: string): string {
   };
 
   return fields[moduleType]?.join("\n- ") || "Campos não definidos";
+}
+
+/**
+ * Sugere campo baseado em palavra-chave (Fallback)
+ */
+function suggestFieldByKeyword(column: string, moduleType: string): string {
+  const col = column.toLowerCase();
+  
+  if (moduleType === 'products') {
+    if (col.includes('nome') || col.includes('produto') || col.includes('descrição')) return 'name';
+    if (col.includes('preço') && col.includes('venda')) return 'retailPrice';
+    if (col.includes('preço') && col.includes('custo')) return 'costPrice';
+    if (col.includes('estoque') || col.includes('qtd')) return 'currentStock';
+    if (col.includes('sku') || col.includes('código')) return 'sku';
+    if (col.includes('marca')) return 'brand';
+    if (col.includes('categoria')) return 'category';
+  }
+  
+  if (moduleType === 'customers') {
+    if (col.includes('nome') || col.includes('cliente')) return 'name';
+    if (col.includes('email')) return 'email';
+    if (col.includes('telefone') || col.includes('celular')) return 'phone';
+    if (col.includes('cpf')) return 'cpf';
+    if (col.includes('cnpj')) return 'cnpj';
+    if (col.includes('endereço') || col.includes('rua')) return 'address';
+  }
+  
+  return '';
 }
 
 /**

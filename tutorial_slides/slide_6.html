@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background-color: #F2F2F2;
+            display: grid;
+            grid-template-columns: 40% 60%;
+        }
+        .ai-section {
+            background-color: #1A1A1A;
+            color: #FFFFFF;
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .workflow-section {
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        h1 {
+            font-size: 56px;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            color: #FFFFFF;
+        }
+        .ai-badge {
+            background-color: #0052CC;
+            color: #FFFFFF;
+            padding: 8px 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 32px;
+            font-size: 14px;
+            letter-spacing: 1px;
+            width: fit-content;
+        }
+        .metric-big {
+            font-size: 96px;
+            font-weight: 900;
+            color: #0052CC;
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+        .metric-label {
+            font-size: 24px;
+            font-weight: 400;
+            opacity: 0.8;
+            margin-bottom: 40px;
+        }
+        .comparison {
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .time-old {
+            opacity: 0.5;
+            text-decoration: line-through;
+            margin-right: 16px;
+        }
+        .time-new {
+            color: #0052CC;
+        }
+        h2 {
+            font-size: 40px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 48px;
+        }
+        .workflow-list {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+        .workflow-item {
+            display: flex;
+            align-items: flex-start;
+        }
+        .workflow-icon-box {
+            width: 48px;
+            height: 48px;
+            background-color: #E6EEFA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 24px;
+            flex-shrink: 0;
+        }
+        .workflow-icon {
+            color: #0052CC;
+            font-size: 20px;
+        }
+        .workflow-content {
+            flex-grow: 1;
+        }
+        .workflow-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 4px;
+        }
+        .workflow-desc {
+            font-size: 16px;
+            color: #666666;
+        }
+        .status-flow {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .status-pill {
+            font-size: 12px;
+            padding: 4px 8px;
+            background-color: #F2F2F2;
+            border: 1px solid #CCCCCC;
+            color: #666666;
+            font-weight: 700;
+        }
+        .status-pill.active {
+            background-color: #0052CC;
+            color: #FFFFFF;
+            border-color: #0052CC;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="ai-section">
+            <div class="ai-badge">Powered by AI</div>
+            <h1>Ordem de<br>Serviço</h1>
+            
+            <div class="metric-big">-50%</div>
+            <div class="metric-label">Tempo de Reparo</div>
+            
+            <div class="comparison">
+                <span class="time-old">20 min</span>
+                <i class="fas fa-arrow-right" style="margin-right: 16px; font-size: 16px;"></i>
+                <span class="time-new">2 min (Diagnóstico)</span>
+            </div>
+        </div>
+        
+        <div class="workflow-section">
+            <h2>Fluxo de Atendimento</h2>
+            
+            <div class="workflow-list">
+                <div class="workflow-item">
+                    <div class="workflow-icon-box">
+                        <i class="fas fa-edit workflow-icon"></i>
+                    </div>
+                    <div class="workflow-content">
+                        <div class="workflow-title">1. Registro</div>
+                        <div class="workflow-desc">Registre o defeito relatado pelo cliente.</div>
+                    </div>
+                </div>
+                
+                <div class="workflow-item">
+                    <div class="workflow-icon-box">
+                        <i class="fas fa-robot workflow-icon"></i>
+                    </div>
+                    <div class="workflow-content">
+                        <div class="workflow-title">2. Diagnóstico IA</div>
+                        <div class="workflow-desc">IA analisa sintomas e sugere soluções prováveis.</div>
+                    </div>
+                </div>
+                
+                <div class="workflow-item">
+                    <div class="workflow-icon-box">
+                        <i class="fas fa-tasks workflow-icon"></i>
+                    </div>
+                    <div class="workflow-content">
+                        <div class="workflow-title">3. Acompanhamento</div>
+                        <div class="status-flow">
+                            <span class="status-pill">Aberta</span>
+                            <span class="status-pill active">Em Reparo</span>
+                            <span class="status-pill">Concluída</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="workflow-item">
+                    <div class="workflow-icon-box">
+                        <i class="fas fa-bell workflow-icon"></i>
+                    </div>
+                    <div class="workflow-content">
+                        <div class="workflow-title">4. Notificação Automática</div>
+                        <div class="workflow-desc">Cliente recebe aviso via WhatsApp/Email.</div>
+                    </div>
+                </div>
+                
+                <div class="workflow-item">
+                    <div class="workflow-icon-box">
+                        <i class="fas fa-print workflow-icon"></i>
+                    </div>
+                    <div class="workflow-content">
+                        <div class="workflow-title">5. Comprovante</div>
+                        <div class="workflow-desc">Gere comprovante profissional com um clique.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

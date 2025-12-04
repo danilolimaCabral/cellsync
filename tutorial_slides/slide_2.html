@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background-color: #F2F2F2;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            margin-bottom: 60px;
+            border-left: 8px solid #0052CC;
+            padding-left: 32px;
+        }
+        h1 {
+            font-size: 48px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 16px;
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #333333;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 32px;
+            flex-grow: 1;
+        }
+        .metric-card {
+            background-color: #FFFFFF;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-top: 4px solid #1A1A1A;
+        }
+        .metric-card.highlight {
+            border-top: 4px solid #0052CC;
+            background-color: #E6EEFA;
+        }
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+        .metric-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333333;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .metric-icon {
+            font-size: 24px;
+            color: #0052CC;
+        }
+        .metric-value {
+            font-size: 48px;
+            font-weight: 900;
+            color: #1A1A1A;
+        }
+        .metric-desc {
+            font-size: 14px;
+            color: #666666;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="header">
+            <h1>Dashboard Principal</h1>
+            <h2>Visão Geral do Negócio em Tempo Real</h2>
+        </div>
+        
+        <div class="metrics-grid">
+            <div class="metric-card highlight">
+                <div class="metric-header">
+                    <span class="metric-title">Vendas Hoje</span>
+                    <i class="fas fa-shopping-cart metric-icon"></i>
+                </div>
+                <div class="metric-value">R$ 4.250</div>
+                <div class="metric-desc">12 vendas realizadas</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Receita Total</span>
+                    <i class="fas fa-chart-line metric-icon"></i>
+                </div>
+                <div class="metric-value">R$ 128.400</div>
+                <div class="metric-desc">Acumulado do mês</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Clientes</span>
+                    <i class="fas fa-users metric-icon"></i>
+                </div>
+                <div class="metric-value">1.245</div>
+                <div class="metric-desc">+45 novos este mês</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Produtos</span>
+                    <i class="fas fa-box-open metric-icon"></i>
+                </div>
+                <div class="metric-value">856</div>
+                <div class="metric-desc">Itens em estoque</div>
+            </div>
+            
+            <div class="metric-card highlight">
+                <div class="metric-header">
+                    <span class="metric-title">OS Abertas</span>
+                    <i class="fas fa-tools metric-icon"></i>
+                </div>
+                <div class="metric-value">8</div>
+                <div class="metric-desc">3 aguardando peça</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Pagamentos</span>
+                    <i class="fas fa-file-invoice-dollar metric-icon"></i>
+                </div>
+                <div class="metric-value">R$ 1.850</div>
+                <div class="metric-desc">Pendentes a receber</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

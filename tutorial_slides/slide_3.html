@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background-color: #F2F2F2;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            margin-bottom: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 2px solid #1A1A1A;
+            padding-bottom: 24px;
+        }
+        h1 {
+            font-size: 48px;
+            font-weight: 900;
+            color: #1A1A1A;
+            line-height: 1.1;
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #666666;
+            text-align: right;
+        }
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            flex-grow: 1;
+        }
+        .step-column {
+            flex: 1;
+            padding-right: 24px;
+            position: relative;
+        }
+        .step-column:last-child {
+            padding-right: 0;
+        }
+        .step-number {
+            font-size: 80px;
+            font-weight: 900;
+            color: #E0E0E0;
+            line-height: 1;
+            margin-bottom: -20px;
+            position: relative;
+            z-index: 1;
+        }
+        .step-content {
+            background-color: #FFFFFF;
+            padding: 32px 24px;
+            border-top: 4px solid #0052CC;
+            position: relative;
+            z-index: 2;
+            height: 100%;
+        }
+        .step-icon {
+            font-size: 32px;
+            color: #1A1A1A;
+            margin-bottom: 24px;
+        }
+        .step-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .step-time {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0052CC;
+            margin-bottom: 16px;
+            display: inline-block;
+            background-color: #E6EEFA;
+            padding: 4px 8px;
+        }
+        .step-desc {
+            font-size: 16px;
+            color: #666666;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="header">
+            <h1>PDV - Vendas em<br>5 Passos Simples</h1>
+            <h2>Processo 3x mais rápido que<br>sistemas tradicionais</h2>
+        </div>
+        
+        <div class="steps-container">
+            <div class="step-column">
+                <div class="step-number">01</div>
+                <div class="step-content">
+                    <i class="fas fa-search step-icon"></i>
+                    <div class="step-title">Busca</div>
+                    <div class="step-time">2 segundos</div>
+                    <div class="step-desc">Busque por IMEI ou nome do produto instantaneamente.</div>
+                </div>
+            </div>
+            
+            <div class="step-column">
+                <div class="step-number">02</div>
+                <div class="step-content">
+                    <i class="fas fa-user step-icon"></i>
+                    <div class="step-title">Cliente</div>
+                    <div class="step-time">3 segundos</div>
+                    <div class="step-desc">Selecione um cliente cadastrado ou cadastre rápido.</div>
+                </div>
+            </div>
+            
+            <div class="step-column">
+                <div class="step-number">03</div>
+                <div class="step-content">
+                    <i class="fas fa-credit-card step-icon"></i>
+                    <div class="step-title">Pagamento</div>
+                    <div class="step-time">2 segundos</div>
+                    <div class="step-desc">Escolha a forma de pagamento (Dinheiro, Pix, Cartão).</div>
+                </div>
+            </div>
+            
+            <div class="step-column">
+                <div class="step-number">04</div>
+                <div class="step-content">
+                    <i class="fas fa-tag step-icon"></i>
+                    <div class="step-title">Desconto</div>
+                    <div class="step-time">2 segundos</div>
+                    <div class="step-desc">Aplique descontos em valor ou porcentagem.</div>
+                </div>
+            </div>
+            
+            <div class="step-column">
+                <div class="step-number">05</div>
+                <div class="step-content">
+                    <i class="fas fa-check step-icon"></i>
+                    <div class="step-title">Finalizar</div>
+                    <div class="step-time">5 segundos</div>
+                    <div class="step-desc">Emita NF-e e imprima o comprovante automaticamente.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
