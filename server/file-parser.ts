@@ -58,14 +58,19 @@ export function parseExcel(fileBuffer: Buffer): ParsedData {
     if (rawData.length === 0) continue;
 
     // Heurística: Encontrar a linha de cabeçalho
-    // Procuramos a primeira linha que tenha pelo menos 2 colunas preenchidas com texto
+    // Procuramos a primeira linha que tenha pelo menos 1 coluna preenchida com texto (relaxado de 2 para 1)
     let headerRowIndex = -1;
+    const scanLimit = Math.min(rawData.length, 50); // Aumentado de 20 para 50
     
-    for (let i = 0; i < Math.min(rawData.length, 20); i++) {
+    for (let i = 0; i < scanLimit; i++) {
       const row = rawData[i];
-      const nonEmptyCells = row.filter(cell => cell && typeof cell === 'string' && cell.trim().length > 0).length;
+      // Conta células não vazias (string ou número)
+      const nonEmptyCells = row.filter(cell => 
+        (cell !== null && cell !== undefined && String(cell).trim().length > 0)
+      ).length;
       
-      if (nonEmptyCells >= 2) {
+      // Aceita se tiver pelo menos 1 coluna válida (ex: lista simples de emails)
+      if (nonEmptyCells >= 1) {
         headerRowIndex = i;
         break;
       }
@@ -96,7 +101,7 @@ export function parseExcel(fileBuffer: Buffer): ParsedData {
   }
 
   if (data.length === 0) {
-    throw new Error("Planilha vazia ou sem dados legíveis. Verifique se há cabeçalhos na primeira linha.");
+    throw new Error(`Não foi possível encontrar dados na planilha. Verificamos as primeiras 50 linhas de todas as abas (${workbook.SheetNames.join(", ")}). Certifique-se de que há dados preenchidos.`);
   }
 
   return {
