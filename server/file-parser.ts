@@ -41,21 +41,27 @@ export function parseCSV(fileContent: string): ParsedData {
 export function parseExcel(fileBuffer: Buffer): ParsedData {
   const workbook = XLSX.read(fileBuffer, { type: "buffer" });
   
-  // Pegar primeira planilha
-  const firstSheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[firstSheetName];
+  // Procurar dados em todas as abas
+  let data: Record<string, any>[] = [];
+  let columns: string[] = [];
 
-  // Converter para JSON
-  const data = XLSX.utils.sheet_to_json(worksheet, {
-    raw: false, // Converter tudo para string
-    defval: "", // Valor padrão para células vazias
-  }) as Record<string, any>[];
+  for (const sheetName of workbook.SheetNames) {
+    const worksheet = workbook.Sheets[sheetName];
+    const sheetData = XLSX.utils.sheet_to_json(worksheet, {
+      raw: false,
+      defval: "",
+    }) as Record<string, any>[];
 
-  if (data.length === 0) {
-    throw new Error("Planilha vazia");
+    if (sheetData.length > 0) {
+      data = sheetData;
+      columns = Object.keys(data[0]);
+      break; // Encontrou dados, para de procurar
+    }
   }
 
-  const columns = Object.keys(data[0]);
+  if (data.length === 0) {
+    throw new Error("Planilha vazia ou sem dados legíveis. Verifique se há cabeçalhos na primeira linha.");
+  }
 
   return {
     data,
