@@ -62,6 +62,27 @@ export const appRouter = router({
     
     return allTenants;
   }),
+
+  promoteToMaster: publicProcedure
+    .input(z.object({ email: z.string().email() }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) return { success: false, error: "Database not connected" };
+
+      // Verificar se usuário existe
+      const [user] = await database.select().from(users).where(eq(users.email, input.email));
+      
+      if (!user) {
+        return { success: false, error: "Usuário não encontrado" };
+      }
+
+      // Atualizar role para master_admin
+      await database.update(users)
+        .set({ role: "master_admin" })
+        .where(eq(users.email, input.email));
+
+      return { success: true, message: `Usuário ${input.email} promovido a Master Admin!` };
+    }),
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
