@@ -169,7 +169,7 @@ const convertToGeminiContent = (messages: Message[]) => {
 };
 
 const invokeGoogleNative = async (params: InvokeParams): Promise<InvokeResult> => {
-  const model = "gemini-2.0-flash";
+  const model = "gemini-1.5-flash";
   // Fallback para a chave fornecida pelo usuário caso a ENV falhe
   const apiKey = ENV.googleApiKey;
   if (!apiKey) {
@@ -182,7 +182,7 @@ const invokeGoogleNative = async (params: InvokeParams): Promise<InvokeResult> =
   const payload: any = {
     contents,
     generationConfig: {
-      maxOutputTokens: 8192,
+      maxOutputTokens: 2048,
       temperature: 0.7,
     }
   };

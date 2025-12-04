@@ -47,39 +47,14 @@ export async function analyzeImportData(
   }
 
   // Montar prompt para IA
-  const systemPrompt = `Você é um assistente especializado em análise de dados para importação.
-Seu objetivo é analisar os dados fornecidos e sugerir o melhor mapeamento de colunas.
+  const systemPrompt = `Analise os dados para importação no módulo: ${moduleType}.
+CAMPOS ALVO: ${getAvailableFields(moduleType)}
 
-MÓDULO: ${moduleType}
-
-CAMPOS DISPONÍVEIS NO SISTEMA:
-${getAvailableFields(moduleType)}
-
-INSTRUÇÕES:
-1. Analise as colunas fornecidas
-2. Sugira o mapeamento mais adequado para cada coluna
-3. Identifique padrões nos dados (categorias, fornecedores, faixas de preço)
-4. Detecte possíveis problemas ou inconsistências
-5. Aplique as regras aprendidas anteriormente (se houver)
 ${memoryContext}
 
-Responda APENAS com um JSON válido no seguinte formato:
-{
-  "suggestedMapping": [
-    {
-      "sourceColumn": "nome da coluna original",
-      "targetField": "campo do sistema",
-      "confidence": 95,
-      "transformation": "opcional: transformação necessária"
-    }
-  ],
-  "detectedPatterns": {
-    "category": "categoria detectada",
-    "supplier": "fornecedor detectado",
-    "priceRange": { "min": 100, "max": 5000 }
-  },
-  "warnings": ["lista de avisos importantes"]
-}`;
+TAREFA: Mapear colunas do CSV para campos do sistema.
+Retorne JSON estrito.
+Foque em alta confiança. Se incerto, confidence < 50.`;
 
   const userPrompt = `COLUNAS ENCONTRADAS: ${columns.join(", ")}
 
