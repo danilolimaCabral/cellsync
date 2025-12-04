@@ -14,6 +14,7 @@ import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { ENV } from "./_core/env";
 import { analyzeProductWithAI } from "./ai-product-assistant";
+import { parseNFeXML } from "./services/nfeParser";
 import { diagnoseServiceOrder } from "./ai-os-assistant";
 import { analyzeTicketWithAI } from "./ai-ticket-assistant";
 import { generateLabel, generateBarcode, generateQRCode } from "./label-generator";
@@ -679,6 +680,23 @@ export const appRouter = router({
           tenantId: ctx.user.tenantId,
         });
         return product;
+      }),
+
+    parseNFe: protectedProcedure
+      .input(z.object({
+        xmlContent: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          const nfeData = parseNFeXML(input.xmlContent);
+          return { success: true, data: nfeData };
+        } catch (error) {
+          console.error("Erro ao processar XML da NFe:", error);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "XML inválido ou formato não suportado",
+          });
+        }
       }),
 
     importBulk: protectedProcedure

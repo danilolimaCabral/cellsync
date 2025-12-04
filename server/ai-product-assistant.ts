@@ -13,6 +13,12 @@ export interface ProductAnalysisResult {
   brand: string;
   model: string;
   category: string;
+  description: string;
+  specs: {
+    storage?: string;
+    color?: string;
+    condition?: string;
+  };
   confidence: "high" | "medium" | "low";
 }
 
@@ -30,12 +36,15 @@ Sua tarefa é analisar o nome de um produto e extrair:
 - Marca (brand): Apple, Samsung, Xiaomi, Motorola, LG, etc
 - Modelo (model): iPhone 15 Pro Max, Galaxy S24 Ultra, Redmi Note 13, etc
 - Categoria (category): Smartphone, Tablet, Smartwatch, Fone de Ouvido, Carregador, Capa, Película, etc
+- Descrição (description): Uma descrição comercial curta e atraente para o produto (max 200 caracteres)
+- Especificações (specs): Extraia armazenamento (128GB, 256GB), cor e condição (Novo, Usado, Vitrine) se disponível no nome
 
 Regras importantes:
 1. Se não conseguir identificar com certeza, use "Não identificado"
 2. Seja específico no modelo (inclua variações como Pro, Max, Ultra, Plus)
 3. Para acessórios, identifique a categoria correta
-4. Retorne APENAS o JSON, sem texto adicional`
+4. A descrição deve ser profissional e pronta para uso em e-commerce
+5. Retorne APENAS o JSON, sem texto adicional`
         },
         {
           role: "user",
@@ -62,13 +71,27 @@ Regras importantes:
                 type: "string",
                 description: "Categoria do produto (Smartphone, Tablet, Acessório, etc)"
               },
+              description: {
+                type: "string",
+                description: "Descrição comercial curta e atraente"
+              },
+              specs: {
+                type: "object",
+                properties: {
+                  storage: { type: "string", description: "Armazenamento (ex: 128GB)" },
+                  color: { type: "string", description: "Cor do produto" },
+                  condition: { type: "string", description: "Condição (Novo, Usado, Vitrine)" }
+                },
+                additionalProperties: false,
+                required: []
+              },
               confidence: {
                 type: "string",
                 enum: ["high", "medium", "low"],
                 description: "Nível de confiança da análise"
               }
             },
-            required: ["brand", "model", "category", "confidence"],
+            required: ["brand", "model", "category", "description", "specs", "confidence"],
             additionalProperties: false
           }
         }
@@ -119,6 +142,8 @@ function analyzeProductFallback(productName: string): ProductAnalysisResult {
     brand,
     model: productName,
     category,
+    description: `Produto: ${productName}`,
+    specs: {},
     confidence: "low"
   };
 }

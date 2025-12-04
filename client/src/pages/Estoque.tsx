@@ -34,6 +34,7 @@ import {
   Barcode,
   Sparkles,
   Loader2,
+  FileUp,
 } from "lucide-react";
 import {
   Command,
@@ -55,8 +56,10 @@ export default function Estoque() {
   const [showModelSearch, setShowModelSearch] = useState(false);
   const [modelSearchTerm, setModelSearchTerm] = useState("");
   const [isAnalyzingWithAI, setIsAnalyzingWithAI] = useState(false);
+  const [isImportingXML, setIsImportingXML] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: "",
+    description: "",
     category: "",
     brand: "",
     model: "",
@@ -107,6 +110,7 @@ export default function Estoque() {
         brand: data.brand !== "Não identificado" ? data.brand : newProduct.brand,
         model: data.model !== "Não identificado" ? data.model : newProduct.model,
         category: data.category !== "Não identificado" ? data.category : newProduct.category,
+        description: data.description || newProduct.description,
       });
       
       if (data.confidence === "high") {
@@ -124,6 +128,43 @@ export default function Estoque() {
       setIsAnalyzingWithAI(false);
     },
   });
+
+  const parseNFeMutation = trpc.products.parseNFe.useMutation({
+    onSuccess: (result) => {
+      if (result.success && result.data.products.length > 0) {
+        const prod = result.data.products[0]; // Pega o primeiro produto por enquanto
+        setNewProduct({
+          ...newProduct,
+          name: prod.name,
+          sku: prod.code,
+          costPrice: prod.unitPrice.toFixed(2),
+          salePrice: (prod.unitPrice * 1.5).toFixed(2), // Sugestão de margem 50%
+        });
+        toast.success(`Dados importados da NFe: ${prod.name}`);
+        
+        // Dispara análise de IA automaticamente após importar XML
+        analyzeProductMutation.mutate({ productName: prod.name });
+      }
+      setIsImportingXML(false);
+    },
+    onError: (error) => {
+      toast.error("Erro ao ler XML: " + error.message);
+      setIsImportingXML(false);
+    }
+  });
+
+  const handleXMLUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImportingXML(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      parseNFeMutation.mutate({ xmlContent: content });
+    };
+    reader.readAsText(file);
+  };
 
   const filteredProducts = products?.filter((p) =>
     p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -154,8 +195,9 @@ export default function Estoque() {
       return;
     }
 
-    createProductMutation.mutate({
+      createProductMutation.mutate({
       name: newProduct.name,
+      description: newProduct.description,
       category: newProduct.category,
       brand: newProduct.brand,
       model: newProduct.model,
@@ -197,6 +239,35 @@ export default function Estoque() {
             <DialogHeader>
               <DialogTitle>Cadastrar Novo Produto</DialogTitle>
             </DialogHeader>
+            
+            <div className="bg-muted/50 p-4 rounded-lg mb-4 border border-dashed border-primary/20">
+              <Label className="mb-2 block text-sm font-medium text-muted-foreground">
+                Agilizar cadastro (Opcional)
+              </Label>
+              <div className="flex gap-2">
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".xml"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    onChange={handleXMLUpload}
+                    disabled={isImportingXML}
+                  />
+                  <Button type="button" variant="outline" className="w-full" disabled={isImportingXML}>
+                    {isImportingXML ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <FileUp className="h-4 w-4 mr-2 text-blue-500" />
+                    )}
+                    Importar XML de Nota (NFe)
+                  </Button>
+                </div>
+                <div className="text-xs text-muted-foreground flex items-center">
+                  Carregue o XML da nota de compra para preencher os dados automaticamente.
+                </div>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmitProduct} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
