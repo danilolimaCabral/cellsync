@@ -136,5 +136,24 @@ export const fiscalRouter = router({
       .from(digitalCertificates)
       .where(eq(digitalCertificates.tenantId, ctx.user.tenantId))
       .orderBy(desc(digitalCertificates.createdAt));
-  })
+  }),
+
+  // Teste de Geração de XML (Apenas para debug)
+  debugGenerateXML: adminProcedure
+    .input(z.object({ saleId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { nfeService } = await import("../services/nfeService");
+      
+      // 1. Gerar XML
+      const xml = await nfeService.generateXML(input.saleId, ctx.user.tenantId);
+      
+      // 2. Assinar XML (Simulado com chave temporária)
+      const signedXml = await nfeService.signXML(xml, ctx.user.tenantId);
+      
+      return { 
+        success: true, 
+        xml: signedXml,
+        message: "XML gerado e assinado com sucesso (Chave de teste)"
+      };
+    })
 });
