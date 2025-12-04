@@ -252,6 +252,72 @@ export async function createProduct(data: {
   return result;
 }
 
+export async function getProductById(id: number) {
+  const database = await getDb();
+  if (!database) return undefined;
+
+  const { products } = await import("../drizzle/schema");
+  const result = await database.select().from(products).where(eq(products.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateProduct(id: number, data: Partial<{
+  name: string;
+  description: string;
+  category: string;
+  brand: string;
+  model: string;
+  sku: string;
+  barcode: string;
+  costPrice: number;
+  salePrice: number;
+  minStock: number;
+  requiresImei: boolean;
+}>) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { products } = await import("../drizzle/schema");
+  await database.update(products).set(data).where(eq(products.id, id));
+}
+
+export async function createStockMovement(data: {
+  tenantId: number;
+  productId: number;
+  type: "entrada" | "saida" | "transferencia" | "ajuste" | "devolucao";
+  quantity: number;
+  reason?: string;
+  userId: number;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { stockMovements, products } = await import("../drizzle/schema");
+  
+  // Registrar movimentação
+  await database.insert(stockMovements).values({
+    tenantId: data.tenantId,
+    productId: data.productId,
+    type: data.type,
+    quantity: data.quantity,
+    reason: data.reason,
+    userId: data.userId,
+  });
+
+  // Atualizar estoque atual do produto
+  const product = await getProductById(data.productId);
+  if (product) {
+    const currentStock = product.currentStock || 0;
+    const newStock = data.type === "entrada" || data.type === "devolucao" 
+      ? currentStock + data.quantity 
+      : currentStock - data.quantity;
+      
+    await database.update(products)
+      .set({ currentStock: newStock })
+      .where(eq(products.id, data.productId));
+  }
+}
+
 // ============= CLIENTES =============
 export async function listCustomers(filters: {
   search?: string;
