@@ -1,6 +1,7 @@
 import { eq, and, or, gte, lte, gt, isNull, desc, sql, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
+import * as schema from "../drizzle/schema";
 import { 
   InsertUser, User, users,
   customers, sales,
@@ -33,7 +34,7 @@ export async function getDb() {
         queueLimit: 0,
         family: 4, // Forçar IPv4 para evitar ECONNREFUSED em alguns ambientes
       });
-      _db = drizzle(connection, { mode: "default" });
+      _db = drizzle(connection, { mode: "default", schema });
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
