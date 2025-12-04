@@ -93,10 +93,16 @@ export default function Vendas() {
   });
 
   const createCustomerMutation = trpc.customers.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Cliente cadastrado com sucesso!");
-      // Recarregar lista de clientes
+      // Recarregar lista de clientes e selecionar o novo cliente
       setShowNewCustomer(false);
+      if (data.customer && data.customer.id) {
+        // Pequeno delay para garantir que a lista de clientes foi atualizada
+        setTimeout(() => {
+          setSelectedCustomerId(data.customer.id);
+        }, 100);
+      }
     },
     onError: (error) => {
       toast.error(`Erro ao cadastrar cliente: ${error.message}`);
