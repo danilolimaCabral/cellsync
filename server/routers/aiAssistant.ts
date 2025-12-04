@@ -131,10 +131,12 @@ export const aiAssistantRouter = router({
         const response = await chatWithImportAssistant(input.messages as any, input.currentData, input.currentMapping);
         return { success: true, message: response };
       } catch (error: any) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error.message || "Erro no chat",
-        });
+        console.error("[Chatbot Error]", error);
+        // Retornar mensagem amigável em vez de erro fatal
+        return { 
+          success: false, 
+          message: "Desculpe, estou enfrentando uma instabilidade temporária na minha conexão com a IA. Por favor, tente novamente em alguns instantes." 
+        };
       }
     }),
 

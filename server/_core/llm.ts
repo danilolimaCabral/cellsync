@@ -297,9 +297,8 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   }
 
   payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
-  }
+  // payload.thinking removido para compatibilidade com Gemini
+
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
