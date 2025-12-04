@@ -714,7 +714,7 @@ export const appRouter = router({
           requiresImei: z.boolean().default(false),
         })),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         const results = {
           success: 0,
           failed: 0,
@@ -735,6 +735,54 @@ export const appRouter = router({
         }
 
         return results;
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(2).optional(),
+        description: z.string().optional(),
+        category: z.string().optional(),
+        brand: z.string().optional(),
+        model: z.string().optional(),
+        sku: z.string().optional(),
+        barcode: z.string().optional(),
+        costPrice: z.number().min(0).optional(),
+        salePrice: z.number().min(0).optional(),
+        minStock: z.number().min(0).optional(),
+        requiresImei: z.boolean().optional(),
+        stockAdjustment: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { id, stockAdjustment, ...data } = input;
+        
+        // Verificar se o produto pertence ao tenant do usuário
+        const existingProduct = await db.getProductById(id);
+        if (!existingProduct || existingProduct.tenantId !== ctx.user.tenantId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Produto não encontrado" });
+        }
+
+        // Atualizar dados do produto
+        if (Object.keys(data).length > 0) {
+          await db.updateProduct(id, data);
+        }
+
+        // Processar ajuste de estoque se houver
+        if (stockAdjustment !== undefined && stockAdjustment !== 0) {
+          const type = stockAdjustment > 0 ? "ajuste_entrada" : "ajuste_saida";
+          const quantity = Math.abs(stockAdjustment);
+          
+          await db.createStockMovement({
+            tenantId: ctx.user.tenantId,
+            productId: id,
+            type: type === "ajuste_entrada" ? "entrada" : "saida", // Mapear para tipos válidos do enum
+            quantity: quantity,
+            reason: "Ajuste manual via edição de produto",
+            userId: ctx.user.id,
+          });
+        }
+
+        return { success: true };
       }),
   }),
 
