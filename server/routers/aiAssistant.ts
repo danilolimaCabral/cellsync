@@ -60,6 +60,12 @@ export const aiAssistantRouter = router({
           fileData = Buffer.from(base64Data, "base64");
         }
 
+        // Se for CSV e estiver em Buffer, converter para string UTF-8
+        // Isso é necessário porque o parseCSV espera string, mas o Base64 decode gera Buffer
+        if (input.fileName.toLowerCase().endsWith(".csv") && Buffer.isBuffer(fileData)) {
+          fileData = fileData.toString("utf-8");
+        }
+
         // Parse do arquivo
         const parsed = parseFile(fileData, input.fileName);
 
