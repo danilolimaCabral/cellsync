@@ -164,4 +164,95 @@ export const systemRouter = router({
       await db.delete(users).where(eq(users.id, input.userId));
       return { success: true };
     }),
+
+  // System Logs Endpoint (Simulated for now as there is no dedicated logs table yet)
+  getSystemLogs: masterProcedure.query(async () => {
+    // In a real scenario, this would query a 'system_logs' table
+    // For now, we'll return recent activities based on created_at timestamps from key tables
+    const db = await getDb();
+    if (!db) return [];
+
+    const recentUsers = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        createdAt: users.createdAt,
+        type: sql<string>`'user_created'`,
+        details: sql<string>`concat('Novo usuário cadastrado: ', ${users.name})`
+      })
+      .from(users)
+      .orderBy(sql`${users.createdAt} DESC`)
+      .limit(10);
+
+    const recentTenants = await db
+      .select({
+        id: tenants.id,
+        name: tenants.name,
+        createdAt: tenants.createdAt,
+        type: sql<string>`'tenant_created'`,
+        details: sql<string>`concat('Nova empresa criada: ', ${tenants.name})`
+      })
+      .from(tenants)
+      .orderBy(sql`${tenants.createdAt} DESC`)
+      .limit(10);
+
+    // Combine and sort
+    const logs = [
+      ...recentUsers.map(u => ({
+        id: `usr-${u.id}`,
+        timestamp: u.createdAt,
+        type: 'info',
+        category: 'Usuários',
+        message: u.details
+      })),
+      ...recentTenants.map(t => ({
+        id: `tnt-${t.id}`,
+        timestamp: t.createdAt,
+        type: 'success',
+        category: 'Empresas',
+        message: t.details
+      }))
+    ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    return logs;
+  }),
+
+  // Tenant Details Endpoint
+  getTenantDetails: masterProcedure
+    .input(z.object({ tenantId: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const tenant = await db.query.tenants.findFirst({
+        where: eq(tenants.id, input.tenantId),
+        with: {
+          plan: true,
+        }
+      });
+
+      if (!tenant) throw new Error("Tenant not found");
+
+      // Get tenant owner
+      const owner = await db.query.users.findFirst({
+        where: and(
+          eq(users.tenantId, input.tenantId),
+          eq(users.role, 'admin')
+        )
+      });
+
+      // Get usage stats
+      const [usersCount] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(eq(users.tenantId, input.tenantId));
+
+      return {
+        ...tenant,
+        owner,
+        stats: {
+          usersCount: usersCount?.count || 0,
+        }
+      };
+    }),
 });

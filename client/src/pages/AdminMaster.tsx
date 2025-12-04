@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { UserManagementDialog } from "@/components/UserManagementDialog";
+import { SystemLogsDialog } from "@/components/SystemLogsDialog";
+import { TenantDetailsDialog } from "@/components/TenantDetailsDialog";
 import {
   Shield,
   Users,
@@ -24,6 +26,8 @@ import { toast } from "sonner";
 export default function AdminMaster() {
   const { user } = useAuth();
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
+  const [isSystemLogsOpen, setIsSystemLogsOpen] = useState(false);
+  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
 
   // Queries
   const { data: systemStats, isLoading } = trpc.system.getStats.useQuery(
@@ -193,7 +197,7 @@ export default function AdminMaster() {
               <div 
                 key={tenant.id} 
                 className="bg-white dark:bg-slate-900 border rounded-lg p-4 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
-                onClick={() => toast.info(`Detalhes de ${tenant.name} em breve`)}
+                onClick={() => setSelectedTenantId(tenant.id)}
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
@@ -271,7 +275,7 @@ export default function AdminMaster() {
                   <tr 
                     key={tenant.id} 
                     className="border-t hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => toast.info(`Detalhes de ${tenant.name} em breve`)}
+                    onClick={() => setSelectedTenantId(tenant.id)}
                   >
                     <td className="p-3 font-medium">#{tenant.id}</td>
                     <td className="p-3">
@@ -394,8 +398,8 @@ export default function AdminMaster() {
 
             <Button
               variant="outline"
-              className="h-20 flex flex-col items-center justify-center space-y-2"
-              onClick={() => toast.info("Funcionalidade em desenvolvimento")}
+              className="h-20 flex flex-col items-center justify-center space-y-2 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 transition-all"
+              onClick={() => setIsSystemLogsOpen(true)}
             >
               <Activity className="h-6 w-6" />
               <span>Logs do Sistema</span>
@@ -425,6 +429,17 @@ export default function AdminMaster() {
       <UserManagementDialog 
         open={isUserManagementOpen} 
         onOpenChange={setIsUserManagementOpen} 
+      />
+
+      <SystemLogsDialog 
+        open={isSystemLogsOpen} 
+        onOpenChange={setIsSystemLogsOpen} 
+      />
+
+      <TenantDetailsDialog 
+        tenantId={selectedTenantId}
+        open={!!selectedTenantId}
+        onOpenChange={(open) => !open && setSelectedTenantId(null)}
       />
     </div>
   );
