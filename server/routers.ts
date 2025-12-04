@@ -773,18 +773,25 @@ Sua missão é:
 
 Responda de forma objetiva (máximo 3-4 parágrafos), use markdown para formatação e sempre termine incentivando o próximo passo (teste grátis, agendar demo, etc).`;
 
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: input.message },
-          ],
-        });
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: input.message },
+            ],
+          });
 
-        const assistantMessage = response.choices[0]?.message?.content || "Desculpe, não consegui processar sua mensagem. Pode tentar novamente?";
+          const assistantMessage = response.choices[0]?.message?.content || "Desculpe, não consegui processar sua mensagem. Pode tentar novamente?";
 
-        return {
-          response: assistantMessage,
-        };
+          return {
+            response: assistantMessage,
+          };
+        } catch (error) {
+          console.error("Erro no chatbot:", error);
+          return {
+            response: "Desculpe, estou enfrentando uma instabilidade momentânea. Poderia perguntar novamente em alguns instantes?",
+          };
+        }
       }),
   }),
 
