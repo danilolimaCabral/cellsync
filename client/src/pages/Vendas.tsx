@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import PageHeader from "@/components/PageHeader";
-import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X } from "lucide-react";
+import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X, FileText } from "lucide-react";
+import NFeIssuanceDialog from "@/components/NFeIssuanceDialog";
 
 interface CartItem {
   productId: number;
@@ -40,6 +41,7 @@ export default function Vendas() {
   const [cpfNota, setCpfNota] = useState("");
   const [emitindoNFe, setEmitindoNFe] = useState(false);
   const [saleType, setSaleType] = useState<"retail" | "wholesale">("retail");
+  const [showNFeDialog, setShowNFeDialog] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Verificar autenticação
@@ -72,7 +74,9 @@ export default function Vendas() {
       
       // Emitir NF-e se solicitado
       if (emitirNFe && selectedCustomerId) {
-        await emitirNFeParaVenda(result.saleId, selectedCustomerId);
+        // await emitirNFeParaVenda(result.saleId, selectedCustomerId);
+        // Nova abordagem: Abrir diálogo de emissão
+        setShowNFeDialog(true);
       }
       
       setShowReceipt(true);
@@ -834,6 +838,13 @@ export default function Vendas() {
           )}
         </div>
       </div>
+
+      {/* Diálogo de Emissão de NF-e */}
+      <NFeIssuanceDialog 
+        open={showNFeDialog} 
+        onOpenChange={setShowNFeDialog}
+        saleId={lastSaleId}
+      />
 
       {/* Dialog de Comprovante */}
       <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
