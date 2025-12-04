@@ -47,18 +47,37 @@ export async function analyzeImportData(
   }
 
   // Montar prompt para IA
-  const systemPrompt = `Analise os dados para importação no módulo: ${moduleType}.
-CAMPOS ALVO: ${getAvailableFields(moduleType)}
+  const systemPrompt = `Você é um Especialista em Limpeza e Migração de Dados (ETL).
+Sua missão é garantir que os dados do usuário sejam importados PERFEITAMENTE para o módulo: ${moduleType}.
+
+CAMPOS ALVO DO SISTEMA:
+${getAvailableFields(moduleType)}
 
 ${memoryContext}
 
-TAREFA: Mapear colunas do CSV para campos do sistema.
-Retorne JSON estrito.
-Foque em alta confiança. Se incerto, confidence < 50.
+TAREFA:
+1. Mapear colunas do arquivo para os campos do sistema.
+2. Identificar problemas de qualidade nos dados (formatação, sujeira, padrões mistos).
+3. Sugerir a transformação CORRETA para limpar os dados automaticamente.
 
-IMPORTANTE: Identifique necessidades de limpeza ou tradução nos dados.
-Se uma coluna precisar de ajuste (ex: remover R$, converter data US->BR, traduzir Yes/No), sugira uma 'transformation'.
-Transformações suportadas: uppercase, lowercase, trim, remove_spaces, format_phone, format_cpf, format_cnpj, parse_currency_br, parse_date_br, translate_boolean.`;
+TRANSFORMAÇÕES DISPONÍVEIS (Use agressivamente):
+- 'uppercase': Para siglas (UF, SKU).
+- 'lowercase': Para emails.
+- 'titlecase': Para nomes próprios (ex: "JOAO SILVA" -> "Joao Silva").
+- 'trim': Remove espaços extras.
+- 'format_phone': Remove tudo que não é número (ex: "(11) 9..." -> "119...").
+- 'format_cpf_cnpj': Remove pontuação de documentos.
+- 'parse_currency_br': Limpa "R$ 1.200,00", "1.200,00", "1200" para número decimal puro.
+- 'parse_date_auto': Detecta e converte datas (DD/MM/AAAA, MM/DD/AAAA, YYYY-MM-DD) para objeto Date.
+- 'translate_boolean': Converte "Sim/Não", "S/N", "Yes/No", "1/0" para booleano real.
+- 'extract_numbers': Extrai apenas números de um texto misto.
+
+REGRAS DE OURO:
+- Se detectar preços com "R$", "US$", vírgulas ou pontos, USE 'parse_currency_br'.
+- Se detectar datas, USE 'parse_date_auto'.
+- Se detectar nomes em CAIXA ALTA, USE 'titlecase'.
+- Se detectar documentos (CPF/CNPJ) com pontos/traços, USE 'format_cpf_cnpj'.
+- Retorne JSON estrito.`;
 
   const userPrompt = `COLUNAS ENCONTRADAS: ${columns.join(", ")}
 
@@ -353,12 +372,36 @@ export function applyTransformations(
           case "parse_date":
             value = new Date(value);
             break;
-          case "parse_currency_br": // Remove R$ e converte 1.000,00 para 1000.00
-            value = parseFloat(String(value).replace("R$", "").replace(/\./g, "").replace(",", ".").trim());
+          case "titlecase":
+            value = String(value).toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
             break;
-          case "parse_date_br": // Converte DD/MM/AAAA para Date
-            const [day, month, year] = String(value).split("/");
-            value = new Date(`${year}-${month}-${day}`);
+          case "format_cpf_cnpj":
+            value = String(value).replace(/\D/g, "");
+            break;
+          case "parse_currency_br": // Remove R$, U$, espaços e converte 1.000,00 para 1000.00
+            // Remove tudo que não é dígito, vírgula ou ponto (mantém sinal de negativo se houver)
+            let cleanStr = String(value).replace(/[^\d.,-]/g, "").trim();
+            // Se tiver vírgula no final (ex: 100,00), assume formato BR
+            if (cleanStr.includes(",") && !cleanStr.includes(".")) {
+               cleanStr = cleanStr.replace(",", ".");
+            } else if (cleanStr.includes(".") && cleanStr.includes(",")) {
+               // Formato misto (1.000,00) -> remove ponto, troca vírgula por ponto
+               cleanStr = cleanStr.replace(/\./g, "").replace(",", ".");
+            }
+            value = parseFloat(cleanStr);
+            break;
+          case "parse_date_auto": // Tenta detectar formato DD/MM/AAAA ou YYYY-MM-DD
+            const dateStr = String(value).trim();
+            if (dateStr.includes("/")) {
+               const parts = dateStr.split("/");
+               if (parts[0].length === 4) { // YYYY/MM/DD
+                 value = new Date(`${parts[0]}-${parts[1]}-${parts[2]}`);
+               } else { // DD/MM/AAAA (assumido)
+                 value = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+               }
+            } else {
+               value = new Date(dateStr);
+            }
             break;
           case "translate_boolean": // Yes/No -> true/false ou Sim/Não
             const v = String(value).toLowerCase();
