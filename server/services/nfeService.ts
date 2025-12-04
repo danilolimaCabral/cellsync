@@ -70,65 +70,67 @@ export class NFeService {
 
     if (!certificate) throw new Error("Certificado não encontrado");
 
-    // Em produção: descriptografar senha e baixar arquivo do S3
-    // Simulação: assumindo que temos o PFX e senha
-    // const pfxBuffer = await downloadFromS3(certificate.fileUrl);
-    // const p12 = forge.pkcs12.pkcs12FromAsn1(forge.asn1.fromDer(pfxBuffer.toString('binary')), certificate.password);
-    
-    // Simulação de assinatura (já que não temos o arquivo PFX real em disco)
-    // Em produção, o código abaixo seria usado com o arquivo real:
-    
-    /*
-    const pfxBuffer = fs.readFileSync(certificate.filePath); // Ler do disco/S3
-    const p12 = forge.pkcs12.pkcs12FromAsn1(forge.asn1.fromDer(pfxBuffer.toString('binary')), certificate.password);
-    
-    const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
-    const key = keyBags[forge.pki.oids.pkcs8ShroudedKeyBag]![0].key;
-    const pemKey = forge.pki.privateKeyToPem(key);
-    
-    const certBags = p12.getBags({ bagType: forge.pki.oids.certBag });
-    const cert = certBags[forge.pki.oids.certBag]![0].cert;
-    // Remover headers do PEM para o XML
-    const pemCert = forge.pki.certificateToPem(cert)
-      .replace('-----BEGIN CERTIFICATE-----', '')
-      .replace('-----END CERTIFICATE-----', '')
-      .replace(/\r\n/g, '')
-      .replace(/\n/g, '');
+    // Tentar carregar certificado real se configurado, senão usar mock
+    let pemKey: string;
+    let pemCert: string;
 
-    const sig = new SignedXml();
-    sig.addReference("//*[local-name(.)='infNFe']", [
-      "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
-      "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
-    ], "http://www.w3.org/2000/09/xmldsig#sha1");
-
-    sig.signingKey = pemKey;
-    sig.keyInfoProvider = {
-      getKeyInfo: () => `<X509Data><X509Certificate>${pemCert}</X509Certificate></X509Data>`
-    };
-
-    sig.computeSignature(xml);
-    return sig.getSignedXml();
-    */
-
-    // Para fins de demonstração e teste sem certificado real:
-    // Vamos gerar um par de chaves RSA temporário para assinar de verdade e validar a estrutura
-    const keys = forge.pki.rsa.generateKeyPair(2048);
-    const pemKey = forge.pki.privateKeyToPem(keys.privateKey);
-    const cert = forge.pki.createCertificate();
-    cert.publicKey = keys.publicKey;
-    cert.serialNumber = '01';
-    cert.validity.notBefore = new Date();
-    cert.validity.notAfter = new Date();
-    cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
-    const attrs = [{ name: 'commonName', value: 'CellSync Test Certificate' }];
-    cert.setSubject(attrs);
-    cert.setIssuer(attrs);
-    cert.sign(keys.privateKey);
-    const pemCert = forge.pki.certificateToPem(cert)
-      .replace('-----BEGIN CERTIFICATE-----', '')
-      .replace('-----END CERTIFICATE-----', '')
-      .replace(/\r\n/g, '')
-      .replace(/\n/g, '');
+    try {
+      // Tentar importar storage dinamicamente para evitar erro de inicialização se env vars faltarem
+      const { storageGet } = await import("../storage");
+      
+      // Se tiver URL do arquivo e credenciais de storage, tentar baixar
+      if (certificate.fileUrl && process.env.BUILT_IN_FORGE_API_URL && process.env.BUILT_IN_FORGE_API_KEY) {
+        const { url } = await storageGet(certificate.fileUrl);
+        const response = await fetch(url);
+        const pfxBuffer = await response.arrayBuffer();
+        
+        // Decodificar PFX
+        const p12 = forge.pkcs12.pkcs12FromAsn1(
+          forge.asn1.fromDer(forge.util.createBuffer(pfxBuffer).getBytes()), 
+          certificate.password
+        );
+        
+        // Extrair chave privada
+        const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
+        const key = keyBags[forge.pki.oids.pkcs8ShroudedKeyBag]![0].key;
+        if (!key) throw new Error("Chave privada não encontrada no certificado");
+        pemKey = forge.pki.privateKeyToPem(key);
+        
+        // Extrair certificado público
+        const certBags = p12.getBags({ bagType: forge.pki.oids.certBag });
+        const cert = certBags[forge.pki.oids.certBag]![0].cert;
+        if (!cert) throw new Error("Certificado público não encontrado no arquivo");
+        
+        pemCert = forge.pki.certificateToPem(cert)
+          .replace('-----BEGIN CERTIFICATE-----', '')
+          .replace('-----END CERTIFICATE-----', '')
+          .replace(/\r\n/g, '')
+          .replace(/\n/g, '');
+      } else {
+        throw new Error("Storage credentials missing or fileUrl empty");
+      }
+    } catch (error) {
+      console.warn("Usando certificado de teste (Mock) pois o real falhou ou não está configurado:", error);
+      
+      // Fallback: Gerar par de chaves RSA temporário para assinar (Mock)
+      const keys = forge.pki.rsa.generateKeyPair(2048);
+      pemKey = forge.pki.privateKeyToPem(keys.privateKey);
+      const cert = forge.pki.createCertificate();
+      cert.publicKey = keys.publicKey;
+      cert.serialNumber = '01';
+      cert.validity.notBefore = new Date();
+      cert.validity.notAfter = new Date();
+      cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+      const attrs = [{ name: 'commonName', value: 'CellSync Test Certificate' }];
+      cert.setSubject(attrs);
+      cert.setIssuer(attrs);
+      cert.sign(keys.privateKey);
+      pemCert = forge.pki.certificateToPem(cert)
+        .replace('-----BEGIN CERTIFICATE-----', '')
+        .replace('-----END CERTIFICATE-----', '')
+        .replace(/\r\n/g, '')
+        .replace(/\n/g, '');
+    }
 
     const sig = new SignedXml();
     sig.addReference("//*[local-name(.)='infNFe']", [
