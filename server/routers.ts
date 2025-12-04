@@ -46,6 +46,22 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 export const appRouter = router({
   system: systemRouter,
   aiAssistant: aiAssistantRouter,
+
+  // Endpoint temporário para diagnóstico de tenants
+  listTenants: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { error: "Database not connected" };
+    
+    const allTenants = await db.select({
+      id: tenants.id,
+      name: tenants.name,
+      subdomain: tenants.subdomain,
+      cnpj: tenants.cnpj,
+      status: tenants.status
+    }).from(tenants);
+    
+    return allTenants;
+  }),
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
