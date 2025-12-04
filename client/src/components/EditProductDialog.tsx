@@ -90,6 +90,8 @@ export function EditProductDialog({ product, open, onOpenChange, onSuccess }: Ed
 
     const newStock = parseInt(formData.currentStock) + stockAdjustment;
 
+    // Remove currentStock from the mutation input as it's not part of the update schema
+    // Instead, pass stockAdjustment which is handled by the backend
     updateProductMutation.mutate({
       id: product.id,
       name: formData.name,
@@ -101,8 +103,8 @@ export function EditProductDialog({ product, open, onOpenChange, onSuccess }: Ed
       costPrice: Math.round(parseFloat(formData.costPrice) * 100),
       salePrice: Math.round(parseFloat(formData.salePrice) * 100),
       minStock: parseInt(formData.minStock),
-      currentStock: newStock, // Atualiza o estoque diretamente
       requiresImei: formData.requiresImei,
+      stockAdjustment: stockAdjustment,
     });
   };
 
