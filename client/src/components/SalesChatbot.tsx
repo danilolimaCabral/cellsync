@@ -15,7 +15,7 @@ export function SalesChatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "👋 Olá! Sou o assistente virtual da **CellSync**. Estou aqui para te ajudar a conhecer nossa plataforma completa de gestão para lojas de celular. Como posso te ajudar?",
+      content: "👋 Olá! Sou a **Ana**, sua assistente virtual da **CellSync**. Estou aqui para te ajudar a conhecer nossa plataforma completa de gestão para lojas de celular. Como posso te ajudar hoje?",
       timestamp: new Date(),
     },
   ]);
@@ -140,7 +140,7 @@ export function SalesChatbot() {
             <Button
               onClick={() => setIsOpen(true)}
               size="lg"
-              className="h-16 w-16 rounded-full shadow-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-110"
+              className="h-16 w-16 rounded-full shadow-2xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 hover:scale-110"
             >
               <MessageCircle className="h-7 w-7 text-white" />
             </Button>
@@ -157,7 +157,7 @@ export function SalesChatbot() {
         )}
       </AnimatePresence>
 
-      {/* Janela do Chat */}
+            {/* Janela do Chat */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -165,17 +165,21 @@ export function SalesChatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.8 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-6 right-6 z-50 w-[420px] h-[600px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700"
+            className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[420px] h-[100dvh] sm:h-[600px] bg-white dark:bg-slate-900 sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden border-t sm:border border-slate-200 dark:border-slate-700"
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border-2 border-white/30">
+                  {/* Avatar da Ana - usando Sparkles como fallback se não tiver imagem */}
                   <Sparkles className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white">Assistente CellSync</h3>
-                  <p className="text-xs text-white/80">Powered by Gemini AI</p>
+                  <h3 className="font-semibold text-white">Ana - CellSync</h3>
+                  <p className="text-xs text-white/80 flex items-center gap-1">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    Online agora
+                  </p>
                 </div>
               </div>
               <Button
@@ -201,8 +205,8 @@ export function SalesChatbot() {
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                       msg.role === "user"
-                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                        : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-md"
+                        ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
+                        : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm border border-slate-100 dark:border-slate-700"
                     }`}
                   >
                     <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
@@ -253,7 +257,7 @@ export function SalesChatbot() {
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+            <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 shrink-0 pb-safe">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -262,13 +266,13 @@ export function SalesChatbot() {
                   onKeyPress={handleKeyPress}
                   placeholder="Digite sua mensagem..."
                   disabled={isTyping}
-                  className="flex-1 px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="flex-1 px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
                 />
                 <Button
                   onClick={handleSend}
                   disabled={!input.trim() || isTyping}
                   size="icon"
-                  className="h-12 w-12 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="h-12 w-12 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 shadow-lg shadow-purple-500/20"
                 >
                   <Send className="h-5 w-5 text-white" />
                 </Button>
