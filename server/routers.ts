@@ -666,8 +666,11 @@ export const appRouter = router({
         minStock: z.number().min(0).default(10),
         requiresImei: z.boolean().default(false),
       }))
-      .mutation(async ({ input }) => {
-        const product = await db.createProduct(input);
+      .mutation(async ({ input, ctx }) => {
+        const product = await db.createProduct({
+          ...input,
+          tenantId: ctx.user.tenantId,
+        });
         return product;
       }),
 
@@ -695,7 +698,10 @@ export const appRouter = router({
 
         for (const productData of input.products) {
           try {
-            await db.createProduct(productData);
+            await db.createProduct({
+              ...productData,
+              tenantId: ctx.user.tenantId,
+            });
             results.success++;
           } catch (error) {
             results.failed++;
