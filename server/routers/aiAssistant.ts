@@ -37,7 +37,7 @@ export const aiAssistantRouter = router({
       z.object({
         fileContent: z.string(), // Base64 ou texto
         fileName: z.string(),
-        moduleType: z.string(), // Flexível para aceitar novos módulos sem quebrar
+        moduleType: z.string().optional().default("products"), // Opcional para evitar erro se frontend falhar
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -144,7 +144,7 @@ export const aiAssistantRouter = router({
   executeImport: protectedProcedure
     .input(
       z.object({
-        moduleType: z.string(), // Flexível para aceitar novos módulos sem quebrar
+        moduleType: z.string().optional().default("products"), // Opcional para evitar erro se frontend falhar
         data: z.array(z.record(z.any())),
         mapping: z.array(
           z.object({
