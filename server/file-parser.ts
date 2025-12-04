@@ -15,24 +15,48 @@ export interface ParsedData {
  * Parse arquivo CSV
  */
 export function parseCSV(fileContent: string): ParsedData {
-  const result = Papa.parse(fileContent, {
-    header: true,
-    skipEmptyLines: true,
-    transformHeader: (header) => header.trim(),
-  });
+  // Tenta detectar delimitador automaticamente, mas com fallbacks explícitos
+  const delimitersToTry = [undefined, ';', ',', '\t']; // undefined = auto-detect
+  let lastError = "";
 
-  if (result.errors.length > 0) {
-    throw new Error(`Erro ao ler CSV: ${result.errors[0].message}`);
+  for (const delimiter of delimitersToTry) {
+    try {
+      const result = Papa.parse(fileContent, {
+        header: true,
+        skipEmptyLines: true,
+        delimiter: delimiter, // Tenta um delimitador específico ou auto
+        transformHeader: (header) => header.trim(),
+      });
+
+      // Se tiver erros críticos de parsing (exceto avisos leves), registra e tenta próximo
+      if (result.errors.length > 0) {
+        // Alguns erros do PapaParse são fatais, outros não.
+        // "Unable to auto-detect delimiting character" é fatal se delimiter for undefined.
+        const fatalError = result.errors.find(e => e.type === "Delimiter" || e.code === "UndetectableDelimiter");
+        if (fatalError) {
+          lastError = fatalError.message;
+          continue; // Tenta próximo delimitador
+        }
+      }
+
+      const data = result.data as Record<string, any>[];
+      const columns = result.meta.fields || [];
+
+      // Validação básica: se achou colunas e dados, sucesso!
+      if (columns.length > 0 && data.length > 0) {
+        return {
+          data,
+          columns,
+          totalRows: data.length,
+        };
+      }
+    } catch (e) {
+      lastError = (e as Error).message;
+    }
   }
 
-  const data = result.data as Record<string, any>[];
-  const columns = result.meta.fields || [];
-
-  return {
-    data,
-    columns,
-    totalRows: data.length,
-  };
+  // Se chegou aqui, nenhum delimitador funcionou
+  throw new Error(`Erro ao ler CSV: Não foi possível detectar o formato automaticamente. (Erro: ${lastError || "Formato inválido"})`);
 }
 
 /**
