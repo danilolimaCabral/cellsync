@@ -84,6 +84,29 @@ export const appRouter = router({
       return { success: true, message: `Usuário ${input.email} promovido a Master Admin!` };
     }),
 
+  revokeUserAccess: publicProcedure
+    .input(z.object({ email: z.string().email() }))
+    .mutation(async ({ input }) => {
+      const database = await getDb();
+      if (!database) return { success: false, error: "Database not connected" };
+
+      const [user] = await database.select().from(users).where(eq(users.email, input.email));
+      
+      if (!user) {
+        return { success: false, error: "Usuário não encontrado" };
+      }
+
+      // Desativar usuário e remover permissões
+      await database.update(users)
+        .set({ 
+          active: false,
+          role: "vendedor" // Rebaixa para menor nível
+        })
+        .where(eq(users.email, input.email));
+
+      return { success: true, message: `Acesso de ${input.email} revogado com sucesso!` };
+    }),
+
   listUsers: publicProcedure.query(async () => {
     const database = await getDb();
     if (!database) return { error: "Database not connected" };
