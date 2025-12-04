@@ -65,7 +65,33 @@ export const appRouter = router({
   
   // ============= AUTENTICAÇÃO LOCAL =============
   auth: router({
-    me: publicProcedure.query(({ ctx }) => ctx.user),
+    me: publicProcedure.query(async ({ ctx }) => {
+      if (!ctx.user) return null;
+      
+      // Buscar dados do tenant
+      const database = await getDb();
+      let tenantData = null;
+      
+      if (database) {
+        const tenant = await database.query.tenants.findFirst({
+          where: eq(tenants.id, ctx.user.tenantId)
+        });
+        if (tenant) {
+          tenantData = {
+            id: tenant.id,
+            name: tenant.name,
+            cnpj: tenant.cnpj,
+            logo: tenant.logo,
+            subdomain: tenant.subdomain
+          };
+        }
+      }
+      
+      return {
+        ...ctx.user,
+        tenant: tenantData
+      };
+    }),
     
     login: publicProcedure
       .input(z.object({
@@ -110,6 +136,25 @@ export const appRouter = router({
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
 
+        // Buscar dados do tenant para retornar no login
+        const database = await getDb();
+        let tenantData = null;
+        
+        if (database) {
+          const tenant = await database.query.tenants.findFirst({
+            where: eq(tenants.id, user.tenantId)
+          });
+          if (tenant) {
+            tenantData = {
+              id: tenant.id,
+              name: tenant.name,
+              cnpj: tenant.cnpj,
+              logo: tenant.logo,
+              subdomain: tenant.subdomain
+            };
+          }
+        }
+
         return {
           success: true,
           user: {
@@ -117,6 +162,7 @@ export const appRouter = router({
             email: user.email,
             name: user.name,
             role: user.role,
+            tenant: tenantData
           },
         };
       }),

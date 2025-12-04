@@ -407,10 +407,15 @@ function DashboardLayoutContent({
                 <PanelLeft className="h-4 w-4 text-muted-foreground" />
               </button>
               {!isCollapsed ? (
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-semibold tracking-tight truncate">
-                    Navigation
+                <div className="flex flex-col min-w-0">
+                  <span className="font-bold tracking-tight truncate text-sm">
+                    {(user as any).tenant?.name || "CellSync"}
                   </span>
+                  {(user as any).tenant?.cnpj && (
+                    <span className="text-[10px] text-muted-foreground truncate">
+                      CNPJ: {(user as any).tenant.cnpj}
+                    </span>
+                  )}
                 </div>
               ) : null}
             </div>
