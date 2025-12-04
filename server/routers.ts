@@ -142,13 +142,37 @@ export const appRouter = router({
         const hashedPassword = await bcrypt.hash(input.password, 10);
 
         // Criar usuário (com tenantId padrão 1 para registro direto)
-        // TODO: Criar tenant automático ou remover registro direto
+        // FIX: Buscar primeiro tenant válido ou criar um novo se não existir
+        let targetTenantId = 1;
+        
+        const database = await getDb();
+        if (database) {
+          // Tenta achar o primeiro tenant ativo
+          const firstTenant = await database.query.tenants.findFirst();
+          
+          if (firstTenant) {
+            targetTenantId = firstTenant.id;
+          } else {
+            // Se não existir NENHUM tenant, cria um padrão para o usuário
+            const newTenantName = `Empresa de ${input.name.split(' ')[0]}`;
+            const newSubdomain = input.email.split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase() + Math.floor(Math.random() * 1000);
+            
+            const [result] = await database.insert(tenants).values({
+              name: newTenantName,
+              subdomain: newSubdomain,
+              planId: 1, // Plano básico
+              status: "active"
+            });
+            targetTenantId = result.insertId;
+          }
+        }
+
         await db.createUser({
-          tenantId: 1, // Tenant padrão para registros diretos
+          tenantId: targetTenantId,
           email: input.email,
           password: hashedPassword,
           name: input.name,
-          role: input.role || "vendedor",
+          role: input.role || "admin", // Mudado para admin para o primeiro usuário conseguir configurar
           active: true,
         });
 
