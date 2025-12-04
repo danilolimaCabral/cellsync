@@ -667,8 +667,15 @@ export const appRouter = router({
         requiresImei: z.boolean().default(false),
       }))
       .mutation(async ({ input, ctx }) => {
+        // Se SKU estiver vazio, gerar um automático ou passar undefined para o banco
+        // Como o banco tem unique constraint, string vazia "" conta como valor duplicado se tiver mais de um
+        const sku = input.sku && input.sku.trim() !== "" 
+          ? input.sku 
+          : `SKU-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
         const product = await db.createProduct({
           ...input,
+          sku,
           tenantId: ctx.user.tenantId,
         });
         return product;
