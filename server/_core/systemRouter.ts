@@ -113,4 +113,55 @@ export const systemRouter = router({
         success: delivered,
       } as const;
     }),
+
+  // User Management Endpoints
+  getAllUsers: masterProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const allUsers = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        tenantId: users.tenantId,
+        tenantName: tenants.name,
+        createdAt: users.createdAt,
+      })
+      .from(users)
+      .leftJoin(tenants, eq(users.tenantId, tenants.id))
+      .orderBy(users.createdAt);
+
+    return allUsers;
+  }),
+
+  updateUserRole: masterProcedure
+    .input(
+      z.object({
+        userId: z.number(),
+        role: z.enum(["master_admin", "admin", "vendedor"]),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      await db
+        .update(users)
+        .set({ role: input.role })
+        .where(eq(users.id, input.userId));
+
+      return { success: true };
+    }),
+
+  deleteUser: masterProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      await db.delete(users).where(eq(users.id, input.userId));
+      return { success: true };
+    }),
 });
