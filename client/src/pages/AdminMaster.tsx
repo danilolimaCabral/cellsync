@@ -29,6 +29,11 @@ export default function AdminMaster() {
     { enabled: user?.role === "master_admin" }
   );
 
+  const { data: tenantsList, isLoading: isLoadingTenants } = trpc.system.getAllTenants.useQuery(
+    undefined,
+    { enabled: user?.role === "master_admin" }
+  );
+
   if (user?.role !== "master_admin") {
     return (
       <div className="p-4 md:p-8">
@@ -161,6 +166,86 @@ export default function AdminMaster() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Monitoramento de Tenants */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Database className="h-5 w-5 mr-2 text-blue-600" />
+              Monitoramento de Tenants
+            </div>
+            <Badge variant="outline" className="ml-2">
+              {tenantsList?.length || 0} Clientes
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-muted/50 text-muted-foreground">
+                <tr>
+                  <th className="p-3 font-medium">ID</th>
+                  <th className="p-3 font-medium">Empresa</th>
+                  <th className="p-3 font-medium">Subdomínio</th>
+                  <th className="p-3 font-medium">Plano</th>
+                  <th className="p-3 font-medium">Status</th>
+                  <th className="p-3 font-medium">Dono (Email)</th>
+                  <th className="p-3 font-medium">Cadastro</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoadingTenants ? (
+                  <tr>
+                    <td colSpan={7} className="p-4 text-center text-muted-foreground">
+                      Carregando clientes...
+                    </td>
+                  </tr>
+                ) : tenantsList?.map((tenant) => (
+                  <tr key={tenant.id} className="border-t hover:bg-muted/50 transition-colors">
+                    <td className="p-3 font-medium">#{tenant.id}</td>
+                    <td className="p-3">
+                      <div className="font-medium">{tenant.name}</div>
+                      <div className="text-xs text-muted-foreground">{tenant.cnpj || "Sem CNPJ"}</div>
+                    </td>
+                    <td className="p-3">
+                      <Badge variant="secondary" className="font-mono text-xs">
+                        {tenant.subdomain}
+                      </Badge>
+                    </td>
+                    <td className="p-3">{tenant.planName || "Básico"}</td>
+                    <td className="p-3">
+                      <Badge 
+                        className={
+                          tenant.status === "active" ? "bg-green-500" :
+                          tenant.status === "trial" ? "bg-blue-500" :
+                          "bg-red-500"
+                        }
+                      >
+                        {tenant.status === "active" ? "Ativo" :
+                         tenant.status === "trial" ? "Trial" : "Inativo"}
+                      </Badge>
+                    </td>
+                    <td className="p-3 text-muted-foreground">
+                      {tenant.ownerEmail || "N/A"}
+                    </td>
+                    <td className="p-3 text-muted-foreground">
+                      {new Date(tenant.createdAt).toLocaleDateString('pt-BR')}
+                    </td>
+                  </tr>
+                ))}
+                {!isLoadingTenants && tenantsList?.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                      Nenhum cliente encontrado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Métricas do Servidor */}
       <Card>

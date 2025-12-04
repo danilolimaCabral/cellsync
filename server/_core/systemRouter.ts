@@ -47,13 +47,13 @@ export const systemRouter = router({
     // Calcular MRR (estimado baseando-se nos planos dos tenants ativos)
     const tenantsWithPlans = await db
       .select({
-        planPrice: plans.price,
+        priceMonthly: plans.priceMonthly,
       })
       .from(tenants)
       .innerJoin(plans, eq(tenants.planId, plans.id))
       .where(or(eq(tenants.status, "active"), eq(tenants.status, "trial")));
 
-    const mrr = tenantsWithPlans.reduce((acc, t) => acc + Number(t.planPrice || 0), 0);
+    const mrr = tenantsWithPlans.reduce((acc, t) => acc + (Number(t.priceMonthly || 0) / 100), 0); // Convertendo centavos para reais
 
     // Métricas do Servidor
     const uptimeSeconds = process.uptime();
@@ -76,6 +76,28 @@ export const systemRouter = router({
         uptime: `${uptimeHours}h ${uptimeMinutes}m`,
       },
     };
+  }),
+
+  getAllTenants: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const allTenants = await db
+      .select({
+        id: tenants.id,
+        name: tenants.name,
+        subdomain: tenants.subdomain,
+        cnpj: tenants.cnpj,
+        status: tenants.status,
+        planName: plans.name,
+        createdAt: tenants.createdAt,
+        ownerEmail: sql<string>`(SELECT email FROM users WHERE users.tenant_id = tenants.id AND users.role = 'admin' LIMIT 1)`
+      })
+      .from(tenants)
+      .leftJoin(plans, eq(tenants.planId, plans.id))
+      .orderBy(tenants.createdAt);
+
+    return allTenants;
   }),
 
   notifyOwner: adminProcedure
