@@ -6,6 +6,7 @@ import { getDb } from "./db";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { fiscalRouter } from "./_core/fiscalRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { getUserByEmail } from "./db";
@@ -46,6 +47,7 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 export const appRouter = router({
   system: systemRouter,
   aiAssistant: aiAssistantRouter,
+  fiscal: fiscalRouter,
 
   // Endpoint temporário para diagnóstico de tenants
   listTenants: publicProcedure.query(async () => {

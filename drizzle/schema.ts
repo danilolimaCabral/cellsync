@@ -723,3 +723,44 @@ export const stripePendingSessions = mysqlTable("stripe_pending_sessions", {
 
 export type StripePendingSession = typeof stripePendingSessions.$inferSelect;
 export type InsertStripePendingSession = typeof stripePendingSessions.$inferInsert;
+
+// ============= CERTIFICADOS DIGITAIS (A1) =============
+export const digitalCertificates = mysqlTable("digital_certificates", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull(), // Multi-tenant isolation
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  fileUrl: text("file_url").notNull(), // URL do arquivo .pfx no S3 (criptografado)
+  password: text("password").notNull(), // Senha do certificado (criptografada)
+  expirationDate: timestamp("expiration_date").notNull(),
+  issuer: varchar("issuer", { length: 255 }), // Emissor do certificado
+  serialNumber: varchar("serial_number", { length: 255 }),
+  thumbprint: varchar("thumbprint", { length: 255 }),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DigitalCertificate = typeof digitalCertificates.$inferSelect;
+export type InsertDigitalCertificate = typeof digitalCertificates.$inferInsert;
+
+// ============= CONFIGURAÇÕES FISCAIS =============
+export const fiscalSettings = mysqlTable("fiscal_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull().unique(), // Uma configuração por tenant
+  environment: mysqlEnum("environment", ["homologacao", "producao"]).default("homologacao").notNull(),
+  cscToken: varchar("csc_token", { length: 255 }), // Código de Segurança do Contribuinte
+  cscId: varchar("csc_id", { length: 10 }), // ID do CSC (ex: 000001)
+  nextNfeNumber: int("next_nfe_number").default(1).notNull(),
+  series: int("series").default(1).notNull(),
+  simpleNational: boolean("simple_national").default(true).notNull(), // Simples Nacional?
+  taxRegime: varchar("tax_regime", { length: 1 }).default("1"), // 1=Simples Nacional, 3=Regime Normal
+  defaultNcm: varchar("default_ncm", { length: 8 }),
+  defaultCfopState: varchar("default_cfop_state", { length: 4 }).default("5102"), // Dentro do estado
+  defaultCfopInterstate: varchar("default_cfop_interstate", { length: 4 }).default("6102"), // Fora do estado
+  certificateId: int("certificate_id"), // Certificado ativo
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FiscalSettings = typeof fiscalSettings.$inferSelect;
+export type InsertFiscalSettings = typeof fiscalSettings.$inferInsert;

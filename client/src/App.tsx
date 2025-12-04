@@ -31,6 +31,7 @@ import MeusChamados from "./pages/MeusChamados";
 import GerenciarChamados from "./pages/GerenciarChamados";
 import GerenciarBackups from "./pages/GerenciarBackups";
 import AdminMaster from "./pages/AdminMaster";
+import FiscalSettings from "./pages/FiscalSettings";
 import Vendedores from "./pages/Vendedores";
 import ImportarXML from "./pages/ImportarXML";
 import ImportarPlanilha from "./pages/ImportarPlanilha";
@@ -282,6 +283,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Configuracoes />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/configuracoes-fiscais">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <FiscalSettings />
               </DashboardLayout>
             )}
           />
