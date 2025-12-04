@@ -124,6 +124,7 @@ export async function listProducts(filters: {
   lowStock?: boolean;
   limit?: number;
   offset?: number;
+  tenantId?: number;
 }) {
   const database = await getDb();
   if (!database) return [];
@@ -159,9 +160,12 @@ export async function listProducts(filters: {
         .from(stockItems)
         .leftJoin(products, eq(stockItems.productId, products.id))
         .where(
-          or(
-            eq(stockItems.imei, searchTerm),
-            like(stockItems.imei, `%${searchTerm}%`)
+          and(
+            filters.tenantId ? eq(products.tenantId, filters.tenantId) : undefined,
+            or(
+              eq(stockItems.imei, searchTerm),
+              like(stockItems.imei, `%${searchTerm}%`)
+            )
           )
         )
         .limit(filters.limit || 50);
@@ -180,10 +184,13 @@ export async function listProducts(filters: {
         .select()
         .from(products)
         .where(
-          or(
-            like(products.name, `%${searchTerm}%`),
-            like(products.sku, `%${searchTerm}%`),
-            like(products.barcode, `%${searchTerm}%`)
+          and(
+            filters.tenantId ? eq(products.tenantId, filters.tenantId) : undefined,
+            or(
+              like(products.name, `%${searchTerm}%`),
+              like(products.sku, `%${searchTerm}%`),
+              like(products.barcode, `%${searchTerm}%`)
+            )
           )
         )
         .limit(filters.limit || 50);
@@ -197,6 +204,10 @@ export async function listProducts(filters: {
     
     // Sem busca, listar todos
     let query = database.select().from(products);
+    
+    if (filters.tenantId) {
+      query.where(eq(products.tenantId, filters.tenantId));
+    }
     
     const results = await query.limit(filters.limit || 50).offset(filters.offset || 0);
     return results.map(p => ({
@@ -222,6 +233,7 @@ export async function createProduct(data: {
   salePrice: number;
   minStock: number;
   requiresImei: boolean;
+  tenantId?: number;
 }) {
   const database = await getDb();
   if (!database) throw new Error("Database not available");
@@ -237,17 +249,20 @@ export async function listCustomers(filters: {
   segment?: string;
   limit?: number;
   offset?: number;
+  tenantId?: number;
 }) {
   const database = await getDb();
   if (!database) return [];
 
   try {
     const { customers } = await import("../drizzle/schema");
-    const results = await database
-      .select()
-      .from(customers)
-      .limit(filters.limit || 50)
-      .offset(filters.offset || 0);
+    let query = database.select().from(customers);
+    
+    if (filters.tenantId) {
+      query.where(eq(customers.tenantId, filters.tenantId));
+    }
+    
+    const results = await query.limit(filters.limit || 50).offset(filters.offset || 0);
     return results;
   } catch (error) {
     console.error("[Database] Failed to list customers:", error);
@@ -266,6 +281,7 @@ export async function createCustomer(data: {
   state?: string;
   zipCode?: string;
   notes?: string;
+  tenantId?: number;
 }) {
   const database = await getDb();
   if (!database) throw new Error("Database not available");
@@ -289,6 +305,7 @@ export async function createSale(data: {
     quantity: number;
     unitPrice: number;
   }>;
+  tenantId?: number;
 }) {
   const database = await getDb();
   if (!database) throw new Error("Database not available");
@@ -298,6 +315,7 @@ export async function createSale(data: {
   // Criar venda
   const finalAmount = data.totalAmount - data.discount;
   const [saleResult] = await database.insert(sales).values({
+    tenantId: data.tenantId || 1,
     customerId: data.customerId,
     sellerId: data.sellerId,
     totalAmount: data.totalAmount,

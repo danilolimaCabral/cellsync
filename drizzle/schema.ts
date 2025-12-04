@@ -73,6 +73,7 @@ export type InsertUser = typeof users.$inferInsert;
 // ============= CLIENTES (CRM) =============
 export const customers = mysqlTable("customers", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   name: text("name").notNull(),
   fantasyName: varchar("fantasyName", { length: 255 }), // Nome fantasia
   email: varchar("email", { length: 320 }),
@@ -101,6 +102,7 @@ export type InsertCustomer = typeof customers.$inferInsert;
 // ============= PRODUTOS =============
 export const products = mysqlTable("products", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   name: text("name").notNull(),
   description: text("description"),
   category: varchar("category", { length: 100 }),
@@ -130,6 +132,7 @@ export type InsertProduct = typeof products.$inferInsert;
 // ============= ESTOQUE COM IMEI =============
 export const stockItems = mysqlTable("stockItems", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   productId: int("productId").notNull(),
   imei: varchar("imei", { length: 20 }).unique(),
   serialNumber: varchar("serialNumber", { length: 100 }),
@@ -152,6 +155,7 @@ export type InsertStockItem = typeof stockItems.$inferInsert;
 // ============= MOVIMENTAÇÕES DE ESTOQUE =============
 export const stockMovements = mysqlTable("stockMovements", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   productId: int("productId").notNull(),
   stockItemId: int("stockItemId"), // Opcional, para produtos com IMEI
   type: mysqlEnum("type", ["entrada", "saida", "transferencia", "ajuste", "devolucao"]).notNull(),
@@ -171,6 +175,7 @@ export type InsertStockMovement = typeof stockMovements.$inferInsert;
 // ============= VENDAS =============
 export const sales = mysqlTable("sales", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   customerId: int("customerId"),
   sellerId: int("sellerId").notNull(), // Vendedor
   totalAmount: int("totalAmount").notNull(), // Total em centavos
@@ -212,6 +217,7 @@ export type InsertSaleItem = typeof saleItems.$inferInsert;
 // ============= ORDENS DE SERVIÇO =============
 export const serviceOrders = mysqlTable("serviceOrders", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   customerId: int("customerId").notNull(),
   technicianId: int("technicianId"), // Técnico responsável
   deviceType: varchar("deviceType", { length: 100 }),
@@ -258,6 +264,7 @@ export type InsertServiceOrderPart = typeof serviceOrderParts.$inferInsert;
 // ============= FINANCEIRO - CONTAS A PAGAR =============
 export const accountsPayable = mysqlTable("accountsPayable", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   description: text("description").notNull(),
   category: varchar("category", { length: 100 }), // Categoria de despesa
   costCenter: varchar("costCenter", { length: 100 }), // Centro de custo
@@ -281,6 +288,7 @@ export type InsertAccountPayable = typeof accountsPayable.$inferInsert;
 // ============= FINANCEIRO - CONTAS A RECEBER =============
 export const accountsReceivable = mysqlTable("accountsReceivable", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   customerId: int("customerId"),
   description: text("description").notNull(),
   amount: int("amount").notNull(), // Valor em centavos
@@ -302,6 +310,7 @@ export type InsertAccountReceivable = typeof accountsReceivable.$inferInsert;
 // ============= TRANSAÇÕES DE CAIXA =============
 export const cashTransactions = mysqlTable("cashTransactions", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   type: mysqlEnum("type", ["entrada", "saida"]).notNull(),
   category: varchar("category", { length: 100 }),
   amount: int("amount").notNull(), // Valor em centavos
@@ -320,6 +329,7 @@ export type InsertCashTransaction = typeof cashTransactions.$inferInsert;
 // ============= CAMPANHAS DE MARKETING =============
 export const marketingCampaigns = mysqlTable("marketingCampaigns", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   name: text("name").notNull(),
   description: text("description"),
   type: mysqlEnum("type", ["email", "sms", "whatsapp", "push"]).notNull(),
@@ -342,6 +352,7 @@ export type InsertMarketingCampaign = typeof marketingCampaigns.$inferInsert;
 // ============= NOTIFICAÇÕES =============
 export const notifications = mysqlTable("notifications", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   userId: int("userId"),
   customerId: int("customerId"),
   type: varchar("type", { length: 50 }).notNull(), // os_status, payment_reminder, etc
@@ -375,6 +386,7 @@ export type InsertSystemSetting = typeof systemSettings.$inferInsert;
 // ============= LOGS DE AUDITORIA =============
 export const auditLogs = mysqlTable("auditLogs", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   userId: int("userId").notNull(),
   action: varchar("action", { length: 100 }).notNull(), // create, update, delete
   entity: varchar("entity", { length: 100 }).notNull(), // sale, product, customer, etc
@@ -391,6 +403,7 @@ export type InsertAuditLog = typeof auditLogs.$inferInsert;
 // ============= COMISSÕES DE VENDEDORES =============
 export const commissionRules = mysqlTable("commissionRules", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   userId: int("userId").notNull(), // Vendedor
   name: text("name").notNull(), // Nome da regra
   type: mysqlEnum("type", ["percentual_fixo", "meta_progressiva", "bonus_produto"]).notNull(),
@@ -561,6 +574,7 @@ export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
 // ============= ANALYTICS DO CHATBOT =============
 export const chatbotConversations = mysqlTable("chatbot_conversations", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   sessionId: varchar("session_id", { length: 255 }).notNull().unique(), // UUID da sessão
   userId: int("user_id"), // Null se visitante anônimo
   startedAt: timestamp("started_at").defaultNow().notNull(),
@@ -591,6 +605,7 @@ export type InsertChatbotMessage = typeof chatbotMessages.$inferInsert;
 
 export const chatbotEvents = mysqlTable("chatbot_events", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   conversationId: int("conversation_id").notNull(),
   eventType: varchar("event_type", { length: 50 }).notNull(), // "cta_click", "link_click", "chat_closed"
   eventData: json("event_data"), // Dados adicionais do evento

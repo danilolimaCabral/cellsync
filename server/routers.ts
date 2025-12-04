@@ -437,8 +437,11 @@ export const appRouter = router({
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
       }).optional())
-      .query(async ({ input }) => {
-        const customers = await db.listCustomers(input || {});
+      .query(async ({ input, ctx }) => {
+        const customers = await db.listCustomers({
+          ...(input || {}),
+          tenantId: ctx.user.tenantId,
+        });
         return customers;
       }),
 
@@ -458,7 +461,10 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         try {
           console.log('[Customers] Criando cliente:', input.name);
-          const result = await db.createCustomer(input);
+          const result = await db.createCustomer({
+            ...input,
+            tenantId: ctx.user.tenantId,
+          });
           console.log('[Customers] Cliente criado com sucesso:', result);
           
           // Criar notificação para o usuário
@@ -491,8 +497,11 @@ export const appRouter = router({
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
       }).optional())
-      .query(async ({ input }) => {
-        const products = await db.listProducts(input || {});
+      .query(async ({ input, ctx }) => {
+        const products = await db.listProducts({
+          ...(input || {}),
+          tenantId: ctx.user.tenantId,
+        });
         return products;
       }),
 
@@ -630,6 +639,7 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         const sellerId = ctx.user.id;
         const saleId = await db.createSale({
+          tenantId: ctx.user.tenantId,
           customerId: input.customerId,
           sellerId,
           items: input.items,
@@ -802,6 +812,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
               
               // Criar nova conversa
               const [conversationResult] = await database.insert(chatbotConversations).values({
+                tenantId: ctx.user?.tenantId || 1, // Default to 1 for anonymous
                 sessionId: sessionId,
                 userId: ctx.user?.id || null,
                 startedAt: new Date(),
