@@ -284,10 +284,15 @@ export async function updateProduct(id: number, data: Partial<{
 export async function createStockMovement(data: {
   tenantId: number;
   productId: number;
+  stockItemId?: number;
   type: "entrada" | "saida" | "transferencia" | "ajuste" | "devolucao";
   quantity: number;
-  reason?: string;
+  fromLocation?: string;
+  toLocation?: string;
   userId: number;
+  reason?: string;
+  referenceType?: string;
+  referenceId?: number;
 }) {
   const database = await getDb();
   if (!database) throw new Error("Database not available");
@@ -295,13 +300,18 @@ export async function createStockMovement(data: {
   const { stockMovements, products } = await import("../drizzle/schema");
   
   // Registrar movimentação
-  await database.insert(stockMovements).values({
+  const [result] = await database.insert(stockMovements).values({
     tenantId: data.tenantId,
     productId: data.productId,
+    stockItemId: data.stockItemId,
     type: data.type,
     quantity: data.quantity,
-    reason: data.reason,
+    fromLocation: data.fromLocation,
+    toLocation: data.toLocation,
     userId: data.userId,
+    reason: data.reason,
+    referenceType: data.referenceType,
+    referenceId: data.referenceId,
   });
 
   // Atualizar estoque atual do produto
@@ -316,6 +326,8 @@ export async function createStockMovement(data: {
       .set({ currentStock: newStock })
       .where(eq(products.id, data.productId));
   }
+  
+  return { id: result.insertId, success: true };
 }
 
 // ============= CLIENTES =============
@@ -956,50 +968,7 @@ export async function getSalesHistory(filters: {
 
 
 // ============= MOVIMENTAÇÕES DE ESTOQUE =============
-export async function createStockMovement(movement: {
-  productId: number;
-  stockItemId?: number;
-  type: "entrada" | "saida" | "transferencia" | "ajuste" | "devolucao";
-  quantity: number;
-  fromLocation?: string;
-  toLocation?: string;
-  userId: number;
-  reason?: string;
-  referenceType?: string;
-  referenceId?: number;
-}) {
-  const database = await getDb();
-  if (!database) throw new Error("Database not available");
 
-  try {
-    const { stockMovements, products } = await import("../drizzle/schema");
-    
-    // Registrar movimentação
-    const [result] = await database.insert(stockMovements).values(movement);
-
-    // Atualizar estoque do produto
-    if (movement.type === "entrada" || movement.type === "devolucao") {
-      await database
-        .update(products)
-        .set({
-          currentStock: sql`${products.currentStock} + ${movement.quantity}`,
-        })
-        .where(eq(products.id, movement.productId));
-    } else if (movement.type === "saida" || movement.type === "ajuste") {
-      await database
-        .update(products)
-        .set({
-          currentStock: sql`${products.currentStock} - ${movement.quantity}`,
-        })
-        .where(eq(products.id, movement.productId));
-    }
-
-    return { id: result.insertId, success: true };
-  } catch (error) {
-    console.error("Error creating stock movement:", error);
-    throw error;
-  }
-}
 
 export async function getStockMovements(filters: {
   startDate?: Date;

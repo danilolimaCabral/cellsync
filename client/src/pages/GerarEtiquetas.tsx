@@ -122,12 +122,108 @@ export default function GerarEtiquetas() {
   const getLabelSizeClass = () => {
     switch (labelSize) {
       case "small":
-        return "w-48 h-24";
+        return "w-[4.72in] h-[2.36in]"; // ~12x6cm
       case "medium":
-        return "w-64 h-32";
+        return "w-[6.3in] h-[3.15in]"; // ~16x8cm
       case "large":
-        return "w-96 h-48";
+        return "w-[9.45in] h-[4.72in]"; // ~24x12cm
     }
+  };
+
+  const LabelContent = ({ label, size }: { label: GeneratedLabel; size: LabelSize }) => {
+    if (size === "large") {
+      return (
+        <div className="h-full flex flex-col justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div className="text-center space-y-2">
+            <div className="text-2xl font-bold text-gray-900 leading-tight line-clamp-2">{label.productName}</div>
+            {label.brand && (
+              <div className="text-lg font-medium text-gray-600 uppercase tracking-wide">{label.brand}</div>
+            )}
+          </div>
+          
+          <div className="flex items-center justify-center gap-6 my-4">
+            <div className="flex-1 flex justify-center">
+              <img src={label.barcode} alt="Barcode" className="h-20 max-w-full object-contain" />
+            </div>
+            <div className="flex-shrink-0">
+              <img src={label.qrcode} alt="QR Code" className="w-24 h-24" />
+            </div>
+          </div>
+
+          <div className="flex items-end justify-between bg-gray-50 rounded-lg p-4 border border-gray-100">
+            <div className="text-sm text-gray-500 font-mono">
+              SKU: {label.sku}
+            </div>
+            <div className="text-6xl font-black text-gray-900 tracking-tight">
+              {label.price}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (size === "medium") {
+      return (
+        <div className="h-full flex flex-col p-3 bg-white border border-gray-200 rounded-md shadow-sm relative overflow-hidden">
+          {/* Header */}
+          <div className="flex justify-between items-start gap-2 mb-2">
+            <div className="flex-1">
+              <div className="text-lg font-bold text-gray-900 leading-tight line-clamp-2 h-[3.5rem]">
+                {label.productName}
+              </div>
+              {label.brand && (
+                <div className="text-xs font-medium text-gray-500 uppercase mt-1">
+                  {label.brand}
+                </div>
+              )}
+            </div>
+            <div className="flex-shrink-0">
+              <img src={label.qrcode} alt="QR Code" className="w-16 h-16" />
+            </div>
+          </div>
+
+          {/* Middle - Barcode */}
+          <div className="flex-1 flex items-center justify-center py-2">
+            <img src={label.barcode} alt="Barcode" className="h-12 max-w-full object-contain" />
+          </div>
+
+          {/* Footer - Price & SKU */}
+          <div className="flex items-end justify-between mt-auto pt-2 border-t border-gray-100">
+            <div className="text-xs text-gray-400 font-mono truncate max-w-[40%]">
+              {label.sku}
+            </div>
+            <div className="text-4xl font-black text-gray-900 tracking-tight">
+              {label.price}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Small
+    return (
+      <div className="h-full flex flex-col p-2 bg-white border border-gray-200 rounded shadow-sm">
+        <div className="flex justify-between gap-2 mb-1">
+          <div className="text-sm font-bold text-gray-900 leading-tight line-clamp-2 flex-1">
+            {label.productName}
+          </div>
+          <img src={label.qrcode} alt="QR Code" className="w-10 h-10 flex-shrink-0" />
+        </div>
+
+        <div className="flex-1 flex items-center justify-center my-1">
+          <img src={label.barcode} alt="Barcode" className="h-8 max-w-full object-contain" />
+        </div>
+
+        <div className="flex items-end justify-between mt-auto">
+          <div className="text-[10px] text-gray-400 font-mono truncate max-w-[40%]">
+            {label.sku}
+          </div>
+          <div className="text-2xl font-black text-gray-900">
+            {label.price}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -141,7 +237,7 @@ export default function GerarEtiquetas() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Configuração */}
-        <Card className="p-6 space-y-6">
+        <Card className="p-6 space-y-6 print:hidden">
           <div>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Tag className="w-5 h-5" />
@@ -258,61 +354,17 @@ export default function GerarEtiquetas() {
         </Card>
 
         {/* Preview */}
-        <Card className="p-6">
+        <Card className="p-6 print:hidden bg-gray-50/50">
           <h2 className="text-xl font-semibold mb-4">Preview</h2>
           {generatedLabels.length === 0 ? (
-            <div className="flex items-center justify-center h-64 text-muted-foreground">
+            <div className="flex items-center justify-center h-64 text-muted-foreground border-2 border-dashed rounded-lg">
               Gere etiquetas para visualizar o preview
             </div>
           ) : (
-            <div className="space-y-4 max-h-[600px] overflow-y-auto">
+            <div className="space-y-4 max-h-[600px] overflow-y-auto p-4">
               {generatedLabels.slice(0, 3).map((label, index) => (
-                <div
-                  key={index}
-                  className={`border rounded p-4 bg-white text-black print:break-inside-avoid ${getLabelSizeClass()}`}
-                >
-                  {labelSize === "large" ? (
-                    // Layout Vitrine - Melhorado
-                    <div className="h-full flex flex-col justify-between p-2 bg-gradient-to-br from-white to-gray-50">
-                      <div className="text-center space-y-1">
-                        <div className="text-xl font-bold text-gray-900 leading-tight">{label.productName}</div>
-                        {label.brand && (
-                          <div className="text-sm font-medium text-blue-600 uppercase tracking-wide">{label.brand}</div>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-center gap-3 my-2">
-                        <img src={label.barcode} alt="Barcode" className="h-14 w-full object-contain" />
-                        <img src={label.qrcode} alt="QR Code" className="w-16 h-16 border-2 border-gray-200 rounded" />
-                      </div>
-                      <div className="text-center space-y-1 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border-2 border-green-200">
-                        <div className="text-5xl font-black text-green-600 tracking-tight">{label.price}</div>
-                        <div className="text-xs text-gray-600 font-medium">SKU: {label.sku}</div>
-                      </div>
-                    </div>
-                  ) : labelSize === "medium" ? (
-                    // Layout Médio - Melhorado
-                    <div className="h-full flex flex-col justify-between p-2 bg-gradient-to-br from-white to-gray-50">
-                      <div className="text-sm font-bold text-gray-900 truncate">{label.productName}</div>
-                      <div className="flex items-center justify-between gap-2 my-1">
-                        <img src={label.barcode} alt="Barcode" className="h-10 flex-1 object-contain" />
-                        <img src={label.qrcode} alt="QR Code" className="w-10 h-10 border border-gray-200 rounded" />
-                      </div>
-                      <div className="flex justify-between items-end bg-gradient-to-r from-green-50 to-emerald-50 rounded p-2 border border-green-200">
-                        <div className="text-2xl font-black text-green-600">{label.price}</div>
-                        <div className="text-xs text-gray-600 font-medium">{label.sku}</div>
-                      </div>
-                    </div>
-                  ) : (
-                    // Layout Pequeno - Melhorado
-                    <div className="h-full flex flex-col justify-between text-xs p-1 bg-gradient-to-br from-white to-gray-50">
-                      <div className="font-bold text-gray-900 truncate text-xs">{label.productName}</div>
-                      <img src={label.barcode} alt="Barcode" className="h-8 w-full object-contain my-1" />
-                      <div className="flex justify-between items-end bg-gradient-to-r from-green-50 to-emerald-50 rounded px-1 py-0.5 border border-green-200">
-                        <div className="text-lg font-black text-green-600">{label.price}</div>
-                        <div className="text-xs text-gray-600 font-medium">{label.sku}</div>
-                      </div>
-                    </div>
-                  )}
+                <div key={index} className={`${getLabelSizeClass()} mx-auto transform scale-90 origin-top`}>
+                  <LabelContent label={label} size={labelSize} />
                 </div>
               ))}
               {generatedLabels.length > 3 && (
@@ -327,49 +379,10 @@ export default function GerarEtiquetas() {
 
       {/* Área de impressão (oculta na tela) */}
       <div className="hidden print:block">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4 p-4">
           {generatedLabels.map((label, index) => (
-            <div
-              key={index}
-              className={`border rounded p-4 bg-white text-black print:break-inside-avoid ${getLabelSizeClass()}`}
-            >
-              {labelSize === "large" ? (
-                <div className="h-full flex flex-col justify-between p-2 bg-gradient-to-br from-white to-gray-50">
-                  <div className="text-center space-y-1">
-                    <div className="text-xl font-bold text-gray-900 leading-tight">{label.productName}</div>
-                    {label.brand && <div className="text-sm font-medium text-blue-600 uppercase tracking-wide">{label.brand}</div>}
-                  </div>
-                  <div className="flex flex-col items-center gap-3 my-2">
-                    <img src={label.barcode} alt="Barcode" className="h-14 w-full object-contain" />
-                    <img src={label.qrcode} alt="QR Code" className="w-16 h-16 border-2 border-gray-200 rounded" />
-                  </div>
-                  <div className="text-center space-y-1 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border-2 border-green-200">
-                    <div className="text-5xl font-black text-green-600 tracking-tight">{label.price}</div>
-                    <div className="text-xs text-gray-600 font-medium">SKU: {label.sku}</div>
-                  </div>
-                </div>
-              ) : labelSize === "medium" ? (
-                <div className="h-full flex flex-col justify-between p-2 bg-gradient-to-br from-white to-gray-50">
-                  <div className="text-sm font-bold text-gray-900 truncate">{label.productName}</div>
-                  <div className="flex items-center justify-between gap-2 my-1">
-                    <img src={label.barcode} alt="Barcode" className="h-10 flex-1 object-contain" />
-                    <img src={label.qrcode} alt="QR Code" className="w-10 h-10 border border-gray-200 rounded" />
-                  </div>
-                  <div className="flex justify-between items-end bg-gradient-to-r from-green-50 to-emerald-50 rounded p-2 border border-green-200">
-                    <div className="text-2xl font-black text-green-600">{label.price}</div>
-                    <div className="text-xs text-gray-600 font-medium">{label.sku}</div>
-                  </div>
-                </div>
-              ) : (
-                <div className="h-full flex flex-col justify-between text-xs p-1 bg-gradient-to-br from-white to-gray-50">
-                  <div className="font-bold text-gray-900 truncate text-xs">{label.productName}</div>
-                  <img src={label.barcode} alt="Barcode" className="h-8 w-full object-contain my-1" />
-                  <div className="flex justify-between items-end bg-gradient-to-r from-green-50 to-emerald-50 rounded px-1 py-0.5 border border-green-200">
-                    <div className="text-lg font-black text-green-600">{label.price}</div>
-                    <div className="text-xs text-gray-600 font-medium">{label.sku}</div>
-                  </div>
-                </div>
-              )}
+            <div key={index} className={`${getLabelSizeClass()} break-inside-avoid mb-4`}>
+              <LabelContent label={label} size={labelSize} />
             </div>
           ))}
         </div>
