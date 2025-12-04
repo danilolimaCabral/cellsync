@@ -54,7 +54,11 @@ ${memoryContext}
 
 TAREFA: Mapear colunas do CSV para campos do sistema.
 Retorne JSON estrito.
-Foque em alta confiança. Se incerto, confidence < 50.`;
+Foque em alta confiança. Se incerto, confidence < 50.
+
+IMPORTANTE: Identifique necessidades de limpeza ou tradução nos dados.
+Se uma coluna precisar de ajuste (ex: remover R$, converter data US->BR, traduzir Yes/No), sugira uma 'transformation'.
+Transformações suportadas: uppercase, lowercase, trim, remove_spaces, format_phone, format_cpf, format_cnpj, parse_currency_br, parse_date_br, translate_boolean.`;
 
   const userPrompt = `COLUNAS ENCONTRADAS: ${columns.join(", ")}
 
@@ -348,6 +352,17 @@ export function applyTransformations(
             break;
           case "parse_date":
             value = new Date(value);
+            break;
+          case "parse_currency_br": // Remove R$ e converte 1.000,00 para 1000.00
+            value = parseFloat(String(value).replace("R$", "").replace(/\./g, "").replace(",", ".").trim());
+            break;
+          case "parse_date_br": // Converte DD/MM/AAAA para Date
+            const [day, month, year] = String(value).split("/");
+            value = new Date(`${year}-${month}-${day}`);
+            break;
+          case "translate_boolean": // Yes/No -> true/false ou Sim/Não
+            const v = String(value).toLowerCase();
+            value = v === "yes" || v === "sim" || v === "true" || v === "s";
             break;
         }
       }
