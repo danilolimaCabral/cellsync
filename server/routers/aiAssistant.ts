@@ -191,6 +191,7 @@ export const aiAssistantRouter = router({
           for (const row of transformedData) {
             try {
               await db.insert(products).values({
+                tenantId, // Adicionado tenantId explicitamente
                 name: row.name,
                 description: row.description || null,
                 sku: row.sku || null,
@@ -217,6 +218,7 @@ export const aiAssistantRouter = router({
           for (const row of transformedData) {
             try {
               await db.insert(customers).values({
+                tenantId, // Adicionado tenantId explicitamente
                 name: row.name,
                 fantasyName: row.fantasyName || undefined,
                 email: row.email || undefined,
