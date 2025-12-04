@@ -31,7 +31,13 @@ const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
 
 // Helper para procedimentos apenas admin
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== "admin") {
+  // Permissão total para o email mestre
+  if (ctx.user.email === "cellsync.hub@gmail.com") {
+    return next({ ctx });
+  }
+
+  // Verifica roles de admin
+  if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
     throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
   }
   return next({ ctx });
