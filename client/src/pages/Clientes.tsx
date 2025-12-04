@@ -93,14 +93,14 @@ export default function Clientes() {
 
     createCustomerMutation.mutate({
       name: newCustomer.name,
-      email: newCustomer.email || undefined,
-      phone: newCustomer.phone || undefined,
-      cpf: newCustomer.cpf || undefined,
-      address: newCustomer.address || undefined,
-      city: newCustomer.city || undefined,
-      state: newCustomer.state || undefined,
-      zipCode: newCustomer.zipCode || undefined,
-      notes: newCustomer.notes || undefined,
+      email: newCustomer.email ? newCustomer.email : undefined,
+      phone: newCustomer.phone ? newCustomer.phone : undefined,
+      cpf: newCustomer.cpf ? newCustomer.cpf : undefined,
+      address: newCustomer.address ? newCustomer.address : undefined,
+      city: newCustomer.city ? newCustomer.city : undefined,
+      state: newCustomer.state ? newCustomer.state : undefined,
+      zipCode: newCustomer.zipCode ? newCustomer.zipCode : undefined,
+      notes: newCustomer.notes ? newCustomer.notes : undefined,
     });
   };
 
