@@ -713,6 +713,12 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const { invokeLLM } = await import("./_core/llm");
+        const { chatbotConversations, chatbotMessages } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        
+        // Gerar ou recuperar ID da sessão (simples, baseado no cookie ou input)
+        // Como o input não tem sessionId, vamos assumir uma sessão nova a cada reload por enquanto
+        // Idealmente o frontend deveria mandar um sessionId
         
         const systemPrompt = `Você é a **Ana**, a Assistente Virtual Inteligente da **CellSync**.
 Sua função é ser uma especialista completa no sistema, atuando tanto como **Consultora de Vendas** quanto como **Suporte Técnico Avançado**.
@@ -783,6 +789,49 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           });
 
           const assistantMessage = response.choices[0]?.message?.content || "Desculpe, não consegui processar sua mensagem. Pode tentar novamente?";
+
+          // --- SALVAR NO BANCO DE DADOS PARA ANALYTICS ---
+          try {
+            const database = await db.getDb();
+            if (database) {
+              // 1. Tentar encontrar uma sessão ativa recente (últimos 30 min) para este usuário
+              // Como não temos sessionId vindo do front, vamos criar uma nova conversa sempre por segurança
+              // TODO: Frontend deve enviar sessionId para agrupar mensagens
+              
+              const sessionId = ctx.user ? `user-${ctx.user.id}-${Date.now()}` : `anon-${Date.now()}`;
+              
+              // Criar nova conversa
+              const [conversationResult] = await database.insert(chatbotConversations).values({
+                sessionId: sessionId,
+                userId: ctx.user?.id || null,
+                startedAt: new Date(),
+                messageCount: 2, // 1 user + 1 assistant
+                userAgent: ctx.req.headers["user-agent"] || "unknown",
+              });
+              
+              const conversationId = conversationResult.insertId;
+
+              // Salvar mensagem do usuário
+              await database.insert(chatbotMessages).values({
+                conversationId: conversationId,
+                role: "user",
+                content: input.message,
+                createdAt: new Date(),
+              });
+
+              // Salvar resposta da Ana
+              await database.insert(chatbotMessages).values({
+                conversationId: conversationId,
+                role: "assistant",
+                content: assistantMessage,
+                createdAt: new Date(),
+              });
+            }
+          } catch (dbError) {
+            console.error("Erro ao salvar analytics do chatbot:", dbError);
+            // Não falhar a resposta se o analytics falhar
+          }
+          // ------------------------------------------------
 
           return {
             response: assistantMessage,
