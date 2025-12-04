@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
-import { Search, Filter, FileSpreadsheet, FileText, Calendar } from "lucide-react";
+import { Search, Filter, FileSpreadsheet, FileText, Calendar, Printer } from "lucide-react";
 import { exportSalesReport } from "@/lib/exportUtils";
 import { toast } from "sonner";
 
@@ -33,8 +33,26 @@ export default function HistoricoVendas() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: salesData, isLoading } = trpc.salesHistory.list.useQuery(filters);
-  const { data: users } = trpc.users.list.useQuery({ limit: 100 });
+	  const { data: salesData, isLoading } = trpc.salesHistory.list.useQuery(filters);
+	  const { data: users } = trpc.users.list.useQuery({ limit: 100 });
+
+	  const generateReceiptMutation = trpc.sales.generateReceipt.useMutation({
+	    onSuccess: (result) => {
+	      const byteCharacters = atob(result.pdf);
+	      const byteNumbers = new Array(byteCharacters.length);
+	      for (let i = 0; i < byteCharacters.length; i++) {
+	        byteNumbers[i] = byteCharacters.charCodeAt(i);
+	      }
+	      const byteArray = new Uint8Array(byteNumbers);
+	      const blob = new Blob([byteArray], { type: "application/pdf" });
+	      const url = URL.createObjectURL(blob);
+	      window.open(url, "_blank");
+	      toast.success("Recibo gerado com sucesso!");
+	    },
+	    onError: (error) => {
+	      toast.error("Erro ao gerar recibo: " + error.message);
+	    },
+	  });
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -256,8 +274,9 @@ export default function HistoricoVendas() {
                     <TableHead>Total</TableHead>
                     <TableHead>Pagamento</TableHead>
                     <TableHead>NF-e</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
+	                    <TableHead>Status</TableHead>
+	                    <TableHead className="w-[50px]"></TableHead>
+	                  </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredSales.map((sale: any) => (
@@ -285,8 +304,24 @@ export default function HistoricoVendas() {
                           <span className="text-gray-400 text-sm">Não emitida</span>
                         )}
                       </TableCell>
-                      <TableCell>{getStatusBadge(sale.status)}</TableCell>
-                    </TableRow>
+	                      <TableCell>{getStatusBadge(sale.status)}</TableCell>
+	                      <TableCell>
+	                        <Button
+	                          variant="ghost"
+	                          size="sm"
+	                          onClick={() => {
+	                            if (sale.nfeIssued) {
+	                              // TODO: Implementar reimpressão de NF-e
+	                              toast.info("Reimpressão de NF-e em breve");
+	                            } else {
+	                              generateReceiptMutation.mutate({ saleId: sale.id });
+	                            }
+	                          }}
+	                        >
+	                          <Printer className="h-4 w-4" />
+	                        </Button>
+	                      </TableCell>
+	                    </TableRow>
                   ))}
                 </TableBody>
               </Table>

@@ -81,8 +81,12 @@ export default function Vendas() {
         // Se for NFC-e (Cupom Fiscal), emitir automaticamente
         await emitirNFeParaVenda(result.saleId, selectedCustomerId);
       } else {
-        // Se não for fiscal, mostrar recibo simples
+        // Se não for fiscal, mostrar recibo simples e abrir automaticamente
         setShowReceipt(true);
+        // Pequeno delay para garantir que o estado foi atualizado
+        setTimeout(() => {
+          generateReceiptMutation.mutate({ saleId: result.saleId });
+        }, 500);
       }
       setCart([]);
       setSelectedCustomerId(null);
