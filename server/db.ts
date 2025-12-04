@@ -1,5 +1,6 @@
 import { eq, and, or, gte, lte, gt, isNull, desc, sql, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 import { 
   InsertUser, User, users,
   customers, sales,
@@ -25,7 +26,14 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const connection = await mysql.createPool({
+        uri: process.env.DATABASE_URL,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        family: 4, // Forçar IPv4 para evitar ECONNREFUSED em alguns ambientes
+      });
+      _db = drizzle(connection, { mode: "default" });
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;

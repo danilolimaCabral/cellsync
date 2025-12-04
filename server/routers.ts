@@ -2436,7 +2436,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
     createWithUser: publicProcedure
       .input(z.object({
         tenantData: z.object({
-          cnpj: z.string(),
+          cnpj: z.string().optional(),
           razaoSocial: z.string(),
           nomeFantasia: z.string(),
           cep: z.string(),
@@ -2505,6 +2505,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         const [newTenant] = await db.insert(tenants).values({
           name: tenantData.nomeFantasia,
           subdomain,
+          cnpj: tenantData.cnpj || null,
           planId: plan.id,
           status: "trial",
           trialEndsAt,
