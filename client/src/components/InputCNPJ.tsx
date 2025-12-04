@@ -63,11 +63,13 @@ export function InputCNPJ({
           disabled={disabled || isLoading}
           className={isLoading ? "pr-10" : ""}
         />
-        {isLoading && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-          </div>
-        )}
+        {/* Usar opacity em vez de renderização condicional para evitar erro de removeChild */}
+        <div 
+          className={`absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-200 ${isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          aria-hidden={!isLoading}
+        >
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+        </div>
       </div>
       <Button
         type="button"
