@@ -665,7 +665,8 @@ export default function Estoque() {
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-center"                      <Button 
+                    <TableCell className="text-center">
+                      <Button 
                         variant="ghost" 
                         size="icon"
                         onClick={() => {
