@@ -787,10 +787,11 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           return {
             response: assistantMessage,
           };
-        } catch (error) {
+        } catch (error: any) {
           console.error("Erro no chatbot:", error);
+          // MODO DIAGNÓSTICO: Retornar o erro real para o usuário ver
           return {
-            response: "Desculpe, estou enfrentando uma instabilidade momentânea. Poderia perguntar novamente em alguns instantes?",
+            response: `[ERRO TÉCNICO] Falha na conexão com IA: ${error.message || JSON.stringify(error)}`,
           };
         }
       }),
