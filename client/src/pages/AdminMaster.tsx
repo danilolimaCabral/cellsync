@@ -180,8 +180,72 @@ export default function AdminMaster() {
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
+        <CardContent className="p-0 md:p-6">
+          {/* Mobile View - Cards */}
+          <div className="md:hidden space-y-4 p-4">
+            {isLoadingTenants ? (
+              <div className="text-center text-muted-foreground py-8">
+                Carregando clientes...
+              </div>
+            ) : tenantsList?.map((tenant) => (
+              <div 
+                key={tenant.id} 
+                className="bg-white dark:bg-slate-900 border rounded-lg p-4 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
+                onClick={() => toast.info(`Detalhes de ${tenant.name} em breve`)}
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <div className="font-semibold text-lg">{tenant.name}</div>
+                    <div className="text-sm text-muted-foreground">{tenant.cnpj || "Sem CNPJ"}</div>
+                  </div>
+                  <Badge 
+                    className={
+                      tenant.status === "active" ? "bg-green-500" :
+                      tenant.status === "trial" ? "bg-blue-500" :
+                      "bg-red-500"
+                    }
+                  >
+                    {tenant.status === "active" ? "Ativo" :
+                     tenant.status === "trial" ? "Trial" : "Inativo"}
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                  <div>
+                    <span className="text-muted-foreground block text-xs">ID</span>
+                    <span className="font-mono">#{tenant.id}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Subdomínio</span>
+                    <Badge variant="secondary" className="font-mono text-xs mt-0.5">
+                      {tenant.subdomain}
+                    </Badge>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Plano</span>
+                    <span>{tenant.planName || "Básico"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Cadastro</span>
+                    <span>{new Date(tenant.createdAt).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                </div>
+                
+                <div className="pt-3 border-t mt-3">
+                  <span className="text-muted-foreground block text-xs mb-1">Dono (Email)</span>
+                  <span className="text-sm break-all">{tenant.ownerEmail || "N/A"}</span>
+                </div>
+              </div>
+            ))}
+            {!isLoadingTenants && tenantsList?.length === 0 && (
+              <div className="text-center text-muted-foreground py-8">
+                Nenhum cliente encontrado.
+              </div>
+            )}
+          </div>
+
+          {/* Desktop View - Table */}
+          <div className="hidden md:block rounded-md border">
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/50 text-muted-foreground">
                 <tr>
@@ -202,7 +266,11 @@ export default function AdminMaster() {
                     </td>
                   </tr>
                 ) : tenantsList?.map((tenant) => (
-                  <tr key={tenant.id} className="border-t hover:bg-muted/50 transition-colors">
+                  <tr 
+                    key={tenant.id} 
+                    className="border-t hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => toast.info(`Detalhes de ${tenant.name} em breve`)}
+                  >
                     <td className="p-3 font-medium">#{tenant.id}</td>
                     <td className="p-3">
                       <div className="font-medium">{tenant.name}</div>
