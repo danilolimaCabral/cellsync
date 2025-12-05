@@ -2180,13 +2180,18 @@ export async function getAllTenants() {
   const database = await getDb();
   if (!database) return [];
 
-  const { tenants } = await import("../drizzle/schema");
+  const { tenants, plans } = await import("../drizzle/schema");
   return await database.select({
     id: tenants.id,
-    name: tenants.nomeFantasia,
-    email: tenants.email,
-    plan: tenants.plano,
-  }).from(tenants);
+    name: tenants.name,
+    cnpj: tenants.cnpj,
+    subdomain: tenants.subdomain,
+    status: tenants.status,
+    planName: plans.name,
+    createdAt: tenants.createdAt,
+  }).from(tenants)
+    .leftJoin(plans, eq(tenants.planId, plans.id))
+    .orderBy(tenants.createdAt);
 }
 
 export async function getTenantModules(tenantId: number) {

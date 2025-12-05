@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json, unique } from "drizzle-orm/mysql-core";
 
 /**
  * Sistema CellSync - Schema completo do banco de dados
@@ -764,3 +764,18 @@ export const fiscalSettings = mysqlTable("fiscal_settings", {
 
 export type FiscalSettings = typeof fiscalSettings.$inferSelect;
 export type InsertFiscalSettings = typeof fiscalSettings.$inferInsert;
+
+// ============= MÓDULOS DE TENANTS (LIBERAÇÃO DE FUNCIONALIDADES) =============
+export const tenantModules = mysqlTable("tenant_modules", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull(),
+  moduleId: varchar("module_id", { length: 50 }).notNull(), // pos, stock, customers, etc
+  enabled: boolean("enabled").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  uniqueConstraint: unique().on(table.tenantId, table.moduleId),
+}));
+
+export type TenantModule = typeof tenantModules.$inferSelect;
+export type InsertTenantModule = typeof tenantModules.$inferInsert;
