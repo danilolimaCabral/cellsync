@@ -21,6 +21,7 @@ import { generateLabel, generateBarcode, generateQRCode } from "./label-generato
 import { tenantSwitchingRouter } from "./routers/tenantSwitching";
 import { tenantManagementRouter } from "./routers/tenantManagement";
 import { aiAssistantRouter } from "./routers/aiAssistant";
+import { adminMigrationRouter } from "./routers/admin-migration";
 import { notifyOwner } from "./_core/notification";
 
 // Helper para criar procedimentos protegidos
@@ -48,6 +49,7 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 export const appRouter = router({
   system: systemRouter,
   aiAssistant: aiAssistantRouter,
+  adminMigration: adminMigrationRouter,
   fiscal: fiscalRouter,
 
   // Endpoint temporário para diagnóstico de tenants

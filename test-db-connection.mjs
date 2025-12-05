@@ -1,4 +1,4 @@
-const mysql = require('mysql2/promise');
+import mysql from 'mysql2/promise';
 
 const connectionConfig = {
   host: 'switchback.proxy.rlwy.net',
@@ -28,7 +28,10 @@ async function testConnection() {
     
     // Get plans
     const [plans] = await connection.execute('SELECT id, name, slug, price_monthly FROM plans');
-    console.log('✅ Plans found:', plans);
+    console.log('✅ Plans found:');
+    plans.forEach(plan => {
+      console.log(`  - ${plan.name} (${plan.slug}): R$ ${(plan.price_monthly / 100).toFixed(2)}/mês`);
+    });
     
     await connection.end();
   } catch (error) {
