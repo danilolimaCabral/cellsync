@@ -1500,8 +1500,8 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           startDate: z.date(),
           endDate: z.date(),
         }))
-        .query(async ({ input }) => {
-          return await db.getCashFlow(input.startDate, input.endDate);
+        .query(async ({ input, ctx }) => {
+          return await db.getCashFlow(ctx.user.tenantId, input.startDate, input.endDate);
         }),
       }),
   }),
@@ -1550,8 +1550,8 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         startDate: z.date(),
         endDate: z.date(),
       }))
-      .query(async ({ input }) => {
-        return await db.getSellerPerformance(input.startDate, input.endDate);
+      .query(async ({ input, ctx }) => {
+        return await db.getSellerPerformance(ctx.user.tenantId, input.startDate, input.endDate);
       }),
 
     serviceOrderStats: protectedProcedure
@@ -1559,8 +1559,8 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         startDate: z.date(),
         endDate: z.date(),
       }))
-      .query(async ({ input }) => {
-        return await db.getServiceOrderStats(input.startDate, input.endDate);
+      .query(async ({ input, ctx }) => {
+        return await db.getServiceOrderStats(ctx.user.tenantId, input.startDate, input.endDate);
       }),
 
     financialKPIs: protectedProcedure
@@ -1568,13 +1568,13 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         startDate: z.date(),
         endDate: z.date(),
       }))
-      .query(async ({ input }) => {
-        return await db.getFinancialKPIs(input.startDate, input.endDate);
+      .query(async ({ input, ctx }) => {
+        return await db.getFinancialKPIs(ctx.user.tenantId, input.startDate, input.endDate);
       }),
 
     inventoryStats: protectedProcedure
-      .query(async () => {
-        return await db.getInventoryStats();
+      .query(async ({ ctx }) => {
+        return await db.getInventoryStats(ctx.user.tenantId);
       }),
 
     // Relatório Avançado de Estoque

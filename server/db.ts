@@ -252,12 +252,13 @@ export async function createProduct(data: {
   return result;
 }
 
-export async function getProductById(id: number) {
+export async function getProductById(tenantId: number, id: number) {
   const database = await getDb();
   if (!database) return undefined;
 
   const { products } = await import("../drizzle/schema");
-  const result = await database.select().from(products).where(eq(products.id, id)).limit(1);
+  const { eq, and } = await import("drizzle-orm");
+  const result = await database.select().from(products).where(and(eq(products.tenantId, tenantId), eq(products.id, id))).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
@@ -610,24 +611,31 @@ export async function updateAccountReceivableStatus(id: number, status: "pendent
 }
 
 // ============= FINANCEIRO - FLUXO DE CAIXA =============
-export async function getCashFlow(startDate: Date, endDate: Date) {
+export async function getCashFlow(tenantId: number, startDate: Date, endDate: Date) {
   const database = await getDb();
   if (!database) return { totalIncome: 0, totalExpenses: 0, balance: 0, transactions: [] };
 
   try {
     const { accountsPayable, accountsReceivable } = await import("../drizzle/schema");
+    const { eq, and } = await import("drizzle-orm");
     
     // Buscar receitas
     const income = await database
       .select()
       .from(accountsReceivable)
-      .where(eq(accountsReceivable.status, "recebido"));
+      .where(and(
+        eq(accountsReceivable.tenantId, tenantId),
+        eq(accountsReceivable.status, "recebido")
+      ));
     
     // Buscar despesas
     const expenses = await database
       .select()
       .from(accountsPayable)
-      .where(eq(accountsPayable.status, "pago"));
+      .where(and(
+        eq(accountsPayable.tenantId, tenantId),
+        eq(accountsPayable.status, "pago")
+      ));
 
     const totalIncome = income.reduce((sum, item) => sum + item.amount, 0);
     const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0);
@@ -744,13 +752,13 @@ export async function getTopProducts(tenantId: number, startDate: Date, endDate:
   }
 }
 
-export async function getSellerPerformance(startDate: Date, endDate: Date) {
+export async function getSellerPerformance(tenantId: number, startDate: Date, endDate: Date) {
   const database = await getDb();
   if (!database) return [];
 
   try {
     const { sales, users } = await import("../drizzle/schema");
-    const { sql } = await import("drizzle-orm");
+    const { sql, eq, and } = await import("drizzle-orm");
     
     const result = await database
       .select({
@@ -761,7 +769,10 @@ export async function getSellerPerformance(startDate: Date, endDate: Date) {
       })
       .from(sales)
       .innerJoin(users, eq(sales.sellerId, users.id))
-      .where(sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`)
+      .where(and(
+        eq(sales.tenantId, tenantId),
+        sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`
+      ))
       .groupBy(sales.sellerId, users.name)
       .orderBy(sql`SUM(${sales.totalAmount}) DESC`);
 
@@ -777,13 +788,13 @@ export async function getSellerPerformance(startDate: Date, endDate: Date) {
   }
 }
 
-export async function getServiceOrderStats(startDate: Date, endDate: Date) {
+export async function getServiceOrderStats(tenantId: number, startDate: Date, endDate: Date) {
   const database = await getDb();
   if (!database) return { total: 0, byStatus: [] };
 
   try {
     const { serviceOrders } = await import("../drizzle/schema");
-    const { sql } = await import("drizzle-orm");
+    const { sql, eq, and } = await import("drizzle-orm");
     
     // Total de OS
     const totalResult = await database
@@ -791,7 +802,10 @@ export async function getServiceOrderStats(startDate: Date, endDate: Date) {
         count: sql<number>`COUNT(*)`,
       })
       .from(serviceOrders)
-      .where(sql`${serviceOrders.createdAt} BETWEEN ${startDate} AND ${endDate}`);
+      .where(and(
+        eq(serviceOrders.tenantId, tenantId),
+        sql`${serviceOrders.createdAt} BETWEEN ${startDate} AND ${endDate}`
+      ));
 
     const total = Number(totalResult[0]?.count) || 0;
 
@@ -802,7 +816,10 @@ export async function getServiceOrderStats(startDate: Date, endDate: Date) {
         count: sql<number>`COUNT(*)`,
       })
       .from(serviceOrders)
-      .where(sql`${serviceOrders.createdAt} BETWEEN ${startDate} AND ${endDate}`)
+      .where(and(
+        eq(serviceOrders.tenantId, tenantId),
+        sql`${serviceOrders.createdAt} BETWEEN ${startDate} AND ${endDate}`
+      ))
       .groupBy(serviceOrders.status);
 
     return {
@@ -818,7 +835,7 @@ export async function getServiceOrderStats(startDate: Date, endDate: Date) {
   }
 }
 
-export async function getFinancialKPIs(startDate: Date, endDate: Date) {
+export async function getFinancialKPIs(tenantId: number, startDate: Date, endDate: Date) {
   const database = await getDb();
   if (!database) return {
     totalRevenue: 0,
@@ -829,7 +846,7 @@ export async function getFinancialKPIs(startDate: Date, endDate: Date) {
 
   try {
     const { accountsReceivable, accountsPayable } = await import("../drizzle/schema");
-    const { sql } = await import("drizzle-orm");
+    const { sql, eq, and } = await import("drizzle-orm");
     
     // Receitas recebidas
     const revenueResult = await database
@@ -837,7 +854,10 @@ export async function getFinancialKPIs(startDate: Date, endDate: Date) {
         total: sql<number>`SUM(${accountsReceivable.amount})`,
       })
       .from(accountsReceivable)
-      .where(sql`${accountsReceivable.status} = 'recebido' AND ${accountsReceivable.paymentDate} BETWEEN ${startDate} AND ${endDate}`);
+      .where(and(
+        eq(accountsReceivable.tenantId, tenantId),
+        sql`${accountsReceivable.status} = 'recebido' AND ${accountsReceivable.paymentDate} BETWEEN ${startDate} AND ${endDate}`
+      ));
 
     const totalRevenue = Number(revenueResult[0]?.total) || 0;
 
@@ -847,7 +867,10 @@ export async function getFinancialKPIs(startDate: Date, endDate: Date) {
         total: sql<number>`SUM(${accountsPayable.amount})`,
       })
       .from(accountsPayable)
-      .where(sql`${accountsPayable.status} = 'pago' AND ${accountsPayable.paymentDate} BETWEEN ${startDate} AND ${endDate}`);
+      .where(and(
+        eq(accountsPayable.tenantId, tenantId),
+        sql`${accountsPayable.status} = 'pago' AND ${accountsPayable.paymentDate} BETWEEN ${startDate} AND ${endDate}`
+      ));
 
     const totalExpenses = Number(expensesResult[0]?.total) || 0;
 
@@ -871,13 +894,13 @@ export async function getFinancialKPIs(startDate: Date, endDate: Date) {
   }
 }
 
-export async function getInventoryStats() {
+export async function getInventoryStats(tenantId: number) {
   const database = await getDb();
   if (!database) return { totalProducts: 0, lowStock: 0, outOfStock: 0, totalValue: 0 };
 
   try {
     const { products } = await import("../drizzle/schema");
-    const { sql } = await import("drizzle-orm");
+    const { sql, eq } = await import("drizzle-orm");
     
     const result = await database
       .select({
@@ -886,7 +909,8 @@ export async function getInventoryStats() {
         outOfStock: sql<number>`SUM(CASE WHEN ${products.currentStock} = 0 THEN 1 ELSE 0 END)`,
         totalValue: sql<number>`SUM(${products.currentStock} * ${products.salePrice})`,
       })
-      .from(products);
+      .from(products)
+      .where(eq(products.tenantId, tenantId));
 
     const stats = result[0] || { total: 0, lowStock: 0, outOfStock: 0, totalValue: 0 };
 
@@ -1628,19 +1652,21 @@ export async function createInvoiceItem(data: InsertInvoiceItem): Promise<number
   return Number(result[0].insertId);
 }
 
-export async function getInvoiceById(id: number) {
+export async function getInvoiceById(tenantId: number, id: number) {
   const db = await getDb();
   if (!db) return null;
   
-  const result = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
+  const { eq, and } = await import("drizzle-orm");
+  const result = await db.select().from(invoices).where(and(eq(invoices.tenantId, tenantId), eq(invoices.id, id))).limit(1);
   return result[0] || null;
 }
 
-export async function getInvoiceItems(invoiceId: number) {
+export async function getInvoiceItems(tenantId: number, invoiceId: number) {
   const db = await getDb();
   if (!db) return [];
   
-  return db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
+  const { eq, and } = await import("drizzle-orm");
+  return db.select().from(invoiceItems).where(and(eq(invoiceItems.tenantId, tenantId), eq(invoiceItems.invoiceId, invoiceId)));
 }
 
 export async function listInvoices(filters: {
@@ -1720,7 +1746,7 @@ export async function cancelInvoice(
   }).where(eq(invoices.id, id));
 }
 
-export async function getInvoiceStats() {
+export async function getInvoiceStats(tenantId: number) {
   const db = await getDb();
   if (!db) return {
     total: 0,
@@ -1729,6 +1755,7 @@ export async function getInvoiceStats() {
     totalValue: 0,
   };
   
+  const { eq } = await import("drizzle-orm");
   const result = await db
     .select({
       total: sql<number>`COUNT(*)`,
@@ -1736,36 +1763,40 @@ export async function getInvoiceStats() {
       canceladas: sql<number>`SUM(CASE WHEN ${invoices.status} = 'cancelada' THEN 1 ELSE 0 END)`,
       totalValue: sql<number>`SUM(CASE WHEN ${invoices.status} = 'emitida' THEN ${invoices.totalInvoice} ELSE 0 END)`,
     })
-    .from(invoices);
+    .from(invoices)
+    .where(eq(invoices.tenantId, tenantId));
   
   return result[0] || { total: 0, emitidas: 0, canceladas: 0, totalValue: 0 };
 }
 
 // ============= FUNÇÕES PARA RECIBO =============
 
-export async function getSaleById(id: number) {
+export async function getSaleById(tenantId: number, id: number) {
   const db = await getDb();
   if (!db) return null;
   
   const { sales } = await import("../drizzle/schema");
-  const result = await db.select().from(sales).where(eq(sales.id, id)).limit(1);
+  const { eq, and } = await import("drizzle-orm");
+  const result = await db.select().from(sales).where(and(eq(sales.tenantId, tenantId), eq(sales.id, id))).limit(1);
   return result[0] || null;
 }
 
-export async function getCustomerById(id: number) {
+export async function getCustomerById(tenantId: number, id: number) {
   const db = await getDb();
   if (!db) return null;
   
   const { customers } = await import("../drizzle/schema");
-  const result = await db.select().from(customers).where(eq(customers.id, id)).limit(1);
+  const { eq, and } = await import("drizzle-orm");
+  const result = await db.select().from(customers).where(and(eq(customers.tenantId, tenantId), eq(customers.id, id))).limit(1);
   return result[0] || null;
 }
 
-export async function getSaleItems(saleId: number) {
+export async function getSaleItems(tenantId: number, saleId: number) {
   const db = await getDb();
   if (!db) return [];
   
   const { saleItems, products, stockItems } = await import("../drizzle/schema");
+  const { eq, and } = await import("drizzle-orm");
   
   const items = await db
     .select({
@@ -1783,7 +1814,7 @@ export async function getSaleItems(saleId: number) {
     .from(saleItems)
     .leftJoin(products, eq(saleItems.productId, products.id))
     .leftJoin(stockItems, eq(saleItems.stockItemId, stockItems.id))
-    .where(eq(saleItems.saleId, saleId));
+    .where(and(eq(saleItems.tenantId, tenantId), eq(saleItems.saleId, saleId)));
   
   return items;
 }
