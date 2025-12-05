@@ -92,12 +92,13 @@ export default function Vendas() {
         setShowReceipt(true);
         setShowPrintReceipt(true);
       }
-      setCart([]);
-      setSelectedCustomerId(null);
-      setDiscount(0);
-      setPaymentMethod("dinheiro");
-      setEmitirNFe(false);
-      searchInputRef.current?.focus();
+      // NÃO limpar o carrinho aqui - será feito após fechar o cupom
+      // setCart([]);
+      // setSelectedCustomerId(null);
+      // setDiscount(0);
+      // setPaymentMethod("dinheiro");
+      // setEmitirNFe(false);
+      // searchInputRef.current?.focus();
     },
     onError: (error) => {
       toast.error(`Erro ao realizar venda: ${error.message}`);
@@ -1044,6 +1045,12 @@ export default function Vendas() {
                 printThermalReceipt();
                 setShowReceipt(false);
                 setLastSaleId(null);
+                setCart([]);
+                setSelectedCustomerId(null);
+                setDiscount(0);
+                setPaymentMethod("dinheiro");
+                setEmitirNFe(false);
+                searchInputRef.current?.focus();
               }} className="flex-1">
                 <Printer className="h-4 w-4 mr-2" />
                 Imprimir Cupom
@@ -1053,6 +1060,12 @@ export default function Vendas() {
                 onClick={() => {
                   setShowReceipt(false);
                   setLastSaleId(null);
+                  setCart([]);
+                  setSelectedCustomerId(null);
+                  setDiscount(0);
+                  setPaymentMethod("dinheiro");
+                  setEmitirNFe(false);
+                  searchInputRef.current?.focus();
                 }}
                 className="flex-1"
               >
