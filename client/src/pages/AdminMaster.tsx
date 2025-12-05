@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { UserManagementDialog } from "@/components/UserManagementDialog";
 import { SystemLogsDialog } from "@/components/SystemLogsDialog";
 import { TenantDetailsDialog } from "@/components/TenantDetailsDialog";
+import { TenantImpersonationDialog } from "@/components/TenantImpersonationDialog";
 import {
   Shield,
   Users,
@@ -20,6 +21,7 @@ import {
   Server,
   HardDrive,
   Cpu,
+  LogIn,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +29,7 @@ export default function AdminMaster() {
   const { user } = useAuth();
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isSystemLogsOpen, setIsSystemLogsOpen] = useState(false);
+  const [isDbMaintenanceOpen, setIsDbMaintenanceOpen] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
 
   // Queries
@@ -404,6 +407,15 @@ export default function AdminMaster() {
               <Activity className="h-6 w-6" />
               <span>Logs do Sistema</span>
             </Button>
+
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col items-center justify-center space-y-2 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 transition-all"
+              onClick={() => setIsDbMaintenanceOpen(true)}
+            >
+              <LogIn className="h-6 w-6" />
+              <span>Acessar Cliente</span>
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -440,6 +452,11 @@ export default function AdminMaster() {
         tenantId={selectedTenantId}
         open={!!selectedTenantId}
         onOpenChange={(open) => !open && setSelectedTenantId(null)}
+      />
+
+      <TenantImpersonationDialog
+        open={isDbMaintenanceOpen}
+        onOpenChange={setIsDbMaintenanceOpen}
       />
     </div>
   );

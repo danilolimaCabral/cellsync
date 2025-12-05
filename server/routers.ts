@@ -3065,5 +3065,85 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
       return getVersionInfo();
     }),
   }),
+
+  // ============= ADMIN DATABASE ACCESS (MAINTENANCE) =============
+  adminDb: router({
+    // Execute a SELECT query on a tenant's database
+    executeQuery: protectedProcedure
+      .input(z.object({
+        tenantId: z.number(),
+        query: z.string(),
+      }))
+      .query(async ({ input, ctx }) => {
+        // Only allow Master Admins to access this
+        if (ctx.user.role !== 'master_admin') {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+
+        const { executeSafeQuery } = await import("./db-admin");
+        return executeSafeQuery(input.tenantId, input.query);
+      }),
+
+    // List all tables in a tenant's database
+    listTables: protectedProcedure
+      .input(z.object({
+        tenantId: z.number(),
+      }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'master_admin') {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+
+        const { listTables } = await import("./db-admin");
+        return listTables(input.tenantId);
+      }),
+
+    // Get table structure
+    getTableStructure: protectedProcedure
+      .input(z.object({
+        tenantId: z.number(),
+        tableName: z.string(),
+      }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'master_admin') {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+
+        const { getTableStructure } = await import("./db-admin");
+        return getTableStructure(input.tenantId, input.tableName);
+      }),
+
+    // Get table data
+    getTableData: protectedProcedure
+      .input(z.object({
+        tenantId: z.number(),
+        tableName: z.string(),
+        limit: z.number().default(100),
+        offset: z.number().default(0),
+      }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'master_admin') {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+
+        const { getTableData } = await import("./db-admin");
+        return getTableData(input.tenantId, input.tableName, input.limit, input.offset);
+      }),
+
+    // Get table row count
+    getTableRowCount: protectedProcedure
+      .input(z.object({
+        tenantId: z.number(),
+        tableName: z.string(),
+      }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'master_admin') {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+
+        const { getTableRowCount } = await import("./db-admin");
+        return getTableRowCount(input.tenantId, input.tableName);
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

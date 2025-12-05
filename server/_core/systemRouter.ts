@@ -255,4 +255,19 @@ export const systemRouter = router({
         }
       };
     }),
+
+  impersonateTenant: masterProcedure
+    .input(z.object({ 
+      tenantId: z.number(),
+      userId: z.number().optional()
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const { createImpersonationToken } = await import("../impersonation");
+      const result = await createImpersonationToken(
+        ctx.user.id,
+        input.tenantId,
+        input.userId
+      );
+      return result;
+    }),
 });
