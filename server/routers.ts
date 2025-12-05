@@ -856,7 +856,7 @@ export const appRouter = router({
           unitPrice: z.number().min(0),
           imei: z.string().optional(),
         })),
-        paymentMethod: z.string(),
+        paymentMethod: z.enum(["dinheiro", "cheque", "cartao_credito", "cartao_debito", "credito_loja", "vale_alimentacao", "vale_refeicao", "vale_presente", "vale_combustivel", "boleto", "deposito", "pix", "sem_pagamento", "outros"]),
         totalAmount: z.number().min(0),
         discount: z.number().min(0).default(0),
         saleType: z.enum(["retail", "wholesale"]).optional(),
@@ -886,13 +886,13 @@ export const appRouter = router({
         const { generateReceipt } = await import("./receipt-generator");
         
         // Buscar dados da venda
-        const sale = await db.getSaleById(input.saleId);
+        const sale = await db.getSaleById(ctx.user.tenantId, input.saleId);
         if (!sale) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Venda não encontrada" });
         }
         
         // Buscar dados do cliente
-        const customer = sale.customerId ? await db.getCustomerById(sale.customerId) : null;
+        const customer = sale.customerId ? await db.getCustomerById(ctx.user.tenantId, sale.customerId) : null;
         
         // Buscar dados do vendedor
         const seller = await db.getUserById(sale.sellerId);
@@ -1914,11 +1914,11 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
       .input(z.object({
         id: z.number(),
       }))
-      .query(async ({ input }) => {
-        const invoice = await db.getInvoiceById(input.id);
+      .query(async ({ input, ctx }) => {
+        const invoice = await db.getInvoiceById(ctx.user.tenantId, input.id);
         if (!invoice) throw new Error("NF-e não encontrada");
         
-        const items = await db.getInvoiceItems(input.id);
+        const items = await db.getInvoiceItems(ctx.user.tenantId, input.id);
         return { ...invoice, items };
       }),
 
@@ -1970,11 +1970,11 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
       .input(z.object({
         id: z.number(),
       }))
-      .query(async ({ input }) => {
-        const invoice = await db.getInvoiceById(input.id);
+      .query(async ({ input, ctx }) => {
+        const invoice = await db.getInvoiceById(ctx.user.tenantId, input.id);
         if (!invoice) throw new Error("NF-e não encontrada");
         
-        const items = await db.getInvoiceItems(input.id);
+        const items = await db.getInvoiceItems(ctx.user.tenantId, input.id);
         const nfeData = { ...invoice, items };
         
         const { generateNFeXML } = await import("./nfe-xml");
@@ -1990,11 +1990,11 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
       .input(z.object({
         id: z.number(),
       }))
-      .query(async ({ input }) => {
-        const invoice = await db.getInvoiceById(input.id);
+      .query(async ({ input, ctx }) => {
+        const invoice = await db.getInvoiceById(ctx.user.tenantId, input.id);
         if (!invoice) throw new Error("NF-e não encontrada");
         
-        const items = await db.getInvoiceItems(input.id);
+        const items = await db.getInvoiceItems(ctx.user.tenantId, input.id);
         const nfeData = { ...invoice, items };
         
         const { generateDANFE } = await import("./nfe-danfe");
@@ -2123,15 +2123,15 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
       .input(z.object({
         id: z.number(),
       }))
-      .mutation(async ({ input }) => {
-        const invoice = await db.getInvoiceById(input.id);
+      .mutation(async ({ input, ctx }) => {
+        const invoice = await db.getInvoiceById(ctx.user.tenantId, input.id);
         if (!invoice) throw new Error("NF-e não encontrada");
         
         if (invoice.status === "emitida") {
           throw new Error("NF-e já foi emitida");
         }
         
-        const items = await db.getInvoiceItems(input.id);
+        const items = await db.getInvoiceItems(ctx.user.tenantId, input.id);
         const nfeData = { ...invoice, items };
         
         // Gerar XML
