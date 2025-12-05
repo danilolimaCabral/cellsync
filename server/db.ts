@@ -2122,3 +2122,67 @@ export async function getServiceOrderById(orderId: number) {
   
   return os || null;
 }
+
+// ============= GESTÃO DE MÓDULOS (TENANTS) =============
+export async function getAllTenants() {
+  const database = await getDb();
+  if (!database) return [];
+
+  const { tenants } = await import("../drizzle/schema");
+  return await database.select({
+    id: tenants.id,
+    name: tenants.nomeFantasia,
+    email: tenants.email,
+    plan: tenants.plano,
+  }).from(tenants);
+}
+
+export async function getTenantModules(tenantId: number) {
+  const database = await getDb();
+  if (!database) return [];
+
+  const { tenantModules } = await import("../drizzle/schema");
+  const modules = await database
+    .select({ moduleId: tenantModules.moduleId })
+    .from(tenantModules)
+    .where(and(
+      eq(tenantModules.tenantId, tenantId),
+      eq(tenantModules.enabled, true)
+    ));
+
+  return modules.map(m => m.moduleId);
+}
+
+export async function toggleTenantModule(tenantId: number, moduleId: string, enabled: boolean) {
+  const database = await getDb();
+  if (!database) return;
+
+  const { tenantModules } = await import("../drizzle/schema");
+  
+  // Verificar se já existe registro
+  const existing = await database
+    .select()
+    .from(tenantModules)
+    .where(and(
+      eq(tenantModules.tenantId, tenantId),
+      eq(tenantModules.moduleId, moduleId)
+    ));
+
+  if (existing.length > 0) {
+    // Atualizar
+    await database
+      .update(tenantModules)
+      .set({ enabled })
+      .where(and(
+        eq(tenantModules.tenantId, tenantId),
+        eq(tenantModules.moduleId, moduleId)
+      ));
+  } else {
+    // Criar novo
+    await database.insert(tenantModules).values({
+      tenantId,
+      moduleId,
+      enabled,
+    });
+  }
+}

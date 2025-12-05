@@ -2882,6 +2882,49 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
   
   // ============= TENANTS (MULTI-LOJA) =============
   tenants: router({
+    // Listar todos os tenants (apenas master_admin)
+    list: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "master_admin") {
+          // Se não for master, retorna apenas o próprio tenant
+          return [{ id: ctx.user.tenantId, name: "Minha Empresa" }];
+        }
+        
+        const tenantsList = await db.getAllTenants();
+        return tenantsList;
+      }),
+
+    // Obter permissões de módulos de um tenant
+    getPermissions: protectedProcedure
+      .input(z.object({
+        tenantId: z.number(),
+      }))
+      .query(async ({ input, ctx }) => {
+        // Segurança: Apenas master_admin pode ver de outros, admin vê do próprio
+        if (ctx.user.role !== "master_admin" && ctx.user.tenantId !== input.tenantId) {
+          throw new Error("Acesso negado");
+        }
+
+        const permissions = await db.getTenantModules(input.tenantId);
+        return permissions;
+      }),
+
+    // Atualizar permissões (apenas master_admin)
+    updatePermissions: protectedProcedure
+      .input(z.object({
+        tenantId: z.number(),
+        moduleId: z.string(),
+        enabled: z.boolean(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "master_admin") {
+          throw new Error("Apenas Master Admin pode alterar módulos");
+        }
+
+        await db.toggleTenantModule(input.tenantId, input.moduleId, input.enabled);
+        return { success: true };
+      }),
+
     // Criar tenant após pagamento bem-sucedido no Stripe
     createFromCheckout: publicProcedure
       .input(z.object({
