@@ -12,37 +12,59 @@ export interface ParsedData {
 }
 
 /**
+ * Detectar delimitador de CSV analisando a primeira linha
+ */
+function detectDelimiter(fileContent: string): string {
+  const firstLine = fileContent.split('\n')[0];
+  if (!firstLine) return ',';
+
+  // Contar ocorrências de cada delimitador potencial
+  const delimiters = [',', ';', '\t', '|'];
+  const counts = delimiters.map(d => ({
+    delimiter: d,
+    count: (firstLine.match(new RegExp(`\\${d}`, 'g')) || []).length
+  }));
+
+  // Retornar o delimitador com mais ocorrências
+  const best = counts.reduce((a, b) => (a.count > b.count ? a : b));
+  return best.count > 0 ? best.delimiter : ',';
+}
+
+/**
  * Parse arquivo CSV
  */
 export function parseCSV(fileContent: string): ParsedData {
-  // Tenta detectar delimitador automaticamente, mas com fallbacks explícitos
-  const delimitersToTry = [undefined, ';', ',', '\t']; // undefined = auto-detect
+  // Detecta o delimitador mais provável
+  const detectedDelimiter = detectDelimiter(fileContent);
+  
+  // Tenta delimitadores em ordem de probabilidade
+  const delimitersToTry = [detectedDelimiter, ';', ',', '\t', '|'];
+  const uniqueDelimiters = [...new Set(delimitersToTry)]; // Remove duplicatas
   let lastError = "";
 
-  for (const delimiter of delimitersToTry) {
+  for (const delimiter of uniqueDelimiters) {
     try {
       const result = Papa.parse(fileContent, {
         header: true,
         skipEmptyLines: true,
-        delimiter: delimiter, // Tenta um delimitador específico ou auto
+        delimiter: delimiter,
         transformHeader: (header) => header.trim(),
+        dynamicTyping: false, // Manter como string para evitar problemas de tipo
       });
 
-      // Se tiver erros críticos de parsing (exceto avisos leves), registra e tenta próximo
+      // Se tiver erros críticos de parsing
       if (result.errors.length > 0) {
-        // Alguns erros do PapaParse são fatais, outros não.
-        // "Unable to auto-detect delimiting character" é fatal se delimiter for undefined.
         const fatalError = result.errors.find(e => e.type === "Delimiter" || e.code === "UndetectableDelimiter");
         if (fatalError) {
           lastError = fatalError.message;
-          continue; // Tenta próximo delimitador
+          continue;
         }
       }
 
       const data = result.data as Record<string, any>[];
       const columns = result.meta.fields || [];
 
-      // Validação básica: se achou colunas e dados, sucesso!
+      // Validação: se achou colunas e dados, sucesso!
       if (columns.length > 0 && data.length > 0) {
         return {
           data,
@@ -56,7 +78,7 @@ export function parseCSV(fileContent: string): ParsedData {
   }
 
   // Se chegou aqui, nenhum delimitador funcionou
-  throw new Error(`Erro ao ler CSV: Não foi possível detectar o formato automaticamente. (Erro: ${lastError || "Formato inválido"})`);
+  throw new Error(`Erro ao ler CSV: Não foi possível detectar o formato automaticamente. Delimitador detectado: '${detectedDelimiter}'. Tente usar um arquivo com delimitador padrão (vírgula ou ponto-e-vírgula). (Erro: ${lastError || "Formato inválido"})`);
 }
 
 /**
