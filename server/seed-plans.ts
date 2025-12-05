@@ -14,38 +14,38 @@ async function seedPlans() {
       name: "Básico",
       slug: "basico",
       description: "Ideal para pequenas assistências e autônomos",
-      priceMonthly: 4990, // R$ 49,90
-      priceYearly: 49900, // R$ 499,00
-      maxUsers: 2,
-      maxProducts: 500,
-      maxStorage: 1024, // 1GB
+      priceMonthly: 9700, // R$ 97,00
+      priceYearly: 97000, // R$ 970,00
+      maxUsers: 3,
+      maxProducts: 1000,
+      maxStorage: 2048, // 2GB
       features: ["pdv", "estoque", "os_basica", "relatorios_basicos"],
-      aiImportsLimit: 10,
+      aiImportsLimit: 20,
       isActive: true
     },
     {
       name: "Profissional",
       slug: "profissional",
       description: "Para lojas em crescimento com equipe",
-      priceMonthly: 9700, // R$ 97,00
-      priceYearly: 97000, // R$ 970,00
-      maxUsers: 5,
-      maxProducts: 2000,
-      maxStorage: 5120, // 5GB
+      priceMonthly: 19700, // R$ 197,00
+      priceYearly: 197000, // R$ 1.970,00
+      maxUsers: 10,
+      maxProducts: 5000,
+      maxStorage: 10240, // 10GB
       features: ["pdv", "estoque", "os_completa", "financeiro", "whatsapp", "relatorios_avancados", "ia_assistente"],
-      aiImportsLimit: 50,
+      aiImportsLimit: 100,
       isActive: true
     },
     {
       name: "Empresarial",
       slug: "empresarial",
       description: "Gestão completa para grandes assistências",
-      priceMonthly: 19700, // R$ 197,00
-      priceYearly: 197000, // R$ 1.970,00
-      maxUsers: 15,
-      maxProducts: 10000,
-      maxStorage: 20480, // 20GB
-      features: ["pdv", "estoque", "os_completa", "financeiro", "whatsapp", "relatorios_bi", "ia_ilimitada", "api_acesso", "multi_loja"],
+      priceMonthly: 59900, // R$ 599,00
+      priceYearly: 599000, // R$ 5.990,00
+      maxUsers: 50,
+      maxProducts: 50000,
+      maxStorage: 102400, // 100GB
+      features: ["pdv", "estoque", "os_completa", "financeiro", "whatsapp", "relatorios_bi", "ia_ilimitada", "api_acesso", "multi_loja", "prioridade_suporte"],
       aiImportsLimit: -1, // Ilimitado
       isActive: true
     }
