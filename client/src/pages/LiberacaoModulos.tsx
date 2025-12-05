@@ -19,7 +19,8 @@ import {
   Settings,
   Database,
   Truck,
-  MessageSquare
+  MessageSquare,
+  Loader2
 } from "lucide-react";
 
 const MODULES = [
@@ -38,18 +39,23 @@ const MODULES = [
 export default function LiberacaoModulos() {
   const { user } = useAuth();
   const [selectedTenant, setSelectedTenant] = useState<string>("");
+  const [isUpdating, setIsUpdating] = useState(false);
   
   // Queries
-  const { data: tenants } = trpc.tenants.list.useQuery();
-  const { data: permissions, refetch } = trpc.tenants.getPermissions.useQuery(
+  const { data: tenants = [], isLoading: tenantsLoading, error: tenantsError } = trpc.tenants.list.useQuery(
+    undefined,
+    { enabled: user?.role === "master_admin" }
+  );
+
+  const { data: permissions = [], refetch, isLoading: permissionsLoading } = trpc.tenants.getPermissions.useQuery(
     { tenantId: Number(selectedTenant) },
-    { enabled: !!selectedTenant }
+    { enabled: !!selectedTenant && user?.role === "master_admin" }
   );
 
   // Mutation
   const updatePermissionMutation = trpc.tenants.updatePermissions.useMutation({
     onSuccess: () => {
-      toast.success("Permissões atualizadas com sucesso!");
+      toast.success("Permissão atualizada com sucesso!");
       refetch();
     },
     onError: (error) => {
@@ -58,15 +64,24 @@ export default function LiberacaoModulos() {
   });
 
   const handleToggleModule = async (moduleId: string, enabled: boolean) => {
-    if (!selectedTenant) return;
+    if (!selectedTenant) {
+      toast.error("Selecione uma empresa primeiro");
+      return;
+    }
 
-    await updatePermissionMutation.mutateAsync({
-      tenantId: Number(selectedTenant),
-      moduleId,
-      enabled
-    });
+    setIsUpdating(true);
+    try {
+      await updatePermissionMutation.mutateAsync({
+        tenantId: Number(selectedTenant),
+        moduleId,
+        enabled
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
+  // Access control
   if (user?.role !== "master_admin") {
     return (
       <div className="p-4 md:p-8">
@@ -98,51 +113,86 @@ export default function LiberacaoModulos() {
             <CardDescription>Escolha qual cliente deseja configurar</CardDescription>
           </CardHeader>
           <CardContent>
-            <Select value={selectedTenant} onValueChange={setSelectedTenant}>
-              <SelectTrigger className="w-full md:w-[400px]">
-                <SelectValue placeholder="Selecione uma empresa..." />
-              </SelectTrigger>
-              <SelectContent>
-                {tenants?.map((tenant: any) => (
-                  <SelectItem key={tenant.id} value={String(tenant.id)}>
-                    {tenant.name} (ID: {tenant.id})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {tenantsLoading ? (
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Carregando empresas...
+              </div>
+            ) : tenantsError ? (
+              <div className="text-sm text-red-500">
+                Erro ao carregar empresas: {tenantsError.message}
+              </div>
+            ) : !tenants || tenants.length === 0 ? (
+              <div className="text-sm text-slate-500">Nenhuma empresa encontrada no sistema</div>
+            ) : (
+              <Select value={selectedTenant} onValueChange={setSelectedTenant}>
+                <SelectTrigger className="w-full md:w-[400px]">
+                  <SelectValue placeholder="Selecione uma empresa..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {tenants.map((tenant: any) => (
+                    <SelectItem key={tenant.id} value={String(tenant.id)}>
+                      {tenant.name} (ID: {tenant.id})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </CardContent>
         </Card>
 
         {/* Lista de Módulos */}
         {selectedTenant && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {MODULES.map((module) => {
-              const isEnabled = permissions?.includes(module.id) || false;
-              const Icon = module.icon;
+          <>
+            {permissionsLoading ? (
+              <div className="text-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-slate-400" />
+                <p className="text-slate-500">Carregando módulos...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {MODULES.map((module) => {
+                  const isEnabled = Array.isArray(permissions) ? permissions.includes(module.id) : false;
+                  const Icon = module.icon;
+                  const isDisabled = isUpdating || updatePermissionMutation.isPending;
 
-              return (
-                <Card key={module.id} className={`transition-all duration-200 ${isEnabled ? 'border-green-200 bg-green-50/30' : 'opacity-80'}`}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between space-x-4">
-                      <div className="flex items-center space-x-4">
-                        <div className={`p-2 rounded-lg ${isEnabled ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'}`}>
-                          <Icon className="h-6 w-6" />
+                  return (
+                    <Card 
+                      key={module.id} 
+                      className={`transition-all duration-200 ${
+                        isEnabled 
+                          ? 'border-green-200 bg-green-50/30 shadow-sm' 
+                          : 'border-slate-200 opacity-75 hover:opacity-100'
+                      } ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}`}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between space-x-4">
+                          <div className="flex items-center space-x-4 flex-1">
+                            <div className={`p-2 rounded-lg transition-colors ${
+                              isEnabled 
+                                ? 'bg-green-100 text-green-600' 
+                                : 'bg-slate-100 text-slate-500'
+                            }`}>
+                              <Icon className="h-6 w-6" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-sm">{module.label}</h4>
+                              <p className="text-xs text-slate-500 mt-1">{module.description}</p>
+                            </div>
+                          </div>
+                          <Switch
+                            checked={isEnabled}
+                            onCheckedChange={(checked) => handleToggleModule(module.id, checked)}
+                            disabled={isDisabled}
+                          />
                         </div>
-                        <div>
-                          <h4 className="font-semibold text-sm">{module.label}</h4>
-                          <p className="text-xs text-slate-500 mt-1">{module.description}</p>
-                        </div>
-                      </div>
-                      <Switch
-                        checked={isEnabled}
-                        onCheckedChange={(checked) => handleToggleModule(module.id, checked)}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
 
         {!selectedTenant && (
