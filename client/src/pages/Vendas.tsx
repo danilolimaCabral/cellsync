@@ -138,8 +138,11 @@ export default function Vendas() {
   // Calcular preço baseado em tipo de venda e quantidade
   const calculatePrice = (product: typeof products[0], quantity: number) => {
     const retailPrice = product.salePrice || 0;
-    const wholesalePrice = (product as any).wholesalePrice;
+    const wholesalePrice = (product as any).wholesalePrice || 0;
     const minWholesaleQty = (product as any).minWholesaleQty || 5;
+
+    // Debug: Log para verificar preços
+    console.log('Calculating price for:', product.name, 'Retail:', retailPrice, 'Wholesale:', wholesalePrice, 'SaleType:', saleType);
 
     // Se não tem preço de atacado ou tipo é varejo, usa preço de varejo
     if (!wholesalePrice || saleType === "retail") {
@@ -226,8 +229,13 @@ export default function Vendas() {
   };
 
   // Cálculos
-  const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const total = subtotal - discount;
+  const subtotal = cart.reduce((sum, item) => {
+    const itemTotal = item.unitPrice * item.quantity;
+    console.log('Cart item:', item.name, 'unitPrice:', item.unitPrice, 'quantity:', item.quantity, 'itemTotal:', itemTotal);
+    return sum + itemTotal;
+  }, 0);
+  const total = Math.max(0, subtotal - discount);
+  console.log('Subtotal:', subtotal, 'Discount:', discount, 'Total:', total);
 
   // Calcular economia de atacado
   const savedAmount = cart.reduce((sum, item) => {
