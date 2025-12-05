@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import PageHeader from "@/components/PageHeader";
-import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X, FileText } from "lucide-react";
+import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X, FileText, Printer } from "lucide-react";
 import NFeIssuanceDialog from "@/components/NFeIssuanceDialog";
+import { ThermalReceipt, useThermalPrinter } from "@/components/ThermalReceipt";
 
 interface CartItem {
   productId: number;
@@ -42,7 +43,9 @@ export default function Vendas() {
   const [emitindoNFe, setEmitindoNFe] = useState(false);
   const [saleType, setSaleType] = useState<"retail" | "wholesale">("retail");
   const [showNFeDialog, setShowNFeDialog] = useState(false);
+  const [showPrintReceipt, setShowPrintReceipt] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const { printThermalReceipt } = useThermalPrinter();
 
   // Verificar autenticação
   if (loading) {
@@ -83,10 +86,7 @@ export default function Vendas() {
       } else {
         // Se não for fiscal, mostrar recibo simples e abrir automaticamente
         setShowReceipt(true);
-        // Pequeno delay para garantir que o estado foi atualizado
-        setTimeout(() => {
-          generateReceiptMutation.mutate({ saleId: result.saleId });
-        }, 500);
+        setShowPrintReceipt(true);
       }
       setCart([]);
       setSelectedCustomerId(null);
@@ -853,6 +853,29 @@ export default function Vendas() {
         </div>
       </div>
 
+      {/* Recibo Térmico Oculto */}
+      {showPrintReceipt && lastSaleId && selectedCustomerId && (
+        <div style={{ display: "none" }}>
+          <ThermalReceipt
+            saleId={lastSaleId}
+            customerName={customers.find((c) => c.id === selectedCustomerId)?.name || "Cliente"}
+            items={cart.map((item) => ({
+              name: item.name,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              subtotal: item.unitPrice * item.quantity,
+            }))}
+            subtotal={subtotal}
+            discount={discount}
+            total={total}
+            paymentMethod={paymentMethod}
+            cpf={cpfNota || undefined}
+            timestamp={new Date()}
+            companyName={user?.tenantName || "LOJA PADRÃO"}
+          />
+        </div>
+      )}
+
       {/* Diálogo de Emissão de NF-e */}
       <NFeIssuanceDialog 
         open={showNFeDialog} 
@@ -874,9 +897,13 @@ export default function Vendas() {
                 {formatCurrency(total)}</p>
             </div>
             <div className="flex gap-2">
-              <Button onClick={printReceipt} className="flex-1">
-                <Receipt className="h-4 w-4 mr-2" />
-                Imprimir
+              <Button onClick={() => {
+                printThermalReceipt();
+                setShowReceipt(false);
+                setLastSaleId(null);
+              }} className="flex-1">
+                <Printer className="h-4 w-4 mr-2" />
+                Imprimir Cupom
               </Button>
               <Button
                 variant="outline"
