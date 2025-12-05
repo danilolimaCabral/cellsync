@@ -186,7 +186,7 @@ export async function getAccountIdByCode(
 /**
  * Cria um lançamento contábil no banco de dados
  */
-export async function createAccounting Posting(
+export async function createAccountingPosting(
   posting: AccountingPosting,
   userId: number
 ): Promise<number> {
