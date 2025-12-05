@@ -933,9 +933,12 @@ export default function Vendas() {
         </div>
       </div>
 
-      {/* Recibo Térmico Oculto */}
-      {showPrintReceipt && lastSaleId && (() => {
+      {/* Recibo Térmico Oculto - Sempre renderizado para permitir impressão */}
+      {(() => {
         const customer = selectedCustomerId ? customers.find((c) => c.id === selectedCustomerId) : null;
+        // Só renderiza se tiver itens no carrinho ou uma venda finalizada
+        if (cart.length === 0 && !lastSaleId) return null;
+        
         return (
           <div style={{ display: "none" }}>
             <ThermalReceipt
