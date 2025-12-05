@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, X, Zap, Crown, Rocket, Star, Shield, BarChart3, Users, Package, CreditCard, MessageSquare, Zap as ZapIcon } from 'lucide-react';
+import { Check, X, Zap, Crown, Rocket, Star, Shield, BarChart3, Users, Package, CreditCard, MessageSquare, Code, Database, Lock, Headphones } from 'lucide-react';
 
 export default function Pricing() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -13,28 +13,37 @@ export default function Pricing() {
     financeiro: { name: 'Financeiro', icon: BarChart3, color: 'text-purple-500' },
     crm: { name: 'CRM', icon: Users, color: 'text-red-500' },
     whatsapp: { name: 'WhatsApp', icon: MessageSquare, color: 'text-green-600' },
-    api: { name: 'API', icon: ZapIcon, color: 'text-indigo-500' },
+    api: { name: 'API', icon: Code, color: 'text-indigo-500' },
+    relatorios: { name: 'Relatórios', icon: BarChart3, color: 'text-cyan-500' },
   };
 
   const plans = [
     {
-      id: 'starter',
-      name: 'Iniciante',
-      tagline: 'Teste sem risco',
-      price: 'Grátis',
-      priceSubtext: 'por 7 dias',
-      monthlyPrice: 0,
-      yearlyPrice: 0,
-      description: 'Experimente toda a potência do CellSync por 7 dias.',
-      icon: Zap,
-      color: 'from-slate-500 to-slate-600',
-      textColor: 'text-slate-600',
-      buttonColor: 'bg-slate-600 hover:bg-slate-700',
+      id: 'basic',
+      name: 'Básico',
+      tagline: 'Perfeito para começar',
+      price: 'R$ 79',
+      priceSubtext: '/mês',
+      monthlyPrice: 79,
+      yearlyPrice: 790,
+      description: 'Tudo que uma pequena loja precisa para organizar vendas, estoque e clientes.',
+      icon: Rocket,
+      color: 'from-blue-500 to-blue-600',
+      textColor: 'text-blue-600',
+      buttonColor: 'bg-blue-600 hover:bg-blue-700',
       buttonVariant: 'default' as const,
       popular: false,
-      modules: ['os', 'vendas'],
-      cta: 'Iniciar Trial Grátis',
-      bonus: null,
+      modules: ['os', 'vendas', 'estoque', 'crm'],
+      cta: 'Começar Agora',
+      bonus: '30% desconto no 1º mês',
+      discount: '17% off anual',
+      details: {
+        users: '2 usuários',
+        products: '500 produtos',
+        customers: '1.000 clientes',
+        storage: '1 GB',
+        support: 'Email',
+      },
     },
     {
       id: 'professional',
@@ -44,17 +53,24 @@ export default function Pricing() {
       priceSubtext: '/mês',
       monthlyPrice: 199,
       yearlyPrice: 1990,
-      description: 'A escolha ideal para lojas em crescimento.',
+      description: 'A escolha ideal para lojas em crescimento. Inclui financeiro, comissões e relatórios avançados.',
       icon: Star,
       color: 'from-purple-500 to-pink-600',
       textColor: 'text-purple-600',
       buttonColor: 'bg-purple-600 hover:bg-purple-700',
       buttonVariant: 'default' as const,
       popular: true,
-      modules: ['os', 'vendas', 'estoque', 'financeiro', 'crm', 'whatsapp'],
+      modules: ['os', 'vendas', 'estoque', 'financeiro', 'crm', 'whatsapp', 'relatorios'],
       cta: 'Escolher Profissional',
       bonus: 'Consulta de setup grátis',
       discount: '17% off anual',
+      details: {
+        users: '5 usuários',
+        products: '2.000 produtos',
+        customers: '5.000 clientes',
+        storage: '10 GB',
+        support: 'Email + Chat',
+      },
     },
     {
       id: 'premium',
@@ -64,17 +80,24 @@ export default function Pricing() {
       priceSubtext: '/mês',
       monthlyPrice: 399,
       yearlyPrice: 3990,
-      description: 'Controle total com API e integrações customizadas.',
+      description: 'Controle total com API, webhooks e integrações customizadas. Ideal para redes de lojas.',
       icon: Crown,
       color: 'from-orange-500 to-red-600',
       textColor: 'text-orange-600',
       buttonColor: 'bg-orange-600 hover:bg-orange-700',
       buttonVariant: 'default' as const,
       popular: false,
-      modules: ['os', 'vendas', 'estoque', 'financeiro', 'crm', 'whatsapp', 'api'],
+      modules: ['os', 'vendas', 'estoque', 'financeiro', 'crm', 'whatsapp', 'api', 'relatorios'],
       cta: 'Escolher Premium',
       bonus: 'Treinamento grátis',
       discount: '17% off anual',
+      details: {
+        users: '15 usuários',
+        products: '5.000 produtos',
+        customers: '20.000 clientes',
+        storage: '50 GB',
+        support: 'Telefone + Chat + Email',
+      },
     },
     {
       id: 'enterprise',
@@ -84,22 +107,29 @@ export default function Pricing() {
       priceSubtext: 'a partir de R$ 999/mês',
       monthlyPrice: 999,
       yearlyPrice: 9990,
-      description: 'Plano customizado com suporte dedicado 24/7.',
+      description: 'Plano customizado com suporte dedicado 24/7 e implementação completa.',
       icon: Shield,
       color: 'from-slate-900 to-slate-800',
       textColor: 'text-slate-900',
       buttonColor: 'bg-slate-900 hover:bg-slate-800',
       buttonVariant: 'default' as const,
       popular: false,
-      modules: ['os', 'vendas', 'estoque', 'financeiro', 'crm', 'whatsapp', 'api'],
+      modules: ['os', 'vendas', 'estoque', 'financeiro', 'crm', 'whatsapp', 'api', 'relatorios'],
       cta: 'Solicitar Demonstração',
       bonus: 'Implementação grátis',
       discount: null,
+      details: {
+        users: 'Ilimitados',
+        products: 'Ilimitados',
+        customers: 'Ilimitados',
+        storage: 'Ilimitado',
+        support: 'Suporte dedicado 24/7',
+      },
     },
   ];
 
   const displayPrice = (plan: typeof plans[0]) => {
-    if (plan.id === 'starter' || plan.id === 'enterprise') {
+    if (plan.id === 'enterprise') {
       return plan.price;
     }
     return billingCycle === 'monthly' ? `R$ ${plan.monthlyPrice}` : `R$ ${plan.yearlyPrice}`;
@@ -222,9 +252,9 @@ export default function Pricing() {
                   </Button>
 
                   {/* Modules Section */}
-                  <div className="mb-6">
+                  <div className="mb-6 pb-6 border-b border-slate-200">
                     <h4 className="text-sm font-bold text-slate-900 mb-3">Módulos Inclusos:</h4>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2">
                       {plan.modules.map((moduleKey) => {
                         const module = modules[moduleKey as keyof typeof modules];
                         const ModuleIcon = module.icon;
@@ -234,96 +264,53 @@ export default function Pricing() {
                             className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
                           >
                             <ModuleIcon className={`h-4 w-4 ${module.color}`} />
-                            <span className="text-sm font-medium text-slate-700">{module.name}</span>
+                            <span className="text-xs font-medium text-slate-700">{module.name}</span>
                           </div>
                         );
                       })}
                     </div>
                   </div>
 
-                  {/* Divider */}
-                  <div className="border-t border-slate-200 pt-6">
-                    <div className="space-y-3">
-                      {plan.id === 'starter' && (
-                        <>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>1 usuário</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>100 produtos</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>500 clientes</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Suporte por email</span>
-                          </div>
-                        </>
-                      )}
-                      {plan.id === 'professional' && (
-                        <>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Até 5 usuários</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Até 2.000 produtos</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Até 5.000 clientes</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Suporte por email + chat</span>
-                          </div>
-                        </>
-                      )}
-                      {plan.id === 'premium' && (
-                        <>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Até 15 usuários</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Até 5.000 produtos</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Até 20.000 clientes</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Suporte prioritário 24/7</span>
-                          </div>
-                        </>
-                      )}
-                      {plan.id === 'enterprise' && (
-                        <>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Usuários ilimitados</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Produtos ilimitados</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Clientes ilimitados</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span>Suporte dedicado 24/7</span>
-                          </div>
-                        </>
-                      )}
+                  {/* Details Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Users className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs text-slate-500">Usuários</p>
+                        <p className="text-sm font-semibold text-slate-900">{plan.details.users}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Package className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs text-slate-500">Produtos</p>
+                        <p className="text-sm font-semibold text-slate-900">{plan.details.products}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Users className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs text-slate-500">Clientes</p>
+                        <p className="text-sm font-semibold text-slate-900">{plan.details.customers}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Database className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs text-slate-500">Armazenamento</p>
+                        <p className="text-sm font-semibold text-slate-900">{plan.details.storage}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Headphones className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs text-slate-500">Suporte</p>
+                        <p className="text-sm font-semibold text-slate-900">{plan.details.support}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -334,7 +321,7 @@ export default function Pricing() {
 
         {/* Guarantees Section */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-8 bg-white rounded-lg p-6 shadow-md">
+          <div className="inline-flex flex-wrap justify-center gap-6 bg-white rounded-lg p-6 shadow-md">
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-green-500" />
               <span className="text-sm font-medium text-slate-700">Teste grátis por 7 dias</span>
