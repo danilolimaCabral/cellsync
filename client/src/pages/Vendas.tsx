@@ -876,59 +876,7 @@ export default function Vendas() {
                     onClick={() => {
                       const copies = parseInt((document.getElementById('cupom-copies') as HTMLSelectElement)?.value || '1');
                       for (let i = 0; i < copies; i++) {
-                        const printWindow = window.open("", "", "width=400,height=600");
-                        if (printWindow) {
-                          printWindow.document.write(`
-                            <html>
-                              <head>
-                                <title>Cupom Fiscal - ${lastSaleId}</title>
-                                <style>
-                                  body { font-family: monospace; font-size: 12px; margin: 0; padding: 10px; }
-                                  .receipt { width: 80mm; margin: 0 auto; }
-                                  .header { text-align: center; font-weight: bold; margin-bottom: 10px; }
-                                  .divider { border-top: 1px dashed #000; margin: 10px 0; }
-                                  .item { display: flex; justify-content: space-between; margin: 5px 0; }
-                                  .total { font-weight: bold; font-size: 14px; text-align: right; }
-                                  .via { text-align: center; font-size: 10px; margin-top: 20px; }
-                                </style>
-                              </head>
-                              <body>
-                                <div class="receipt">
-                                  <div class="header">CUPOM FISCAL</div>
-                                  <div>Cupom: ${lastSaleId}</div>
-                                  <div>Data: ${new Date().toLocaleDateString('pt-BR')}</div>
-                                  <div class="divider"></div>
-                                  <div class="item">
-                                    <span>Cliente:</span>
-                                    <span>${selectedCustomerId ? 'Cliente' : 'Consumidor'}</span>
-                                  </div>
-                                  <div class="divider"></div>
-                                  <div class="item">
-                                    <span>Subtotal:</span>
-                                    <span>R$ ${(subtotal / 100).toFixed(2)}</span>
-                                  </div>
-                                  <div class="item">
-                                    <span>Desconto:</span>
-                                    <span>R$ ${(discount / 100).toFixed(2)}</span>
-                                  </div>
-                                  <div class="item total">
-                                    <span>Total:</span>
-                                    <span>R$ ${(total / 100).toFixed(2)}</span>
-                                  </div>
-                                  <div class="divider"></div>
-                                  <div style="text-align: center; font-size: 10px;">
-                                    Obrigado pela compra!
-                                  </div>
-                                  <div class="via">Via ${i + 1}</div>
-                                </div>
-                              </body>
-                            </html>
-                          `);
-                          printWindow.document.close();
-                          setTimeout(() => {
-                            printWindow.print();
-                          }, 100);
-                        }
+                        printThermalReceipt();
                       }
                     }}
                   >
