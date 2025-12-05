@@ -11,10 +11,10 @@ export default function Pricing() {
       name: 'Iniciante',
       tagline: 'Teste sem risco',
       price: 'Grátis',
-      priceSubtext: 'por 14 dias',
+      priceSubtext: 'por 7 dias',
       monthlyPrice: 0,
       yearlyPrice: 0,
-      description: 'Experimente toda a potência do CellSync por 14 dias. Sem cartão de crédito, sem compromisso.',
+      description: 'Experimente toda a potência do CellSync por 7 dias. Sem cartão de crédito, sem compromisso.',
       icon: Zap,
       color: 'from-slate-500 to-slate-600',
       textColor: 'text-slate-600',
@@ -451,10 +451,10 @@ export default function Pricing() {
             Pronto para transformar seu negócio?
           </h2>
           <p className="text-lg text-slate-600 mb-6">
-            Comece com 14 dias grátis. Sem cartão de crédito, sem compromisso.
+            Comece com 7 dias grátis. Sem cartão de crédito, sem compromisso.
           </p>
           <Button className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-bold text-lg">
-            Iniciar Trial Grátis Agora
+            Iniciar Trial de 7 Dias Grátis
           </Button>
         </div>
       </div>
