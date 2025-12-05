@@ -43,7 +43,7 @@ export const databaseQueryRouter = router({
   executeQuery: masterProcedure
     .input(z.object({
       query: z.string().min(1, "Query cannot be empty"),
-      limit: z.number().default(100).max(1000)
+      limit: z.number().max(1000).default(100)
     }))
     .query(async ({ input }) => {
       let connection;
