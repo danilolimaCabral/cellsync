@@ -3011,7 +3011,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           .where(eq(tenants.id, ctx.user.tenantId));
 
         return { success: true };
-      }),,
+      }),
 
     // Listar todos os tenants (apenas master_admin)
     list: protectedProcedure
