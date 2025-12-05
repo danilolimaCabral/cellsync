@@ -586,11 +586,22 @@ export const appRouter = router({
         offset: z.number().min(0).default(0),
       }).optional())
       .query(async ({ input, ctx }) => {
-        const customers = await db.listCustomers({
-          ...(input || {}),
-          tenantId: ctx.user.tenantId,
-        });
-        return customers;
+        try {
+          const customers = await db.listCustomers({
+            search: input?.search,
+            segment: input?.segment,
+            limit: input?.limit || 50,
+            offset: input?.offset || 0,
+            tenantId: ctx.user.tenantId,
+          });
+          return customers || [];
+        } catch (error) {
+          console.error('[Customers] Erro ao listar clientes:', error);
+          throw new TRPCError({ 
+            code: "INTERNAL_SERVER_ERROR", 
+            message: "Erro ao carregar clientes. Por favor, tente novamente." 
+          });
+        }
       }),
 
     create: protectedProcedure
