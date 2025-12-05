@@ -16,16 +16,23 @@ import {
   HardDrive,
   Calendar,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
 export default function GerenciarBackups() {
   const { user } = useAuth();
   const [isRunning, setIsRunning] = useState(false);
 
+  const [selectedTenant, setSelectedTenant] = useState<string>("");
+
   // Queries
+  const { data: tenants } = trpc.tenants.list.useQuery(undefined, {
+    enabled: user?.role === "master_admin"
+  });
+
   const { data: backups, isLoading, refetch } = trpc.backup.list.useQuery(
-    {},
-    { enabled: user?.role === "master_admin" }
+    { tenantId: selectedTenant && selectedTenant !== "0" ? Number(selectedTenant) : undefined },
+    { enabled: !!user }
   );
 
   // Mutations
@@ -47,7 +54,9 @@ export default function GerenciarBackups() {
 
   const handleRunBackup = () => {
     setIsRunning(true);
-    runBackupMutation.mutate();
+    runBackupMutation.mutate({ 
+      tenantId: selectedTenant && selectedTenant !== "0" ? Number(selectedTenant) : undefined 
+    });
   };
 
   const formatFileSize = (bytes: number) => {
@@ -99,29 +108,47 @@ export default function GerenciarBackups() {
 
   return (
     <div className="p-4 md:p-8 space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <PageHeader
           title="Gerenciar Backups"
           description="Backups automáticos do banco de dados"
         />
         
-        <Button
-          onClick={handleRunBackup}
-          disabled={isRunning}
-          className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
-        >
-          {isRunning ? (
-            <>
-              <Clock className="h-4 w-4 mr-2 animate-spin" />
-              Executando...
-            </>
-          ) : (
-            <>
-              <Play className="h-4 w-4 mr-2" />
-              Executar Backup Agora
-            </>
+        <div className="flex items-center gap-4">
+          {user?.role === "master_admin" && (
+            <Select value={selectedTenant} onValueChange={setSelectedTenant}>
+              <SelectTrigger className="w-[250px]">
+                <SelectValue placeholder="Filtrar por empresa..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Todas as empresas</SelectItem>
+                {tenants?.map((tenant: any) => (
+                  <SelectItem key={tenant.id} value={String(tenant.id)}>
+                    {tenant.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
-        </Button>
+
+          <Button
+            onClick={handleRunBackup}
+            disabled={isRunning}
+            className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
+          >
+            {isRunning ? (
+              <>
+                <Clock className="h-4 w-4 mr-2 animate-spin" />
+                Executando...
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4 mr-2" />
+                Executar Backup Agora
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Cards de Estatísticas */}

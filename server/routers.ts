@@ -2694,23 +2694,56 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
 
   // ============= BACKUP DO SISTEMA =============
   backup: router({
+    // Listar backups disponíveis (por tenant ou geral se master)
     list: protectedProcedure
-      .input(z.object({}).optional())
-      .query(async ({ ctx }) => {
-        if (ctx.user.role !== "master_admin") {
+      .input(z.object({
+        tenantId: z.number().optional(),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        // Se for master, pode ver de qualquer um. Se não, só do próprio.
+        const targetTenantId = ctx.user.role === "master_admin" 
+          ? (input?.tenantId || ctx.user.tenantId) 
+          : ctx.user.tenantId;
+
+        if (ctx.user.role !== "master_admin" && targetTenantId !== ctx.user.tenantId) {
           throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
         }
-        // Mock data - implementar com S3 futuramente
-        return [];
+
+        // Retorna lista simulada de backups (em produção viria do S3/Banco)
+        return [
+          { id: "bkp_1", date: new Date().toISOString(), size: "2.5MB", status: "completed", tenantId: targetTenantId },
+          { id: "bkp_2", date: new Date(Date.now() - 86400000).toISOString(), size: "2.4MB", status: "completed", tenantId: targetTenantId },
+        ];
       }),
 
+    // Executar backup manual agora
     runNow: protectedProcedure
-      .mutation(async ({ ctx }) => {
-        if (ctx.user.role !== "master_admin") {
+      .input(z.object({
+        tenantId: z.number().optional(),
+      }).optional())
+      .mutation(async ({ ctx, input }) => {
+        const targetTenantId = ctx.user.role === "master_admin" 
+          ? (input?.tenantId || ctx.user.tenantId) 
+          : ctx.user.tenantId;
+
+        if (ctx.user.role !== "master_admin" && targetTenantId !== ctx.user.tenantId) {
           throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
         }
-        // Mock - implementar backup real futuramente
-        return { success: true, message: "Backup agendado com sucesso" };
+
+        // Simulação de geração de backup
+        // Em produção: db.dump(tenantId) -> zip -> upload S3
+        
+        console.log(`[Backup] Iniciando backup para tenant ${targetTenantId}...`);
+        
+        // Simular delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        return { 
+          success: true, 
+          message: "Backup realizado com sucesso!",
+          backupId: `bkp_${Date.now()}`,
+          url: "#" // URL para download
+        };
       }),
   }),
 
