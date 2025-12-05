@@ -1627,6 +1627,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         stockItemId: z.number().optional(),
         type: z.enum(["entrada", "saida", "transferencia", "ajuste", "devolucao"]),
         quantity: z.number().positive(),
+        unitCost: z.number().optional(),
         fromLocation: z.string().optional(),
         toLocation: z.string().optional(),
         reason: z.string().optional(),

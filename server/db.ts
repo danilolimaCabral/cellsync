@@ -287,6 +287,7 @@ export async function createStockMovement(data: {
   stockItemId?: number;
   type: "entrada" | "saida" | "transferencia" | "ajuste" | "devolucao";
   quantity: number;
+  unitCost?: number;
   fromLocation?: string;
   toLocation?: string;
   userId: number;
@@ -325,6 +326,23 @@ export async function createStockMovement(data: {
     await database.update(products)
       .set({ currentStock: newStock })
       .where(eq(products.id, data.productId));
+
+    // Se for entrada de estoque (compra), gerar conta a pagar se houver custo
+    if (data.type === "entrada" && data.unitCost && data.unitCost > 0) {
+      const { accountsPayable } = await import("../drizzle/schema");
+      const totalCost = data.unitCost * data.quantity;
+      
+      await database.insert(accountsPayable).values({
+        description: `Compra de Estoque - ${product.name}`,
+        amount: totalCost,
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias padrão
+        status: "pendente",
+        referenceType: "stock_entry",
+        referenceId: Number(result.insertId),
+        createdBy: data.userId,
+        tenantId: data.tenantId,
+      });
+    }
   }
   
   return { id: result.insertId, success: true };
