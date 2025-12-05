@@ -305,22 +305,83 @@ export default function HistoricoVendas() {
                         )}
                       </TableCell>
 	                      <TableCell>{getStatusBadge(sale.status)}</TableCell>
-	                      <TableCell>
-	                        <Button
-	                          variant="ghost"
-	                          size="sm"
-	                          onClick={() => {
-	                            if (sale.nfeIssued) {
-	                              // TODO: Implementar reimpressão de NF-e
-	                              toast.info("Reimpressão de NF-e em breve");
-	                            } else {
-	                              generateReceiptMutation.mutate({ saleId: sale.id });
-	                            }
-	                          }}
-	                        >
-	                          <Printer className="h-4 w-4" />
-	                        </Button>
-	                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              // Abrir janela de impressão
+                              const printWindow = window.open("", "", "width=400,height=600");
+                              if (printWindow) {
+                                printWindow.document.write(`
+                                  <html>
+                                    <head>
+                                      <title>Cupom Fiscal - ${sale.id}</title>
+                                      <style>
+                                        body { font-family: monospace; font-size: 12px; margin: 0; padding: 10px; }
+                                        .receipt { width: 80mm; margin: 0 auto; }
+                                        .header { text-align: center; font-weight: bold; margin-bottom: 10px; }
+                                        .divider { border-top: 1px dashed #000; margin: 10px 0; }
+                                        .item { display: flex; justify-content: space-between; margin: 5px 0; }
+                                        .total { font-weight: bold; font-size: 14px; text-align: right; }
+                                      </style>
+                                    </head>
+                                    <body>
+                                      <div class="receipt">
+                                        <div class="header">CUPOM FISCAL</div>
+                                        <div>Cupom: ${sale.id}</div>
+                                        <div>Data: ${formatDate(sale.saleDate || sale.createdAt)}</div>
+                                        <div class="divider"></div>
+                                        <div class="item">
+                                          <span>Cliente:</span>
+                                          <span>${sale.customerName || "Consumidor"}</span>
+                                        </div>
+                                        <div class="divider"></div>
+                                        <div class="item">
+                                          <span>Subtotal:</span>
+                                          <span>R$ ${(sale.totalAmount / 100).toFixed(2)}</span>
+                                        </div>
+                                        <div class="item">
+                                          <span>Desconto:</span>
+                                          <span>R$ ${(sale.discountAmount / 100).toFixed(2)}</span>
+                                        </div>
+                                        <div class="item total">
+                                          <span>Total:</span>
+                                          <span>R$ ${(sale.finalAmount / 100).toFixed(2)}</span>
+                                        </div>
+                                        <div class="divider"></div>
+                                        <div style="text-align: center; font-size: 10px;">
+                                          Obrigado pela compra!
+                                        </div>
+                                      </div>
+                                    </body>
+                                  </html>
+                                `);
+                                printWindow.document.close();
+                                setTimeout(() => {
+                                  printWindow.print();
+                                }, 100);
+                              }
+                            }}
+                            title="Imprimir cupom"
+                          >
+                            <Printer className="h-4 w-4" />
+                          </Button>
+                          {sale.nfeIssued && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                toast.info("Reimpressão de NF-e em breve");
+                              }}
+                              title="Imprimir NF-e"
+                            >
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
 	                    </TableRow>
                   ))}
                 </TableBody>

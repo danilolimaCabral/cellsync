@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import PageHeader from "@/components/PageHeader";
-import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X, FileText, Printer } from "lucide-react";
+import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X, FileText, Printer, History } from "lucide-react";
 import NFeIssuanceDialog from "@/components/NFeIssuanceDialog";
 import { ThermalReceipt, useThermalPrinter } from "@/components/ThermalReceipt";
+import { useRouter } from "wouter";
 
 interface CartItem {
   productId: number;
@@ -46,6 +47,7 @@ export default function Vendas() {
   const [showPrintReceipt, setShowPrintReceipt] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { printThermalReceipt } = useThermalPrinter();
+  const [, navigate] = useRouter();
 
   // Verificar autenticação
   if (loading) {
@@ -413,12 +415,22 @@ export default function Vendas() {
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       {/* Header com título */}
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <PageHeader 
           title="Ponto de Venda (PDV)" 
           description="Sistema integrado de vendas"
           backTo="/dashboard"
         />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/historico-vendas")}
+          className="gap-2"
+          title="Ver histórico de vendas"
+        >
+          <History className="h-4 w-4" />
+          Histórico
+        </Button>
       </div>
 
       {/* Barra de controles (Varejo/Atacado + Atalhos) */}
