@@ -499,7 +499,7 @@ export const appRouter = router({
       }
     }),
 
-    overview: protectedProcedure.query(async () => {
+    overview: protectedProcedure.query(async ({ ctx }) => {
       const database = await db.getDb();
       if (!database) {
         return {
@@ -513,10 +513,10 @@ export const appRouter = router({
       }
 
       const { sales, customers, products, serviceOrders, accountsReceivable } = await import("../drizzle/schema");
-      const { sql, eq } = await import("drizzle-orm");
+      const { sql, eq, and } = await import("drizzle-orm");
 
       try {
-        // Vendas de hoje
+        // Vendas de hoje (filtrado por tenant)
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
@@ -525,39 +525,51 @@ export const appRouter = router({
         const salesTodayResult = await database
           .select({ count: sql<number>`COUNT(*)` })
           .from(sales)
-          .where(sql`${sales.createdAt} >= ${today} AND ${sales.createdAt} < ${tomorrow}`);
+          .where(and(
+            eq(sales.tenantId, ctx.user.tenantId),
+            sql`${sales.createdAt} >= ${today} AND ${sales.createdAt} < ${tomorrow}`
+          ));
         const totalSales = Number(salesTodayResult[0]?.count) || 0;
 
-        // Receita total (todas as vendas)
+        // Receita total (todas as vendas do tenant)
         const revenueResult = await database
           .select({ total: sql<number>`SUM(${sales.finalAmount})` })
-          .from(sales);
+          .from(sales)
+          .where(eq(sales.tenantId, ctx.user.tenantId));
         const totalRevenue = Number(revenueResult[0]?.total) || 0;
 
-        // Total de clientes
+        // Total de clientes do tenant
         const customersResult = await database
           .select({ count: sql<number>`COUNT(*)` })
-          .from(customers);
+          .from(customers)
+          .where(eq(customers.tenantId, ctx.user.tenantId));
         const totalCustomers = Number(customersResult[0]?.count) || 0;
 
-        // Total de produtos
+        // Total de produtos do tenant
         const productsResult = await database
           .select({ count: sql<number>`COUNT(*)` })
-          .from(products);
+          .from(products)
+          .where(eq(products.tenantId, ctx.user.tenantId));
         const totalProducts = Number(productsResult[0]?.count) || 0;
 
-        // OS abertas (status diferente de concluída e cancelada)
+        // OS abertas do tenant (status diferente de concluída e cancelada)
         const openOSResult = await database
           .select({ count: sql<number>`COUNT(*)` })
           .from(serviceOrders)
-          .where(sql`${serviceOrders.status} NOT IN ('concluida', 'cancelada')`);
+          .where(and(
+            eq(serviceOrders.tenantId, ctx.user.tenantId),
+            sql`${serviceOrders.status} NOT IN ('concluida', 'cancelada')`
+          ));
         const openServiceOrders = Number(openOSResult[0]?.count) || 0;
 
-        // Pagamentos pendentes (contas a receber pendentes)
+        // Pagamentos pendentes do tenant (contas a receber pendentes)
         const pendingPaymentsResult = await database
           .select({ count: sql<number>`COUNT(*)` })
           .from(accountsReceivable)
-          .where(eq(accountsReceivable.status, "pendente"));
+          .where(and(
+            eq(accountsReceivable.tenantId, ctx.user.tenantId),
+            eq(accountsReceivable.status, "pendente")
+          ));
         const pendingPayments = Number(pendingPaymentsResult[0]?.count) || 0;
 
         return {
