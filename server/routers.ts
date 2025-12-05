@@ -3046,5 +3046,13 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         };
       }),
   }),
+
+  // ============= VERSION INFO =============
+  version: router({
+    info: publicProcedure.query(async () => {
+      const { getVersionInfo } = await import("./version");
+      return getVersionInfo();
+    }),
+  }),
 });
 export type AppRouter = typeof appRouter;

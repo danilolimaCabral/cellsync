@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import PageHeader from "@/components/PageHeader";
 import { motion } from "framer-motion";
+import { VersionInfo } from "@/components/VersionInfo";
 import { 
   DollarSign, 
   Package, 
@@ -257,11 +258,19 @@ export default function Dashboard() {
                 <p className="text-xs text-slate-500 mt-1">Ordens em andamento</p>
               </motion.div>
             </div>
-          </CardContent>
+            </CardContent>
         </Card>
       </motion.div>
 
-
+      {/* Version Info Footer */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.8 }}
+        className="mt-8 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800"
+      >
+        <VersionInfo />
+      </motion.div>
     </div>
   );
 }

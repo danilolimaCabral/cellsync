@@ -1,0 +1,3 @@
+b0784f3
+2025-12-05T08:04:17-05:00
+fix: payment method validation and invoice/sale tenantId isolation

@@ -43,6 +43,7 @@ import AssinaturaSucesso from "./pages/AssinaturaSucesso";
 import Assinatura from "./pages/Assinatura";
 import Onboarding from "./pages/Onboarding";
 import CriarConta from "./pages/CriarConta";
+import Sobre from "./pages/Sobre";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -71,6 +72,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/planos" component={Planos} />
+      <Route path="/sobre" component={Sobre} />
       <Route path="/assinatura/sucesso" component={AssinaturaSucesso} />
       <Route path="/assinatura">
         {() => (
