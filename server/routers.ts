@@ -1519,8 +1519,8 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         limit: z.number().optional(),
         offset: z.number().optional(),
       }))
-      .query(async ({ input }) => {
-        return await db.getSalesHistory(input);
+      .query(async ({ input, ctx }) => {
+        return await db.getSalesHistory({ ...input, tenantId: ctx.user.tenantId });
       }),
   }),
 
@@ -1531,8 +1531,8 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         startDate: z.date(),
         endDate: z.date(),
       }))
-      .query(async ({ input }) => {
-        return await db.getSalesStats(input.startDate, input.endDate);
+      .query(async ({ input, ctx }) => {
+        return await db.getSalesStats(ctx.user.tenantId, input.startDate, input.endDate);
       }),
 
     topProducts: protectedProcedure
@@ -1541,8 +1541,8 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         endDate: z.date(),
         limit: z.number().optional(),
       }))
-      .query(async ({ input }) => {
-        return await db.getTopProducts(input.startDate, input.endDate, input.limit);
+      .query(async ({ input, ctx }) => {
+        return await db.getTopProducts(ctx.user.tenantId, input.startDate, input.endDate, input.limit);
       }),
 
     sellerPerformance: protectedProcedure
@@ -1651,21 +1651,21 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         limit: z.number().optional(),
         offset: z.number().optional(),
       }))
-      .query(async ({ input }) => {
-        return await db.getStockMovements(input);
+      .query(async ({ input, ctx }) => {
+        return await db.getStockMovements({ ...input, tenantId: ctx.user.tenantId });
       }),
 
     byIMEI: protectedProcedure
       .input(z.object({
         imei: z.string(),
       }))
-      .query(async ({ input }) => {
-        return await db.getStockMovementsByIMEI(input.imei);
+      .query(async ({ input, ctx }) => {
+        return await db.getStockMovementsByIMEI(ctx.user.tenantId, input.imei);
       }),
 
     inventoryReport: protectedProcedure
-      .query(async () => {
-        return await db.getInventoryReport();
+      .query(async ({ ctx }) => {
+        return await db.getInventoryReport(ctx.user.tenantId);
       }),
   }),
 

@@ -650,13 +650,13 @@ export async function getCashFlow(startDate: Date, endDate: Date) {
 
 
 // ============= RELATÓRIOS E BI =============
-export async function getSalesStats(startDate: Date, endDate: Date) {
+export async function getSalesStats(tenantId: number, startDate: Date, endDate: Date) {
   const database = await getDb();
   if (!database) return { totalSales: 0, totalRevenue: 0, averageTicket: 0, salesByPeriod: [] };
 
   try {
     const { sales } = await import("../drizzle/schema");
-    const { sql } = await import("drizzle-orm");
+    const { sql, eq, and } = await import("drizzle-orm");
     
     // Total de vendas e receita
     const result = await database
@@ -665,7 +665,10 @@ export async function getSalesStats(startDate: Date, endDate: Date) {
         total: sql<number>`SUM(${sales.totalAmount})`,
       })
       .from(sales)
-      .where(sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`);
+      .where(and(
+        eq(sales.tenantId, tenantId),
+        sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`
+      ));
 
     const stats = result[0] || { count: 0, total: 0 };
     const totalSales = Number(stats.count) || 0;
@@ -680,7 +683,10 @@ export async function getSalesStats(startDate: Date, endDate: Date) {
         total: sql<number>`SUM(${sales.totalAmount})`,
       })
       .from(sales)
-      .where(sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`)
+      .where(and(
+        eq(sales.tenantId, tenantId),
+        sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`
+      ))
       .groupBy(sql`sale_date`)
       .orderBy(sql`sale_date`);
 
@@ -700,13 +706,13 @@ export async function getSalesStats(startDate: Date, endDate: Date) {
   }
 }
 
-export async function getTopProducts(startDate: Date, endDate: Date, limit: number = 10) {
+export async function getTopProducts(tenantId: number, startDate: Date, endDate: Date, limit: number = 10) {
   const database = await getDb();
   if (!database) return [];
 
   try {
     const { saleItems, products, sales } = await import("../drizzle/schema");
-    const { sql } = await import("drizzle-orm");
+    const { sql, eq, and } = await import("drizzle-orm");
     
     const result = await database
       .select({
@@ -718,7 +724,10 @@ export async function getTopProducts(startDate: Date, endDate: Date, limit: numb
       .from(saleItems)
       .innerJoin(products, eq(saleItems.productId, products.id))
       .innerJoin(sales, eq(saleItems.saleId, sales.id))
-      .where(sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`)
+      .where(and(
+        eq(sales.tenantId, tenantId),
+        sql`${sales.createdAt} BETWEEN ${startDate} AND ${endDate}`
+      ))
       .groupBy(saleItems.productId, products.name)
       .orderBy(sql`SUM(${saleItems.quantity}) DESC`)
       .limit(limit);
@@ -896,6 +905,7 @@ export async function getInventoryStats() {
 
 // ============= HISTÓRICO DE VENDAS =============
 export async function getSalesHistory(filters: {
+  tenantId: number; // CRITICAL: Add tenantId for multi-tenant isolation
   startDate?: Date;
   endDate?: Date;
   sellerId?: number;
@@ -910,9 +920,12 @@ export async function getSalesHistory(filters: {
 
   try {
     const { sales, users, customers } = await import("../drizzle/schema");
-    const { sql, and } = await import("drizzle-orm");
+    const { sql, and, eq } = await import("drizzle-orm");
     
     const conditions: any[] = [];
+
+    // CRITICAL: Always filter by tenantId for data isolation
+    conditions.push(eq(sales.tenantId, filters.tenantId));
 
     if (filters.startDate) {
       conditions.push(sql`${sales.createdAt} >= ${filters.startDate}`);
@@ -993,6 +1006,7 @@ export async function getSalesHistory(filters: {
 
 
 export async function getStockMovements(filters: {
+  tenantId: number; // CRITICAL: Add tenantId for multi-tenant isolation
   startDate?: Date;
   endDate?: Date;
   productId?: number;
@@ -1006,9 +1020,12 @@ export async function getStockMovements(filters: {
 
   try {
     const { stockMovements, products, users, stockItems } = await import("../drizzle/schema");
-    const { sql, and } = await import("drizzle-orm");
+    const { sql, and, eq } = await import("drizzle-orm");
     
     const conditions: any[] = [];
+
+    // CRITICAL: Always filter by tenantId for data isolation
+    conditions.push(eq(stockMovements.tenantId, filters.tenantId));
 
     if (filters.startDate) {
       conditions.push(sql`${stockMovements.createdAt} >= ${filters.startDate}`);
@@ -1081,7 +1098,7 @@ export async function getStockMovements(filters: {
   }
 }
 
-export async function getInventoryReport() {
+export async function getInventoryReport(tenantId: number) {
   const database = await getDb();
   if (!database) return [];
 
@@ -1112,7 +1129,8 @@ export async function getInventoryReport() {
           WHERE ${stockMovements.productId} = ${products.id}
         )`,
       })
-      .from(products);
+      .from(products)
+      .where(eq(products.tenantId, tenantId));
 
     return result.map((item) => ({
       ...item,
@@ -1130,7 +1148,7 @@ export async function getInventoryReport() {
   }
 }
 
-export async function getStockMovementsByIMEI(imei: string) {
+export async function getStockMovementsByIMEI(tenantId: number, imei: string) {
   const database = await getDb();
   if (!database) return [];
 
@@ -1153,7 +1171,10 @@ export async function getStockMovementsByIMEI(imei: string) {
       .leftJoin(products, eq(stockMovements.productId, products.id))
       .leftJoin(users, eq(stockMovements.userId, users.id))
       .leftJoin(stockItems, eq(stockMovements.stockItemId, stockItems.id))
-      .where(eq(stockItems.imei, imei))
+      .where(and(
+        eq(stockMovements.tenantId, tenantId),
+        eq(stockItems.imei, imei)
+      ))
       .orderBy(sql`${stockMovements.createdAt} DESC`);
 
     return result;
