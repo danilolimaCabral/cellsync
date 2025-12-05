@@ -1,4 +1,5 @@
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json, unique, date } from "drizzle-orm/mysql-core";
+import { relations } from "drizzle-orm";
 
 /**
  * Sistema CellSync - Schema completo do banco de dados
@@ -473,6 +474,7 @@ export type InsertCommission = typeof commissions.$inferInsert;
 // Tabela de Notas Fiscais Eletrônicas
 export const invoices = mysqlTable("invoices", {
   id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1), // Multi-tenant isolation
   saleId: int("saleId"), // Venda relacionada (opcional para NF-e avulsa)
   number: int("number").notNull(), // Número da NF-e
   series: int("series").notNull().default(1), // Série da NF-e
@@ -901,3 +903,44 @@ export type InsertAccountingPosting = typeof accounting_postings.$inferInsert;
 
 export type FinancialRecord = typeof financial_records.$inferSelect;
 export type InsertFinancialRecord = typeof financial_records.$inferInsert;
+
+// ============= FISCAL =============
+export const emission_logs = mysqlTable("emission_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull(),
+  saleId: int("sale_id"),
+  type: mysqlEnum("type", ["cupom", "nfe", "nfce", "recibo"]).notNull(),
+  number: int("number").notNull(),
+  series: int("series").notNull(),
+  accessKey: varchar("access_key", { length: 44 }),
+  xmlUrl: text("xml_url"),
+  status: mysqlEnum("status", ["autorizada", "cancelada", "rejeitada", "contingencia"]).default("autorizada").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const fiscal_settings = mysqlTable("fiscal_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenant_id").notNull().unique(),
+  environment: mysqlEnum("environment", ["homologacao", "producao"]).default("homologacao").notNull(),
+  cscToken: varchar("csc_token", { length: 255 }),
+  cscId: varchar("csc_id", { length: 10 }),
+  nextNfeNumber: int("next_nfe_number").default(1).notNull(),
+  nfeSeries: int("nfe_series").default(1).notNull(),
+  nextNfceNumber: int("next_nfce_number").default(1).notNull(),
+  nfceSeries: int("nfce_series").default(1).notNull(),
+  simpleNational: boolean("simple_national").default(true).notNull(),
+  taxRegime: varchar("tax_regime", { length: 1 }).default("1"),
+  defaultNcm: varchar("default_ncm", { length: 8 }),
+  defaultCfopState: varchar("default_cfop_state", { length: 4 }).default("5102"),
+  defaultCfopInterstate: varchar("default_cfop_interstate", { length: 4 }).default("6102"),
+  certificateId: int("certificate_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const emissionLogsRelations = relations(emission_logs, ({ one }) => ({
+  sale: one(sales, {
+    fields: [emission_logs.saleId],
+    references: [sales.id],
+  }),
+}));

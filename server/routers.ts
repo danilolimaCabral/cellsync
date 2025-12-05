@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { sql, eq, and, desc, gte, lte } from "drizzle-orm";
-import { tenants, users, plans, emission_logs, sales, fiscal_settings } from "../drizzle/schema";
+import { tenants, users, plans, emission_logs, sales, fiscal_settings, invoices, invoiceItems } from "../drizzle/schema";
 import { getDb } from "./db";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -54,7 +54,6 @@ export const appRouter = router({
   adminMigration: adminMigrationRouter,
   databaseQuery: databaseQueryRouter,
   databaseImport: databaseImportRouter,
-  fiscal: fiscalRouter,
 
   // Endpoint temporário para diagnóstico de tenants
   listTenants: publicProcedure.query(async () => {
@@ -2120,20 +2119,25 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           const nfeData = parseNFeXML(input.xmlContent);
           
           // Verificar se já existe nota com este número e série
-          const existingInvoice = await db.getInvoiceByNumberAndSeries(
-            parseInt(nfeData.number),
-            parseInt(nfeData.series)
-          );
+          const existingInvoice = await db.query.invoices.findFirst({
+            where: and(
+              eq(invoices.number, parseInt(nfeData.number)),
+              eq(invoices.series, parseInt(nfeData.series)),
+              eq(invoices.tenantId, ctx.user.tenantId)
+            )
+          });
           
           if (existingInvoice) {
             throw new Error(`Nota fiscal ${nfeData.number} série ${nfeData.series} já existe no sistema.`);
           }
           
           // Criar a NF-e no banco
-          const invoiceId = await db.createInvoice({
+          const [result] = await db.insert(invoices).values({
+            tenantId: ctx.user.tenantId,
+            number: parseInt(nfeData.number),
             series: parseInt(nfeData.series),
             model: nfeData.model,
-            type: "entrada", // Assumindo entrada ao importar, mas poderia ser saída dependendo do emitente
+            type: "entrada",
             emitterCnpj: nfeData.emitter.cnpj,
             emitterName: nfeData.emitter.name,
             emitterFantasyName: nfeData.emitter.fantasyName,
@@ -2150,22 +2154,21 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
             recipientZipCode: nfeData.recipient.zipCode,
             recipientPhone: nfeData.recipient.phone,
             recipientEmail: nfeData.recipient.email,
-            cfop: nfeData.items[0]?.cfop || "5102", // Pega do primeiro item ou padrão
+            cfop: nfeData.items[0]?.cfop || "5102",
             natureOperation: nfeData.natureOperation,
-            paymentMethod: "outros", // Simplificação, ideal seria mapear do XML
+            paymentMethod: "outros",
             paymentIndicator: "outros",
             totalProducts: nfeData.totals.products,
             totalDiscount: nfeData.totals.discount,
             totalFreight: nfeData.totals.freight,
             totalInvoice: nfeData.totals.invoice,
             additionalInfo: nfeData.additionalInfo,
-            number: parseInt(nfeData.number),
-            status: "emitida", // Já vem emitida do XML
-            accessKey: nfeData.accessKey,
-            protocol: nfeData.protocol,
-            authorizationDate: nfeData.authorizationDate ? new Date(nfeData.authorizationDate) : new Date(),
-            issuedBy: ctx.user.id,
+            status: "autorizada",
+            xmlContent: input.xmlContent,
+            issuedAt: new Date(nfeData.issuedAt),
+            createdAt: new Date(),
           });
+          const invoiceId = result.insertId;
           
           // Criar os itens
           for (const item of nfeData.items) {

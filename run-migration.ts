@@ -162,6 +162,23 @@ async function runMigration() {
     console.error("Error updating fiscal_settings:", error.message);
   }
 
+  // Adicionar tenantId em invoices se não existir
+  try {
+    await connection.execute(`
+      ALTER TABLE invoices 
+      ADD COLUMN tenantId int NOT NULL DEFAULT 1;
+    `);
+    console.log("Added tenantId to invoices");
+  } catch (e: any) {
+    if (e.code === 'ER_DUP_FIELDNAME') {
+      console.log("tenantId already exists in invoices");
+    } else if (e.code === 'ER_NO_SUCH_TABLE') {
+      console.log("Table invoices does not exist, skipping alter");
+    } else {
+      console.error("Error altering invoices:", e.message);
+    }
+  }
+
   await connection.end();
   console.log("Migration completed.");
 }
