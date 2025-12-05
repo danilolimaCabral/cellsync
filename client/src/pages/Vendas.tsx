@@ -29,6 +29,10 @@ const formatCurrency = (cents: number) => {
 
 export default function Vendas() {
   const { user, loading } = useAuth();
+  const tenantQuery = trpc.tenants.getById.useQuery(user?.tenantId, {
+    enabled: !!user?.tenantId,
+  });
+  const tenant = tenantQuery.data;
   const [searchTerm, setSearchTerm] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
@@ -1000,15 +1004,15 @@ export default function Vendas() {
               paymentMethod={paymentMethod}
               cpf={cpfNota || undefined}
               timestamp={new Date()}
-              companyName={user?.tenantName || "LOJA PADRÃO"}
-              companyDocument={user?.tenantCnpj || "00.000.000/0000-00"}
-              companyAddress={user?.tenantAddress || ""}
-              companyPhone={user?.tenantPhone || ""}
-              customerCpf={customer?.cpf || (customer ? undefined : user?.tenantCnpj)}
-              customerCnpj={customer?.cnpj || undefined}
-              customerAddress={customer?.address || (customer ? undefined : user?.tenantAddress)}
-              customerPhone={customer?.phone || (customer ? undefined : user?.tenantPhone)}
-              customerEmail={customer?.email || undefined}
+              companyName={tenant?.name || "LOJA PADRÃO"}
+              companyDocument={tenant?.cnpj || "00.000.000/0000-00"}
+              companyAddress={tenant?.address || ""}
+              companyPhone={tenant?.phone || ""}
+              customerCpf={customer?.cpf}
+              customerCnpj={customer?.cnpj}
+              customerAddress={customer?.address}
+              customerPhone={customer?.phone}
+              customerEmail={customer?.email}
               sellerName={user?.name || undefined}
             />
           </div>
