@@ -2193,6 +2193,54 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
       }),
   }),
 
+  // Assistente de Importação IA
+  aiAssistant: router({
+    analyzeImportFile: protectedProcedure
+      .input(z.object({
+        fileContent: z.string(), // Base64
+        fileName: z.string(),
+        moduleType: z.enum(["products", "customers", "sales", "stock", "service_orders", "accounts_payable", "accounts_receivable"]),
+      }))
+      .mutation(async ({ input }) => {
+        // Simulação de análise de arquivo (já que não temos parser real de Excel/CSV aqui)
+        // Em produção, usaríamos 'xlsx' ou 'papaparse' para ler o buffer
+        
+        // Mock de colunas detectadas baseado no tipo
+        const mockColumns = input.moduleType === "products" 
+          ? ["Nome do Produto", "Preço Venda", "Custo", "Estoque", "Código Barras"]
+          : input.moduleType === "customers"
+          ? ["Nome Cliente", "Email", "Telefone", "CPF/CNPJ", "Endereço"]
+          : ["Data", "Valor", "Descrição"];
+
+        return {
+          importId: `import_${Date.now()}`,
+          fileName: input.fileName,
+          totalRows: 15, // Simulado
+          detectedColumns: mockColumns,
+          mappings: mockColumns.map(col => ({
+            sourceColumn: col,
+            targetField: col.toLowerCase().replace(/ /g, "_"),
+            confidence: 0.95
+          })),
+          previewData: [
+            { "Nome do Produto": "Capa iPhone 13", "Preço Venda": "50.00", "Estoque": "10" },
+            { "Nome do Produto": "Película 3D", "Preço Venda": "20.00", "Estoque": "50" }
+          ]
+        };
+      }),
+
+    processImport: protectedProcedure
+      .input(z.object({
+        importId: z.string(),
+        mappings: z.array(z.any())
+      }))
+      .mutation(async ({ input }) => {
+        // Simulação de processamento
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return { success: true, importedCount: 15 };
+      }),
+  }),
+
   // Labels (Etiquetas)
   labels: router({
     // Gerar etiqueta completa
