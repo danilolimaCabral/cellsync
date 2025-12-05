@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import Vendas from "./pages/Vendas";
 import Estoque from "./pages/Estoque";
 import Clientes from "./pages/Clientes";
+import Customers from "./pages/Customers";
+import CustomerForm from "./pages/CustomerForm";
 import OrdemServico from "./pages/OrdemServico";
 import Financeiro from "./pages/Financeiro";
 import Relatorios from "./pages/Relatorios";
@@ -198,7 +200,31 @@ function Router() {
           <ProtectedRoute
             component={() => (
               <DashboardLayout>
-                <Clientes />
+                <Customers />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/customers">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <Customers />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/customers/:id">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <CustomerForm />
               </DashboardLayout>
             )}
           />

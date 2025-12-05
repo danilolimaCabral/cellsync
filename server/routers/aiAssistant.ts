@@ -15,6 +15,7 @@ import {
 } from "../ai-memory";
 import { getDb } from "../db";
 import { importSessions, products, customers } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 
 // Helper para criar procedimentos protegidos
 const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
@@ -91,8 +92,10 @@ export const aiAssistantRouter = router({
 
         // Criar sessão de importação
         const db = await getDb();
+        let sessionId: number | undefined;
+        
         if (db) {
-          await db.insert(importSessions).values({
+          const result = await db.insert(importSessions).values({
             tenantId,
             userId: ctx.user.id,
             moduleType: input.moduleType,
@@ -101,12 +104,14 @@ export const aiAssistantRouter = router({
             totalRows: parsed.totalRows,
             columnMapping: analysis.suggestedMapping as any,
           });
+          sessionId = result[0].insertId;
         }
 
         return {
           success: true,
           analysis,
           limitStatus,
+          sessionId,
         };
       } catch (error: any) {
         throw new TRPCError({
@@ -166,6 +171,7 @@ export const aiAssistantRouter = router({
           })
         ),
         saveMapping: z.boolean().default(false), // Salvar mapeamento na memória da IA
+        sessionId: z.number().optional(), // ID da sessão para atualização de status
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -264,6 +270,20 @@ export const aiAssistantRouter = router({
 
         // Incrementar contador de uso
         await incrementAIImportUsage(tenantId);
+
+        // Atualizar sessão de importação se o ID for fornecido (precisamos adicionar sessionId ao input)
+        if (input.sessionId && db) {
+          await db.update(importSessions)
+            .set({
+              status: errorCount === 0 ? "completed" : (successCount > 0 ? "completed" : "failed"),
+              processedRows: successCount + errorCount,
+              successRows: successCount,
+              errorRows: errorCount,
+              errors: errors.length > 0 ? errors : null,
+              completedAt: new Date(),
+            })
+            .where(eq(importSessions.id, input.sessionId));
+        }
 
         return {
           success: true,

@@ -106,6 +106,20 @@
       "when": 1764759246768,
       "tag": "0015_chunky_silver_fox",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1764857432362,
+      "tag": "0016_fair_scarecrow",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1764932878537,
+      "tag": "0017_ambiguous_bloodscream",
+      "breakpoints": true
     }
   ]
 }
