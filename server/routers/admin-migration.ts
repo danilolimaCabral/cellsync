@@ -5,7 +5,7 @@
  * Requires master_admin role for security.
  */
 
-import { router, masterProcedure } from "../trpc";
+import { router, masterProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
 import { plans } from "../../drizzle/schema";

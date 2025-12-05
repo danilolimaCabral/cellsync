@@ -5,7 +5,7 @@
  * SECURITY: Only accessible to master_admin role
  */
 
-import { router, masterProcedure } from "../trpc";
+import { router, masterProcedure } from "../_core/trpc";
 import { z } from "zod";
 import mysql from "mysql2/promise";
 
