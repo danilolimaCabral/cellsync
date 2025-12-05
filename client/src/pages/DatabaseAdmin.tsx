@@ -1,4 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { DatabaseQueryPanel } from "@/components/DatabaseQueryPanel";
 import { AlertCircle } from "lucide-react";
 import { useNavigate } from "wouter";
