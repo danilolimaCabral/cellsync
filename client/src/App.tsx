@@ -44,6 +44,7 @@ import Assinatura from "./pages/Assinatura";
 import Onboarding from "./pages/Onboarding";
 import CriarConta from "./pages/CriarConta";
 import Sobre from "./pages/Sobre";
+import DatabaseAdmin from "./pages/DatabaseAdmin";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -406,6 +407,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <AdminMaster />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/database-admin">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <DatabaseAdmin />
               </DashboardLayout>
             )}
           />
