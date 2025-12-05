@@ -16,6 +16,8 @@ async function seedPlans() {
       description: "Ideal para pequenas assistências e autônomos",
       priceMonthly: 9700, // R$ 97,00
       priceYearly: 97000, // R$ 970,00
+      stripePriceIdMonthly: "price_1QaXXXXXXXXXXXXX", // Substituir com ID real do Stripe
+      stripePriceIdYearly: "price_1QaYYYYYYYYYYYYY", // Substituir com ID real do Stripe
       maxUsers: 3,
       maxProducts: 1000,
       maxStorage: 2048, // 2GB
@@ -29,6 +31,8 @@ async function seedPlans() {
       description: "Para lojas em crescimento com equipe",
       priceMonthly: 19700, // R$ 197,00
       priceYearly: 197000, // R$ 1.970,00
+      stripePriceIdMonthly: "price_1QaZZZZZZZZZZZZZ", // Substituir com ID real do Stripe
+      stripePriceIdYearly: "price_1QbAAAAAAAAAAAAA", // Substituir com ID real do Stripe
       maxUsers: 10,
       maxProducts: 5000,
       maxStorage: 10240, // 10GB
@@ -39,9 +43,11 @@ async function seedPlans() {
     {
       name: "Empresarial",
       slug: "empresarial",
-      description: "Gestão completa para grandes assistências",
+      description: "Gestão completo para grandes assistências",
       priceMonthly: 59900, // R$ 599,00
       priceYearly: 599000, // R$ 5.990,00
+      stripePriceIdMonthly: "price_1QbBBBBBBBBBBBBB", // Substituir com ID real do Stripe
+      stripePriceIdYearly: "price_1QbCCCCCCCCCCCCC", // Substituir com ID real do Stripe
       maxUsers: 50,
       maxProducts: 50000,
       maxStorage: 102400, // 100GB
