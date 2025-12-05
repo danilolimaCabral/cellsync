@@ -27,6 +27,7 @@ interface ThermalReceiptProps {
   customerAddress?: string;
   customerPhone?: string;
   customerEmail?: string;
+  sellerName?: string;
 }
 
 /**
@@ -52,6 +53,7 @@ export const ThermalReceipt = ({
   customerAddress,
   customerPhone,
   customerEmail,
+  sellerName,
 }: ThermalReceiptProps) => {
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("pt-BR", {
@@ -88,14 +90,25 @@ export const ThermalReceipt = ({
         color: "black",
       }}
     >
-      {/* Cabeçalho com Dados da Empresa */}
-      <div style={{ textAlign: "center", marginBottom: "8px", borderBottom: "1px dashed #000", paddingBottom: "8px" }}>
-        <div style={{ fontWeight: "bold", fontSize: "14px" }}>{companyName}</div>
-        <div style={{ fontSize: "10px" }}>CNPJ: {companyDocument}</div>
-        {companyAddress && <div style={{ fontSize: "9px", marginTop: "2px", wordBreak: "break-word" }}>{companyAddress}</div>}
-        {companyPhone && <div style={{ fontSize: "9px" }}>Tel: {companyPhone}</div>}
-        <div style={{ fontSize: "10px", marginTop: "4px" }}>NFC-e - CUPOM FISCAL</div>
+      {/* Título */}
+      <div style={{ textAlign: "center", marginBottom: "8px", fontWeight: "bold", fontSize: "13px" }}>
+        CUPOM FISCAL
       </div>
+
+      {/* Separador */}
+      <div style={{ borderBottom: "1px dashed #000", marginBottom: "8px" }}></div>
+
+      {/* VENDEDOR (Empresa) */}
+      <div style={{ marginBottom: "8px", fontSize: "10px" }}>
+        <div style={{ fontWeight: "bold", marginBottom: "4px" }}>VENDEDOR:</div>
+        <div style={{ fontWeight: "bold" }}>{companyName}</div>
+        <div>CNPJ: {companyDocument}</div>
+        {companyAddress && <div style={{ wordBreak: "break-word", marginTop: "2px" }}>{companyAddress}</div>}
+        {companyPhone && <div>Tel: {companyPhone}</div>}
+      </div>
+
+      {/* Separador */}
+      <div style={{ borderBottom: "1px dashed #000", marginBottom: "8px" }}></div>
 
       {/* Informações da Venda */}
       <div style={{ marginBottom: "8px", fontSize: "11px" }}>
@@ -106,16 +119,13 @@ export const ThermalReceipt = ({
       {/* Separador */}
       <div style={{ borderBottom: "1px dashed #000", marginBottom: "8px" }}></div>
 
-      {/* Dados do Cliente */}
+      {/* COMPRADOR (Cliente) */}
       <div style={{ marginBottom: "8px", fontSize: "10px" }}>
-        <div style={{ fontWeight: "bold", marginBottom: "4px" }}>CLIENTE:</div>
-        <div>{customerName}</div>
+        <div style={{ fontWeight: "bold", marginBottom: "4px" }}>COMPRADOR:</div>
+        <div style={{ fontWeight: "bold" }}>{customerName}</div>
         {(customerCpf || customerCnpj) && (
           <div>{customerCpf ? `CPF: ${customerCpf}` : `CNPJ: ${customerCnpj}`}</div>
         )}
-        {customerAddress && <div style={{ wordBreak: "break-word", marginTop: "2px" }}>{customerAddress}</div>}
-        {customerPhone && <div>Tel: {customerPhone}</div>}
-        {customerEmail && <div style={{ wordBreak: "break-word" }}>{customerEmail}</div>}
       </div>
 
       {/* Separador */}
@@ -186,6 +196,7 @@ export const ThermalReceipt = ({
       {/* Rodapé */}
       <div style={{ textAlign: "center", fontSize: "10px", marginBottom: "4px" }}>
         <div>Obrigado pela compra!</div>
+        {sellerName && <div style={{ marginTop: "4px", fontSize: "9px" }}>Vendedor: {sellerName}</div>}
         <div style={{ marginTop: "4px" }}>Volte sempre!</div>
       </div>
 

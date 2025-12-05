@@ -973,13 +973,13 @@ export default function Vendas() {
       </div>
 
       {/* Recibo Térmico Oculto */}
-      {showPrintReceipt && lastSaleId && selectedCustomerId && (() => {
-        const customer = customers.find((c) => c.id === selectedCustomerId);
+      {showPrintReceipt && lastSaleId && (() => {
+        const customer = selectedCustomerId ? customers.find((c) => c.id === selectedCustomerId) : null;
         return (
           <div style={{ display: "none" }}>
             <ThermalReceipt
               saleId={lastSaleId}
-              customerName={customer?.name || "Cliente"}
+              customerName={customer?.name || "Consumidor"}
               items={cart.map((item) => ({
                 name: item.name,
                 quantity: item.quantity,
@@ -996,11 +996,12 @@ export default function Vendas() {
               companyDocument={user?.tenantCnpj || "00.000.000/0000-00"}
               companyAddress={user?.tenantAddress || ""}
               companyPhone={user?.tenantPhone || ""}
-              customerCpf={customer?.cpf || undefined}
+              customerCpf={customer?.cpf || (customer ? undefined : user?.tenantCnpj)}
               customerCnpj={customer?.cnpj || undefined}
-              customerAddress={customer?.address || undefined}
-              customerPhone={customer?.phone || undefined}
+              customerAddress={customer?.address || (customer ? undefined : user?.tenantAddress)}
+              customerPhone={customer?.phone || (customer ? undefined : user?.tenantPhone)}
               customerEmail={customer?.email || undefined}
+              sellerName={user?.name || undefined}
             />
           </div>
         );
