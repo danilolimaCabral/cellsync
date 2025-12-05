@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { sql, eq, and, desc, gte, lte } from "drizzle-orm";
-import { tenants, users, plans, emission_logs, sales, fiscal_settings, invoices, invoiceItems } from "../drizzle/schema";
+import { tenants, users, plans, emission_logs, sales, fiscal_settings, invoices, invoiceItems, saleItems, products, stockItems, customers } from "../drizzle/schema";
 import { getDb } from "./db";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -912,21 +912,49 @@ export const appRouter = router({
       }))
       .mutation(async ({ input, ctx }) => {
         const { generateReceipt } = await import("./receipt-generator");
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
         
         // Buscar dados da venda
-        const sale = await db.getSaleById(ctx.user.tenantId, input.saleId);
+        const [sale] = await db.select().from(sales).where(and(
+          eq(sales.id, input.saleId),
+          eq(sales.tenantId, ctx.user.tenantId)
+        ));
+
         if (!sale) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Venda não encontrada" });
         }
         
         // Buscar dados do cliente
-        const customer = sale.customerId ? await db.getCustomerById(ctx.user.tenantId, sale.customerId) : null;
+        let customer = null;
+        if (sale.customerId) {
+          const [c] = await db.select().from(customers).where(and(
+            eq(customers.id, sale.customerId),
+            eq(customers.tenantId, ctx.user.tenantId)
+          ));
+          customer = c;
+        }
         
         // Buscar dados do vendedor
-        const seller = await db.getUserById(sale.sellerId);
+        const [seller] = await db.select().from(users).where(eq(users.id, sale.sellerId));
         
         // Buscar itens da venda
-        const items = await db.getSaleItems(input.saleId);
+        const items = await db.select({
+            id: saleItems.id,
+            productId: saleItems.productId,
+            productName: products.name,
+            productSku: products.sku,
+            brand: products.brand,
+            model: products.model,
+            category: products.category,
+            quantity: saleItems.quantity,
+            unitPrice: saleItems.unitPrice,
+            imei: stockItems.imei,
+          })
+          .from(saleItems)
+          .leftJoin(products, eq(saleItems.productId, products.id))
+          .leftJoin(stockItems, eq(saleItems.stockItemId, stockItems.id))
+          .where(eq(saleItems.saleId, input.saleId));
         
         // Preparar dados para o recibo
         const receiptData = {
@@ -939,8 +967,8 @@ export const appRouter = router({
             document: customer.cpf || customer.cnpj || undefined,
             phone: customer.phone || undefined,
           } : undefined,
-          products: items.map((item: any) => ({
-            name: item.productName,
+          products: items.map((item) => ({
+            name: item.productName || "Produto Desconhecido",
             sku: item.productSku || "N/A",
             brand: item.brand,
             model: item.model,
@@ -952,10 +980,10 @@ export const appRouter = router({
             warranty: "90 dias",
           })),
           subtotal: sale.totalAmount,
-          discount: sale.discountAmount,
-          total: sale.finalAmount,
+          discount: sale.discount,
+          total: sale.totalAmount - sale.discount,
           paymentMethod: sale.paymentMethod || "Não informado",
-          commission: sale.commission || undefined,
+          commission: undefined,
           saleType: sale.saleType,
           savedAmount: sale.appliedDiscount || 0,
         };
