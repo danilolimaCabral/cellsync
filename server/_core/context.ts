@@ -31,6 +31,19 @@ export async function createContext(
         
         if (dbUser && dbUser.active) {
           user = dbUser;
+          
+          // Se há um tenant ativo (impersonação), sobrescrever o tenantId
+          const activeTenantId = opts.req.cookies?.['active_tenant_id'];
+          if (activeTenantId && user.role === 'master_admin') {
+            const parsedTenantId = parseInt(activeTenantId, 10);
+            if (!isNaN(parsedTenantId)) {
+              // Criar uma cópia do usuário com o tenantId sobrescrito
+              user = {
+                ...user,
+                tenantId: parsedTenantId,
+              };
+            }
+          }
         }
       }
     } catch (error) {
