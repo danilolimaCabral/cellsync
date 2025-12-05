@@ -18,12 +18,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { validateCPF, validateCNPJ } from "@/lib/validators";
 
 const customerSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
   phone: z.string().optional(),
-  cpf: z.string().optional(),
+  cpf: z.string().optional().refine((val) => {
+    if (!val) return true;
+    const clean = val.replace(/[^\d]+/g, '');
+    if (clean.length === 11) return validateCPF(clean);
+    if (clean.length === 14) return validateCNPJ(clean);
+    return false;
+  }, "CPF ou CNPJ inválido"),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -191,9 +198,9 @@ export default function CustomerForm() {
                 name="cpf"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>CPF</FormLabel>
+                    <FormLabel>CPF / CNPJ</FormLabel>
                     <FormControl>
-                      <Input placeholder="000.000.000-00" {...field} />
+                      <Input placeholder="000.000.000-00 ou 00.000.000/0000-00" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

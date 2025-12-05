@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { sql, eq } from "drizzle-orm";
-import { tenants, users, plans } from "../drizzle/schema";
+import { sql, eq, and, desc, gte, lte } from "drizzle-orm";
+import { tenants, users, plans, emission_logs, sales, fiscal_settings } from "../drizzle/schema";
 import { getDb } from "./db";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -2971,6 +2971,48 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
   
   // ============= TENANTS (MULTI-LOJA) =============
   tenants: router({
+    // Obter dados de um tenant específico
+    getById: protectedProcedure
+      .input(z.number().optional())
+      .query(async ({ input, ctx }) => {
+        const tenantId = input || ctx.user.tenantId;
+        
+        // Segurança: Usuário só pode ver seu próprio tenant, a menos que seja master_admin
+        if (ctx.user.role !== "master_admin" && ctx.user.tenantId !== tenantId) {
+          throw new Error("Acesso negado");
+        }
+
+        const database = await getDb();
+        if (!database) throw new Error("Erro ao conectar ao banco");
+
+        const { tenants } = await import("../drizzle/schema");
+        const [tenant] = await database.select().from(tenants).where(eq(tenants.id, tenantId));
+        return tenant;
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        name: z.string().optional(),
+        cnpj: z.string().optional(),
+        address: z.string().optional(),
+        phone: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Apenas admin pode atualizar dados da empresa
+        if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Apenas administradores podem alterar dados da empresa" });
+        }
+
+        await db.update(tenants)
+          .set(input)
+          .where(eq(tenants.id, ctx.user.tenantId));
+
+        return { success: true };
+      }),,
+
     // Listar todos os tenants (apenas master_admin)
     list: protectedProcedure
       .query(async ({ ctx }) => {
@@ -3100,6 +3142,167 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           tenantId: Number(tenantId),
           userId: Number(userId),
         };
+      }),
+  }),
+
+  // ============= FISCAL =============
+  fiscal: router({
+    getSettings: protectedProcedure
+      .query(async ({ ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        const settings = await db.query.fiscal_settings.findFirst({
+          where: eq(fiscal_settings.tenantId, ctx.user.tenantId),
+        });
+
+        return settings;
+      }),
+
+    updateSettings: protectedProcedure
+      .input(z.object({
+        nextNfeNumber: z.number().optional(),
+        nfeSeries: z.number().optional(),
+        nextNfceNumber: z.number().optional(),
+        nfceSeries: z.number().optional(),
+        environment: z.enum(["homologacao", "producao"]).optional(),
+        cscToken: z.string().optional(),
+        cscId: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso negado" });
+        }
+
+        const existing = await db.query.fiscal_settings.findFirst({
+          where: eq(fiscal_settings.tenantId, ctx.user.tenantId),
+        });
+
+        if (existing) {
+          await db.update(fiscal_settings)
+            .set(input)
+            .where(eq(fiscal_settings.tenantId, ctx.user.tenantId));
+        } else {
+          await db.insert(fiscal_settings).values({
+            tenantId: ctx.user.tenantId,
+            ...input,
+          });
+        }
+
+        return { success: true };
+      }),
+
+    emitReceipt: protectedProcedure
+      .input(z.object({
+        saleId: z.number(),
+        type: z.enum(["cupom", "nfe", "nfce", "recibo"]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // 1. Verificar se a venda existe e pertence ao tenant
+        const sale = await db.query.sales.findFirst({
+          where: and(
+            eq(sales.id, input.saleId),
+            eq(sales.tenantId, ctx.user.tenantId)
+          ),
+          with: {
+            items: {
+              with: {
+                product: true,
+              }
+            },
+            customer: true,
+          }
+        });
+
+        if (!sale) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Venda não encontrada" });
+        }
+
+        // 2. Gerar número sequencial para o documento
+        // Buscar o último número emitido para este tipo e série
+        const lastLog = await db.query.emission_logs.findFirst({
+          where: and(
+            eq(emission_logs.tenantId, ctx.user.tenantId),
+            eq(emission_logs.type, input.type),
+            eq(emission_logs.series, 1) // Série padrão 1
+          ),
+          orderBy: [desc(emission_logs.number)],
+        });
+
+        const nextNumber = (lastLog?.number || 0) + 1;
+
+        // 3. Registrar emissão
+        const [log] = await db.insert(emission_logs).values({
+          tenantId: ctx.user.tenantId,
+          saleId: input.saleId,
+          type: input.type,
+          number: nextNumber,
+          series: 1,
+          createdAt: new Date(),
+        });
+
+        // 4. Retornar dados para impressão
+        return {
+          success: true,
+          receiptNumber: nextNumber,
+          series: 1,
+          accessKey: null, // Para NFC-e real, geraria aqui
+          issuedAt: new Date(),
+          sale: sale,
+        };
+      }),
+      
+    getHistory: protectedProcedure
+      .input(z.object({
+        saleId: z.number(),
+      }))
+      .query(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        const logs = await db.query.emission_logs.findMany({
+          where: and(
+            eq(emission_logs.tenantId, ctx.user.tenantId),
+            eq(emission_logs.saleId, input.saleId)
+          ),
+          orderBy: [desc(emission_logs.createdAt)],
+        });
+
+        return logs;
+      }),
+
+    getEmissionReport: protectedProcedure
+      .input(z.object({
+        startDate: z.date(),
+        endDate: z.date(),
+      }))
+      .query(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        const logs = await db.query.emission_logs.findMany({
+          where: and(
+            eq(emission_logs.tenantId, ctx.user.tenantId),
+            gte(emission_logs.createdAt, input.startDate),
+            lte(emission_logs.createdAt, input.endDate)
+          ),
+          orderBy: [desc(emission_logs.createdAt)],
+          with: {
+            sale: {
+              with: {
+                customer: true,
+              }
+            }
+          }
+        });
+
+        return logs;
       }),
   }),
 

@@ -48,6 +48,7 @@ export default function Vendas() {
   const [saleType, setSaleType] = useState<"retail" | "wholesale">("retail");
   const [showNFeDialog, setShowNFeDialog] = useState(false);
   const [showPrintReceipt, setShowPrintReceipt] = useState(false);
+  const [receiptData, setReceiptData] = useState<{ number: number, series: number } | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { printThermalReceipt } = useThermalPrinter();
 
@@ -81,14 +82,22 @@ export default function Vendas() {
       
       // Emitir NF-e se solicitado
       if (emitirNFe && selectedCustomerId) {
-        // await emitirNFeParaVenda(result.saleId, selectedCustomerId);
-        // Nova abordagem: Abrir diálogo de emissão
         setShowNFeDialog(true);
-      } else if (emitirCupom && selectedCustomerId) {
-        // Se for NFC-e (Cupom Fiscal), emitir automaticamente
-        await emitirNFeParaVenda(result.saleId, selectedCustomerId);
+      } else if (emitirCupom) {
+        // Emitir cupom fiscal (NFC-e simulada)
+        emitReceiptMutation.mutate({
+          saleId: result.saleId,
+          type: "nfce",
+        }, {
+          onSuccess: (data) => {
+            setReceiptData({ number: data.receiptNumber, series: data.series });
+            setShowReceipt(true);
+            setShowPrintReceipt(true);
+          }
+        });
       } else {
         // Se não for fiscal, mostrar recibo simples e abrir automaticamente
+        setReceiptData(null); // Limpar dados de cupom anterior
         setShowReceipt(true);
         setShowPrintReceipt(true);
       }
@@ -130,6 +139,15 @@ export default function Vendas() {
     onError: (error) => {
       toast.error(`Erro ao emitir NF-e: ${error.message}`);
       setEmitindoNFe(false);
+    },
+  });
+
+  const emitReceiptMutation = trpc.fiscal.emitReceipt.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Cupom ${data.receiptNumber} emitido com sucesso!`);
+    },
+    onError: (error) => {
+      toast.error(`Erro ao emitir cupom: ${error.message}`);
     },
   });
 
@@ -942,7 +960,7 @@ export default function Vendas() {
         return (
           <div style={{ display: "none" }}>
             <ThermalReceipt
-              saleId={lastSaleId}
+              saleId={receiptData ? receiptData.number : (lastSaleId || 0)}
               customerName={customer?.name || "Consumidor"}
               items={cart.map((item) => ({
                 name: item.name,

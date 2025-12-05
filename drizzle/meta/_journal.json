@@ -120,6 +120,20 @@
       "when": 1764932878537,
       "tag": "0017_ambiguous_bloodscream",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1764967190504,
+      "tag": "0018_dry_red_ghost",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1764967593703,
+      "tag": "0019_lazy_shocker",
+      "breakpoints": true
     }
   ]
 }

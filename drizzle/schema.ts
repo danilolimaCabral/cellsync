@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json, unique } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, json, unique, date } from "drizzle-orm/mysql-core";
 
 /**
  * Sistema CellSync - Schema completo do banco de dados
@@ -14,6 +14,8 @@ export const tenants = mysqlTable("tenants", {
   cnpj: varchar("cnpj", { length: 14 }).unique(), // CNPJ da empresa (apenas números)
   customDomain: varchar("customDomain", { length: 255 }), // domínio personalizado
   logo: text("logo"), // URL do logo
+  address: text("address"), // Endereço completo da loja
+  phone: varchar("phone", { length: 20 }), // Telefone de contato
   planId: int("plan_id").notNull(), // Referência ao plano
   status: mysqlEnum("status", ["active", "suspended", "cancelled", "trial"]).default("trial").notNull(),
   trialEndsAt: timestamp("trial_ends_at"),
@@ -213,6 +215,22 @@ export const saleItems = mysqlTable("saleItems", {
 
 export type SaleItem = typeof saleItems.$inferSelect;
 export type InsertSaleItem = typeof saleItems.$inferInsert;
+
+// ============= HISTÓRICO DE EMISSÕES =============
+export const emissionLogs = mysqlTable("emission_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1),
+  saleId: int("saleId"), // Pode ser nulo se for emissão avulsa
+  type: mysqlEnum("type", ["cupom", "nfe", "nfce", "recibo"]).notNull(),
+  number: int("number").notNull(), // Número sequencial
+  series: int("series").default(1).notNull(),
+  accessKey: varchar("accessKey", { length: 44 }), // Chave de acesso para documentos fiscais
+  xmlUrl: text("xmlUrl"), // URL do XML se houver
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EmissionLog = typeof emissionLogs.$inferSelect;
+export type InsertEmissionLog = typeof emissionLogs.$inferInsert;
 
 // ============= ORDENS DE SERVIÇO =============
 export const serviceOrders = mysqlTable("serviceOrders", {
@@ -751,7 +769,9 @@ export const fiscalSettings = mysqlTable("fiscal_settings", {
   cscToken: varchar("csc_token", { length: 255 }), // Código de Segurança do Contribuinte
   cscId: varchar("csc_id", { length: 10 }), // ID do CSC (ex: 000001)
   nextNfeNumber: int("next_nfe_number").default(1).notNull(),
-  series: int("series").default(1).notNull(),
+  nfeSeries: int("nfe_series").default(1).notNull(), // Renomeado de series para nfeSeries para clareza
+  nextNfceNumber: int("next_nfce_number").default(1).notNull(),
+  nfceSeries: int("nfce_series").default(1).notNull(),
   simpleNational: boolean("simple_national").default(true).notNull(), // Simples Nacional?
   taxRegime: varchar("tax_regime", { length: 1 }).default("1"), // 1=Simples Nacional, 3=Regime Normal
   defaultNcm: varchar("default_ncm", { length: 8 }),
@@ -779,3 +799,105 @@ export const tenantModules = mysqlTable("tenant_modules", {
 
 export type TenantModule = typeof tenantModules.$inferSelect;
 export type InsertTenantModule = typeof tenantModules.$inferInsert;
+
+// ============= CONTABILIDADE =============
+
+export const chart_of_accounts = mysqlTable("chart_of_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  tenant_id: int("tenant_id").notNull(),
+  account_code: varchar("account_code", { length: 50 }).notNull(),
+  account_name: varchar("account_name", { length: 255 }).notNull(),
+  account_type: mysqlEnum("account_type", ["asset", "liability", "equity", "revenue", "expense"]).notNull(),
+  parent_account_id: int("parent_account_id"),
+  is_analytical: boolean("is_analytical").default(true).notNull(),
+  description: text("description"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const posting_templates = mysqlTable("posting_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  tenant_id: int("tenant_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  template_type: mysqlEnum("template_type", ["sale", "sale_return", "payment", "receipt", "adjustment"]).notNull(),
+  description: text("description"),
+  is_active: boolean("is_active").default(true).notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const posting_template_lines = mysqlTable("posting_template_lines", {
+  id: int("id").autoincrement().primaryKey(),
+  template_id: int("template_id").notNull(),
+  account_id: int("account_id").notNull(),
+  type: mysqlEnum("type", ["debit", "credit"]).notNull(),
+  debit_percentage: int("debit_percentage").default(0).notNull(), // 0-100
+  credit_percentage: int("credit_percentage").default(0).notNull(), // 0-100
+  description_template: varchar("description_template", { length: 255 }),
+  line_number: int("line_number").notNull(),
+});
+
+export const accounting_postings = mysqlTable("accounting_postings", {
+  id: int("id").autoincrement().primaryKey(),
+  tenant_id: int("tenant_id").notNull(),
+  posting_date: date("posting_date").notNull(),
+  posting_number: varchar("posting_number", { length: 50 }).notNull(), // YYYYMMDD-SEQ
+  reference_type: mysqlEnum("reference_type", ["sale", "purchase", "payment", "receipt", "adjustment"]).notNull(),
+  reference_id: int("reference_id"),
+  reference_document: varchar("reference_document", { length: 100 }),
+  description: text("description"),
+  status: mysqlEnum("status", ["draft", "posted", "cancelled"]).default("draft").notNull(),
+  posted_by: int("posted_by"),
+  posted_at: timestamp("posted_at"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const accounting_posting_lines = mysqlTable("accounting_posting_lines", {
+  id: int("id").autoincrement().primaryKey(),
+  posting_id: int("posting_id").notNull(),
+  account_id: int("account_id").notNull(),
+  debit_amount: int("debit_amount").default(0).notNull(), // Centavos
+  credit_amount: int("credit_amount").default(0).notNull(), // Centavos
+  description: varchar("description", { length: 255 }),
+});
+
+export const financial_records = mysqlTable("financial_records", {
+  id: int("id").autoincrement().primaryKey(),
+  tenant_id: int("tenant_id").notNull(),
+  sale_id: int("sale_id"),
+  nfe_id: int("nfe_id"),
+  record_type: mysqlEnum("record_type", ["revenue", "expense", "receivable", "payable"]).notNull(),
+  due_date: date("due_date").notNull(),
+  amount: int("amount").notNull(), // Centavos
+  status: mysqlEnum("status", ["pending", "paid", "cancelled", "overdue"]).default("pending").notNull(),
+  paid_amount: int("paid_amount").default(0),
+  paid_at: timestamp("paid_at"),
+  description: text("description"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const tax_calculations = mysqlTable("tax_calculations", {
+  id: int("id").autoincrement().primaryKey(),
+  sale_id: int("sale_id").notNull(),
+  tax_type: mysqlEnum("tax_type", ["icms", "pis", "cofins", "ipi", "iss"]).notNull(),
+  tax_base: int("tax_base").notNull(), // Base de cálculo em centavos
+  tax_rate: int("tax_rate").notNull(), // Alíquota * 100 (ex: 18% = 1800 ou 0.18? O código usa float, mas aqui vou usar int para consistência ou float se o drizzle suportar decimal)
+  tax_amount: int("tax_amount").notNull(), // Valor do imposto em centavos
+  tax_account_id: int("tax_account_id"), // Conta contábil relacionada
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Exportar tipos
+export type ChartOfAccount = typeof chart_of_accounts.$inferSelect;
+export type InsertChartOfAccount = typeof chart_of_accounts.$inferInsert;
+
+export type PostingTemplate = typeof posting_templates.$inferSelect;
+export type InsertPostingTemplate = typeof posting_templates.$inferInsert;
+
+export type AccountingPosting = typeof accounting_postings.$inferSelect;
+export type InsertAccountingPosting = typeof accounting_postings.$inferInsert;
+
+export type FinancialRecord = typeof financial_records.$inferSelect;
+export type InsertFinancialRecord = typeof financial_records.$inferInsert;

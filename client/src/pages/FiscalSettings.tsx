@@ -1,371 +1,279 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Upload, ShieldCheck, AlertTriangle, FileKey } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-
-const fiscalSchema = z.object({
-  environment: z.enum(["homologacao", "producao"]),
-  cscToken: z.string().optional(),
-  cscId: z.string().optional(),
-  nextNfeNumber: z.coerce.number().min(1),
-  series: z.coerce.number().min(1),
-  simpleNational: z.boolean(),
-  defaultNcm: z.string().optional(),
-});
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import PageHeader from "@/components/PageHeader";
+import { Settings, Building2, FileText, Save } from "lucide-react";
 
 export default function FiscalSettings() {
-  const [activeTab, setActiveTab] = useState("general");
-  const [uploading, setUploading] = useState(false);
-  const [certPassword, setCertPassword] = useState("");
-  const [certFile, setCertFile] = useState<File | null>(null);
-
-  const utils = trpc.useContext();
-  const { data: settings, isLoading } = trpc.fiscal.getSettings.useQuery();
-
-  const form = useForm<z.infer<typeof fiscalSchema>>({
-    resolver: zodResolver(fiscalSchema),
-    defaultValues: {
-      environment: "homologacao",
-      nextNfeNumber: 1,
-      series: 1,
-      simpleNational: true,
-    },
-    values: settings ? {
-      environment: settings.environment as "homologacao" | "producao",
-      cscToken: settings.cscToken || "",
-      cscId: settings.cscId || "",
-      nextNfeNumber: settings.nextNfeNumber,
-      series: settings.series,
-      simpleNational: settings.simpleNational,
-      defaultNcm: settings.defaultNcm || "",
-    } : undefined
+  const { user } = useAuth();
+  
+  // Queries
+  const tenantQuery = trpc.tenants.getById.useQuery(user?.tenantId, {
+    enabled: !!user?.tenantId,
+  });
+  
+  const fiscalSettingsQuery = trpc.fiscal.getSettings.useQuery(undefined, {
+    enabled: !!user,
   });
 
-  const saveMutation = trpc.fiscal.saveSettings.useMutation({
+  // Mutations
+  const updateTenantMutation = trpc.tenants.update.useMutation({
     onSuccess: () => {
-      toast.success("Configurações fiscais salvas com sucesso!");
-      utils.fiscal.getSettings.invalidate();
+      toast.success("Dados da empresa atualizados com sucesso!");
+      tenantQuery.refetch();
     },
     onError: (error) => {
-      toast.error(`Erro ao salvar: ${error.message}`);
-    }
+      toast.error(`Erro ao atualizar empresa: ${error.message}`);
+    },
   });
 
-  const uploadMutation = trpc.fiscal.uploadCertificate.useMutation({
+  const updateFiscalSettingsMutation = trpc.fiscal.updateSettings.useMutation({
     onSuccess: () => {
-      toast.success("Certificado digital importado com sucesso!");
-      setCertFile(null);
-      setCertPassword("");
-      utils.fiscal.getSettings.invalidate();
+      toast.success("Configurações fiscais atualizadas com sucesso!");
+      fiscalSettingsQuery.refetch();
     },
     onError: (error) => {
-      toast.error(`Erro ao importar certificado: ${error.message}`);
-    }
+      toast.error(`Erro ao atualizar configurações: ${error.message}`);
+    },
   });
 
-  const onSubmit = (data: z.infer<typeof fiscalSchema>) => {
-    saveMutation.mutate(data);
-  };
+  // Estados locais para formulários
+  const [tenantData, setTenantData] = useState({
+    name: "",
+    cnpj: "",
+    address: "",
+    phone: "",
+  });
 
-  const handleUpload = async () => {
-    if (!certFile || !certPassword) {
-      toast.error("Selecione o arquivo e informe a senha");
-      return;
-    }
+  const [fiscalData, setFiscalData] = useState({
+    environment: "homologacao",
+    nfeSeries: 1,
+    nextNfeNumber: 1,
+    nfceSeries: 1,
+    nextNfceNumber: 1,
+    cscToken: "",
+    cscId: "",
+  });
 
-    setUploading(true);
-    try {
-      // Simulação de upload para S3
-      // Em produção: usar presigned URL ou FormData
-      const fakeUrl = `https://s3.amazonaws.com/bucket/${certFile.name}`;
-      
-      await uploadMutation.mutateAsync({
-        fileName: certFile.name,
-        fileUrl: fakeUrl,
-        password: certPassword
+  // Carregar dados quando disponíveis
+  useEffect(() => {
+    if (tenantQuery.data) {
+      setTenantData({
+        name: tenantQuery.data.name || "",
+        cnpj: tenantQuery.data.cnpj || "",
+        address: tenantQuery.data.address || "",
+        phone: tenantQuery.data.phone || "",
       });
-    } finally {
-      setUploading(false);
     }
+  }, [tenantQuery.data]);
+
+  useEffect(() => {
+    if (fiscalSettingsQuery.data) {
+      setFiscalData({
+        environment: fiscalSettingsQuery.data.environment || "homologacao",
+        nfeSeries: fiscalSettingsQuery.data.nfeSeries || 1,
+        nextNfeNumber: fiscalSettingsQuery.data.nextNfeNumber || 1,
+        nfceSeries: fiscalSettingsQuery.data.nfceSeries || 1,
+        nextNfceNumber: fiscalSettingsQuery.data.nextNfceNumber || 1,
+        cscToken: fiscalSettingsQuery.data.cscToken || "",
+        cscId: fiscalSettingsQuery.data.cscId || "",
+      });
+    }
+  }, [fiscalSettingsQuery.data]);
+
+  const handleTenantSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateTenantMutation.mutate(tenantData);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const handleFiscalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateFiscalSettingsMutation.mutate({
+      ...fiscalData,
+      nfeSeries: Number(fiscalData.nfeSeries),
+      nextNfeNumber: Number(fiscalData.nextNfeNumber),
+      nfceSeries: Number(fiscalData.nfceSeries),
+      nextNfceNumber: Number(fiscalData.nextNfceNumber),
+      environment: fiscalData.environment as "homologacao" | "producao",
+    });
+  };
+
+  if (!user) return null;
 
   return (
-    <div className="container mx-auto py-6 max-w-4xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configurações Fiscais</h1>
-          <p className="text-muted-foreground">
-            Gerencie dados de emissão de NF-e e certificado digital.
-          </p>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Configurações Fiscais"
+        description="Gerencie os dados da sua empresa e parâmetros de emissão fiscal."
+        icon={Settings}
+      />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="general">Geral</TabsTrigger>
-          <TabsTrigger value="certificate">Certificado Digital</TabsTrigger>
-        </TabsList>
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Dados da Empresa */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-primary" />
+              <CardTitle>Dados da Empresa</CardTitle>
+            </div>
+            <CardDescription>
+              Informações que aparecerão no cabeçalho das notas e cupons.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleTenantSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Razão Social / Nome Fantasia</Label>
+                <Input
+                  id="name"
+                  value={tenantData.name}
+                  onChange={(e) => setTenantData({ ...tenantData, name: e.target.value })}
+                  placeholder="Minha Loja LTDA"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="cnpj">CNPJ</Label>
+                <Input
+                  id="cnpj"
+                  value={tenantData.cnpj}
+                  onChange={(e) => setTenantData({ ...tenantData, cnpj: e.target.value })}
+                  placeholder="00.000.000/0000-00"
+                />
+              </div>
 
-        <TabsContent value="general">
-          <Card>
-            <CardHeader>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone</Label>
+                <Input
+                  id="phone"
+                  value={tenantData.phone}
+                  onChange={(e) => setTenantData({ ...tenantData, phone: e.target.value })}
+                  placeholder="(00) 00000-0000"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">Endereço Completo</Label>
+                <Input
+                  id="address"
+                  value={tenantData.address}
+                  onChange={(e) => setTenantData({ ...tenantData, address: e.target.value })}
+                  placeholder="Rua Exemplo, 123 - Bairro, Cidade - UF"
+                />
+              </div>
+
+              <Button type="submit" disabled={updateTenantMutation.isPending}>
+                {updateTenantMutation.isPending ? "Salvando..." : "Salvar Dados da Empresa"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Parâmetros Fiscais */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
               <CardTitle>Parâmetros de Emissão</CardTitle>
-              <CardDescription>
-                Configure o ambiente e numeração das notas fiscais.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="environment"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Ambiente de Emissão</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione o ambiente" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="homologacao">Homologação (Testes)</SelectItem>
-                              <SelectItem value="producao">Produção (Validade Jurídica)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Use Homologação para testes sem valor fiscal.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="simpleNational"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">Simples Nacional</FormLabel>
-                            <FormDescription>
-                              Empresa optante pelo Simples Nacional?
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="nextNfeNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Próximo Número de NF-e</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="series"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Série</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="cscId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>ID do CSC (Token)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ex: 000001" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="cscToken"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Código CSC</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="Token de segurança" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button type="submit" disabled={saveMutation.isLoading}>
-                      {saveMutation.isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Salvar Configurações
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="certificate">
-          <div className="grid gap-6">
-            {/* Status do Certificado */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Status do Certificado</CardTitle>
-                <CardDescription>
-                  Informações sobre o certificado digital A1 atual.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {settings?.hasCertificate ? (
-                  <div className="flex items-center gap-4 p-4 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-                    <div className="p-2 bg-green-100 dark:bg-green-800 rounded-full">
-                      <ShieldCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-green-900 dark:text-green-300">Certificado Ativo</h4>
-                      <p className="text-sm text-green-700 dark:text-green-400">
-                        Emitido por: {settings.certificateIssuer || "N/A"}
-                      </p>
-                      <p className="text-sm text-green-700 dark:text-green-400">
-                        Válido até: {settings.certificateExpiration ? format(new Date(settings.certificateExpiration), "dd/MM/yyyy", { locale: ptBR }) : "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-4 p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
-                    <div className="p-2 bg-yellow-100 dark:bg-yellow-800 rounded-full">
-                      <AlertTriangle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-yellow-900 dark:text-yellow-300">Nenhum certificado configurado</h4>
-                      <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                        Você precisa enviar um certificado A1 (.pfx) para emitir notas fiscais.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Upload de Novo Certificado */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Atualizar Certificado</CardTitle>
-                <CardDescription>
-                  Envie um novo arquivo .pfx (Modelo A1) para substituir o atual.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                  <FormLabel htmlFor="cert-file">Arquivo do Certificado (.pfx)</FormLabel>
-                  <Input 
-                    id="cert-file" 
-                    type="file" 
-                    accept=".pfx,.p12"
-                    onChange={(e) => setCertFile(e.target.files?.[0] || null)}
-                  />
-                </div>
-
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                  <FormLabel htmlFor="cert-pass">Senha do Certificado</FormLabel>
-                  <Input 
-                    id="cert-pass" 
-                    type="password" 
-                    value={certPassword}
-                    onChange={(e) => setCertPassword(e.target.value)}
-                    placeholder="Digite a senha do arquivo"
-                  />
-                </div>
-
-                <Button 
-                  onClick={handleUpload} 
-                  disabled={!certFile || !certPassword || uploading || uploadMutation.isLoading}
+            </div>
+            <CardDescription>
+              Configure a numeração e ambiente de emissão.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleFiscalSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="environment">Ambiente</Label>
+                <Select 
+                  value={fiscalData.environment} 
+                  onValueChange={(value) => setFiscalData({ ...fiscalData, environment: value })}
                 >
-                  {(uploading || uploadMutation.isLoading) ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processando...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Enviar Certificado
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o ambiente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="homologacao">Homologação (Teste)</SelectItem>
+                    <SelectItem value="producao">Produção</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nfceSeries">Série NFC-e</Label>
+                  <Input
+                    id="nfceSeries"
+                    type="number"
+                    value={fiscalData.nfceSeries}
+                    onChange={(e) => setFiscalData({ ...fiscalData, nfceSeries: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nextNfceNumber">Próx. Número NFC-e</Label>
+                  <Input
+                    id="nextNfceNumber"
+                    type="number"
+                    value={fiscalData.nextNfceNumber}
+                    onChange={(e) => setFiscalData({ ...fiscalData, nextNfceNumber: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nfeSeries">Série NF-e</Label>
+                  <Input
+                    id="nfeSeries"
+                    type="number"
+                    value={fiscalData.nfeSeries}
+                    onChange={(e) => setFiscalData({ ...fiscalData, nfeSeries: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nextNfeNumber">Próx. Número NF-e</Label>
+                  <Input
+                    id="nextNfeNumber"
+                    type="number"
+                    value={fiscalData.nextNfeNumber}
+                    onChange={(e) => setFiscalData({ ...fiscalData, nextNfeNumber: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cscId">ID do CSC (Token)</Label>
+                <Input
+                  id="cscId"
+                  value={fiscalData.cscId}
+                  onChange={(e) => setFiscalData({ ...fiscalData, cscId: e.target.value })}
+                  placeholder="Ex: 000001"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cscToken">Código CSC</Label>
+                <Input
+                  id="cscToken"
+                  value={fiscalData.cscToken}
+                  onChange={(e) => setFiscalData({ ...fiscalData, cscToken: e.target.value })}
+                  placeholder="Código alfanumérico do CSC"
+                  type="password"
+                />
+              </div>
+
+              <Button type="submit" disabled={updateFiscalSettingsMutation.isPending}>
+                {updateFiscalSettingsMutation.isPending ? "Salvando..." : "Salvar Configurações"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

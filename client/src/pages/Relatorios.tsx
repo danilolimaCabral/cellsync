@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { exportFinancialReport } from "@/lib/exportUtils";
 import { toast } from "sonner";
+import FiscalReportTab from "@/components/FiscalReportTab";
 import {
   LineChart,
   Line,
@@ -263,11 +264,12 @@ export default function Relatorios() {
 
       {/* Tabs de Relatórios */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="sales">Vendas</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="financial">Financeiro</TabsTrigger>
+          <TabsTrigger value="fiscal">Fiscal</TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
@@ -524,6 +526,11 @@ export default function Relatorios() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Fiscal */}
+        <TabsContent value="fiscal" className="space-y-4">
+          <FiscalReportTab startDate={startDate} endDate={endDate} />
         </TabsContent>
 
         {/* Financeiro */}
