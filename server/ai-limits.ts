@@ -78,8 +78,8 @@ export async function checkAIImportLimit(tenantId: number): Promise<AILimitStatu
   // Verificar limite
   const importsLimit = plan.aiImportsLimit;
   const importsUsed = tenant.aiImportsUsed;
-  const isUnlimited = importsLimit === -1;
-  const importsRemaining = isUnlimited ? -1 : Math.max(0, importsLimit - importsUsed);
+  const isUnlimited = importsLimit === -1 || importsLimit === null; // Ensure null is also treated as unlimited if applicable
+  const importsRemaining = isUnlimited ? 999999 : Math.max(0, importsLimit - importsUsed);
 
   // Determinar se pode importar
   let canImport = true;
@@ -95,6 +95,8 @@ export async function checkAIImportLimit(tenantId: number): Promise<AILimitStatu
     suggestUpgrade = true;
   } else if (isInTrial) {
     message = `Você está no período trial (${trialDaysRemaining} dias restantes). Importações ilimitadas!`;
+  } else if (isUnlimited) {
+    message = `Você possui importações ilimitadas no plano ${plan.name}. Aproveite!`;
   }
 
   return {

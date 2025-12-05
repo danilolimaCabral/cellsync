@@ -187,29 +187,37 @@ export const aiAssistantRouter = router({
         const errors: string[] = [];
 
         // Importar baseado no módulo
+        console.log(`[AI Import] Iniciando importação de ${transformedData.length} registros para o módulo ${input.moduleType}`);
+        
         if (input.moduleType === "products") {
           for (const row of transformedData) {
             try {
+              // Garantir que valores numéricos sejam válidos
+              const costPrice = row.costPrice ? Number(row.costPrice) : 0;
+              const salePrice = row.retailPrice ? Number(row.retailPrice) : 0;
+              const currentStock = row.currentStock ? Number(row.currentStock) : 0;
+              
               await db.insert(products).values({
                 tenantId, // Adicionado tenantId explicitamente
-                name: row.name,
+                name: row.name || "Produto Sem Nome", // Fallback para evitar erro de constraint
                 description: row.description || null,
                 sku: row.sku || null,
                 category: row.category || null,
                 brand: row.brand || null,
                 model: row.model || null,
-                costPrice: row.costPrice ? parseInt(row.costPrice) : 0,
-                salePrice: row.retailPrice ? parseInt(row.retailPrice) : 0,
-                wholesalePrice: row.wholesalePrice ? parseInt(row.wholesalePrice) : undefined,
-                minWholesaleQty: row.minWholesaleQty ? parseInt(row.minWholesaleQty) : undefined,
-                currentStock: row.currentStock ? parseInt(row.currentStock) : 0,
-                minStock: row.minStock ? parseInt(row.minStock) : 10,
+                costPrice: isNaN(costPrice) ? 0 : costPrice,
+                salePrice: isNaN(salePrice) ? 0 : salePrice,
+                wholesalePrice: row.wholesalePrice ? Number(row.wholesalePrice) : undefined,
+                minWholesaleQty: row.minWholesaleQty ? Number(row.minWholesaleQty) : undefined,
+                currentStock: isNaN(currentStock) ? 0 : currentStock,
+                minStock: row.minStock ? Number(row.minStock) : 10,
                 supplier: row.supplier || undefined,
                 barcode: row.barcode || undefined,
                 active: true,
               });
               successCount++;
             } catch (error: any) {
+              console.error(`[AI Import Error] Falha ao inserir produto:`, error);
               errorCount++;
               errors.push(`Linha ${successCount + errorCount}: ${error.message}`);
             }
