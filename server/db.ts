@@ -464,17 +464,21 @@ export async function createSale(data: {
     }
   }
 
-  // Criar conta a receber se não for pagamento à vista
-  if (data.paymentMethod !== "dinheiro" && data.paymentMethod !== "pix") {
-    await database.insert(accountsReceivable).values({
-      description: `Venda #${saleId}`,
-      customerId: data.customerId,
-      amount: finalAmount,
-      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
-      status: "pendente",
-      createdBy: data.sellerId,
-    });
-  }
+  // Registrar no financeiro (Contas a Receber)
+  // Se for dinheiro ou PIX, já entra como recebido. Se for cartão/outros, entra como pendente.
+  const isImmediatePayment = data.paymentMethod === "dinheiro" || data.paymentMethod === "pix";
+  
+  await database.insert(accountsReceivable).values({
+    description: `Venda #${saleId} - ${data.paymentMethod.toUpperCase()}`,
+    customerId: data.customerId,
+    amount: finalAmount,
+    dueDate: isImmediatePayment ? new Date() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias para crédito
+    status: isImmediatePayment ? "recebido" : "pendente",
+    paymentDate: isImmediatePayment ? new Date() : null,
+    referenceType: "sale",
+    referenceId: saleId,
+    createdBy: data.sellerId,
+  });
 
   return saleId;
 }
