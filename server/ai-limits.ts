@@ -86,6 +86,10 @@ export async function checkAIImportLimit(tenantId: number): Promise<AILimitStatu
   let message: string | undefined;
   let suggestUpgrade = false;
 
+  // Se o tenant estiver suspenso (manutenção), ainda permitimos a importação se for ilimitado ou se não tiver atingido o limite numérico.
+  // O bloqueio por status "suspended" deve ser tratado no login ou middleware geral, mas para esta função específica de limite,
+  // focamos apenas na contagem.
+
   if (!isInTrial && !isUnlimited && importsUsed >= importsLimit) {
     canImport = false;
     message = `Você atingiu o limite de ${importsLimit} importações do mês. Faça upgrade para continuar!`;

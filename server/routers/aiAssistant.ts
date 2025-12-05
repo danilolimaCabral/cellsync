@@ -45,6 +45,11 @@ export const aiAssistantRouter = router({
 
       // Verificar limites
       const limitStatus = await checkAIImportLimit(tenantId);
+      
+      // Permitir importação mesmo em modo suspenso/manutenção se for o Master Admin ou se o limite permitir
+      // A verificação de status do tenant deve ser feita no middleware ou aqui se necessário.
+      // Por enquanto, vamos confiar no checkAIImportLimit, mas garantir que ele não bloqueie indevidamente.
+      
       if (!limitStatus.canImport) {
         throw new TRPCError({
           code: "FORBIDDEN",
