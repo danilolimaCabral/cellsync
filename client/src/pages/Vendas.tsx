@@ -973,27 +973,38 @@ export default function Vendas() {
       </div>
 
       {/* Recibo Térmico Oculto */}
-      {showPrintReceipt && lastSaleId && selectedCustomerId && (
-        <div style={{ display: "none" }}>
-          <ThermalReceipt
-            saleId={lastSaleId}
-            customerName={customers.find((c) => c.id === selectedCustomerId)?.name || "Cliente"}
-            items={cart.map((item) => ({
-              name: item.name,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              subtotal: item.unitPrice * item.quantity,
-            }))}
-            subtotal={subtotal}
-            discount={discount}
-            total={total}
-            paymentMethod={paymentMethod}
-            cpf={cpfNota || undefined}
-            timestamp={new Date()}
-            companyName={user?.tenantName || "LOJA PADRÃO"}
-          />
-        </div>
-      )}
+      {showPrintReceipt && lastSaleId && selectedCustomerId && (() => {
+        const customer = customers.find((c) => c.id === selectedCustomerId);
+        return (
+          <div style={{ display: "none" }}>
+            <ThermalReceipt
+              saleId={lastSaleId}
+              customerName={customer?.name || "Cliente"}
+              items={cart.map((item) => ({
+                name: item.name,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                subtotal: item.unitPrice * item.quantity,
+              }))}
+              subtotal={subtotal}
+              discount={discount}
+              total={total}
+              paymentMethod={paymentMethod}
+              cpf={cpfNota || undefined}
+              timestamp={new Date()}
+              companyName={user?.tenantName || "LOJA PADRÃO"}
+              companyDocument={user?.tenantCnpj || "00.000.000/0000-00"}
+              companyAddress={user?.tenantAddress || ""}
+              companyPhone={user?.tenantPhone || ""}
+              customerCpf={customer?.cpf || undefined}
+              customerCnpj={customer?.cnpj || undefined}
+              customerAddress={customer?.address || undefined}
+              customerPhone={customer?.phone || undefined}
+              customerEmail={customer?.email || undefined}
+            />
+          </div>
+        );
+      })()}
 
       {/* Diálogo de Emissão de NF-e */}
       <NFeIssuanceDialog 

@@ -20,6 +20,13 @@ interface ThermalReceiptProps {
   timestamp: Date;
   companyName?: string;
   companyDocument?: string;
+  companyAddress?: string;
+  companyPhone?: string;
+  customerCpf?: string;
+  customerCnpj?: string;
+  customerAddress?: string;
+  customerPhone?: string;
+  customerEmail?: string;
 }
 
 /**
@@ -38,6 +45,13 @@ export const ThermalReceipt = ({
   timestamp,
   companyName = "LOJA PADRÃO",
   companyDocument = "00.000.000/0000-00",
+  companyAddress = "",
+  companyPhone = "",
+  customerCpf,
+  customerCnpj,
+  customerAddress,
+  customerPhone,
+  customerEmail,
 }: ThermalReceiptProps) => {
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("pt-BR", {
@@ -74,10 +88,12 @@ export const ThermalReceipt = ({
         color: "black",
       }}
     >
-      {/* Cabeçalho */}
+      {/* Cabeçalho com Dados da Empresa */}
       <div style={{ textAlign: "center", marginBottom: "8px", borderBottom: "1px dashed #000", paddingBottom: "8px" }}>
         <div style={{ fontWeight: "bold", fontSize: "14px" }}>{companyName}</div>
         <div style={{ fontSize: "10px" }}>CNPJ: {companyDocument}</div>
+        {companyAddress && <div style={{ fontSize: "9px", marginTop: "2px", wordBreak: "break-word" }}>{companyAddress}</div>}
+        {companyPhone && <div style={{ fontSize: "9px" }}>Tel: {companyPhone}</div>}
         <div style={{ fontSize: "10px", marginTop: "4px" }}>NFC-e - CUPOM FISCAL</div>
       </div>
 
@@ -85,7 +101,21 @@ export const ThermalReceipt = ({
       <div style={{ marginBottom: "8px", fontSize: "11px" }}>
         <div>Cupom: {String(saleId).padStart(6, "0")}</div>
         <div>{formatDate(timestamp)}</div>
-        {cpf && <div>CPF: {cpf}</div>}
+      </div>
+
+      {/* Separador */}
+      <div style={{ borderBottom: "1px dashed #000", marginBottom: "8px" }}></div>
+
+      {/* Dados do Cliente */}
+      <div style={{ marginBottom: "8px", fontSize: "10px" }}>
+        <div style={{ fontWeight: "bold", marginBottom: "4px" }}>CLIENTE:</div>
+        <div>{customerName}</div>
+        {(customerCpf || customerCnpj) && (
+          <div>{customerCpf ? `CPF: ${customerCpf}` : `CNPJ: ${customerCnpj}`}</div>
+        )}
+        {customerAddress && <div style={{ wordBreak: "break-word", marginTop: "2px" }}>{customerAddress}</div>}
+        {customerPhone && <div>Tel: {customerPhone}</div>}
+        {customerEmail && <div style={{ wordBreak: "break-word" }}>{customerEmail}</div>}
       </div>
 
       {/* Separador */}
