@@ -1408,7 +1408,10 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           offset: z.number().optional(),
         }).optional())
         .query(async ({ input }) => {
-          return await db.listAccountsPayable(input || {});
+          return await db.listAccountsPayable({
+            ...(input || {}),
+            tenantId: ctx.user.tenantId,
+          });
         }),
 
       create: protectedProcedure
@@ -1425,6 +1428,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           return await db.createAccountPayable({
             ...input,
             createdBy: ctx.user.id,
+            tenantId: ctx.user.tenantId,
           });
         }),
 
@@ -1490,7 +1494,10 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           offset: z.number().optional(),
         }).optional())
         .query(async ({ input }) => {
-          return await db.listAccountsReceivable(input || {});
+          return await db.listAccountsReceivable({
+            ...(input || {}),
+            tenantId: ctx.user.tenantId,
+          });
         }),
 
       create: protectedProcedure
@@ -1507,6 +1514,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           return await db.createAccountReceivable({
             ...input,
             createdBy: ctx.user.id,
+            tenantId: ctx.user.tenantId,
           });
         }),
 
