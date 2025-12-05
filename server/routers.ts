@@ -1348,18 +1348,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         return [];
       }),
 
-    update: adminProcedure
-      .input(z.object({
-        userId: z.number(),
-        name: z.string().optional(),
-        role: z.enum(["admin", "vendedor", "tecnico", "gerente"]).optional(),
-        active: z.boolean().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const { userId, ...data } = input;
-        await db.updateUser(userId, data);
-        return { success: true };
-      }),
+
 
     create: protectedProcedure
       .input(z.object({
@@ -1367,6 +1356,9 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         password: z.string().min(6),
         name: z.string().min(2),
         role: z.enum(["admin", "vendedor", "tecnico", "gerente"]).default("vendedor"),
+        phone: z.string().optional(),
+        commissionRate: z.number().min(0).max(100).optional(),
+        active: z.boolean().default(true),
       }))
       .mutation(async ({ input, ctx }) => {
         // Verificar se email já existe
@@ -1382,15 +1374,88 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         const hashedPassword = await bcrypt.hash(input.password, 10);
 
         // Criar usuário vinculado ao tenant do usuário atual
-        await db.createUser({
+        const result = await db.createUser({
           tenantId: ctx.user.tenantId,
           email: input.email,
           password: hashedPassword,
           name: input.name,
           role: input.role,
-          active: true,
+          phone: input.phone,
+          active: input.active,
         });
 
+        // Se é vendedor, salvar taxa de comissão
+        if (input.role === "vendedor" && input.commissionRate !== undefined) {
+          await db.updateUser(ctx.user.tenantId, result.id, {
+            commissionRate: input.commissionRate
+          });
+        }
+
+        return { success: true, userId: result.id };
+      }),
+
+    listByRole: protectedProcedure
+      .input(z.object({
+        role: z.string(),
+      }))
+      .query(async ({ input, ctx }) => {
+        const users = await db.listUsersByRole(ctx.user.tenantId, input.role);
+        return users.map((u: any) => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          phone: u.phone,
+          role: u.role,
+          commissionRate: u.commissionRate,
+          active: u.active,
+        }));
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        // Verificar se o usuário pertence ao mesmo tenant
+        const user = await db.getUserByIdAndTenant(ctx.user.tenantId, input.id);
+        
+        if (!user) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Você não tem permissão para deletar este usuário"
+          });
+        }
+        
+        // Deletar usuário
+        await db.deleteUser(ctx.user.tenantId, input.id);
+        
+        return { success: true };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+        phone: z.string().optional(),
+        role: z.enum(["admin", "vendedor", "tecnico", "gerente"]).optional(),
+        commissionRate: z.number().min(0).max(100).optional(),
+        active: z.boolean().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { id, ...data } = input;
+        
+        // Verificar se o usuário pertence ao mesmo tenant
+        const user = await db.getUserByIdAndTenant(ctx.user.tenantId, id);
+        
+        if (!user) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Você não tem permissão para atualizar este usuário"
+          });
+        }
+        
+        // Atualizar usuário
+        await db.updateUser(ctx.user.tenantId, id, data);
+        
         return { success: true };
       }),
   }),

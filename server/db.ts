@@ -2309,3 +2309,83 @@ export async function toggleTenantModule(tenantId: number, moduleId: string, ena
     });
   }
 }
+
+
+// ============= USERS MANAGEMENT =============
+
+export async function listUsersByRole(tenantId: number, role: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { eq, and } = await import("drizzle-orm");
+  return db.select().from(users)
+    .where(and(
+      eq(users.tenantId, tenantId),
+      eq(users.role, role as any)
+    ))
+    .orderBy(users.name);
+}
+
+export async function updateUser(
+  tenantId: number,
+  userId: number,
+  data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    role?: string;
+    commissionRate?: number;
+    active?: boolean;
+  }
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { eq, and } = await import("drizzle-orm");
+  
+  // Filtrar dados undefined
+  const updateData: any = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.email !== undefined) updateData.email = data.email;
+  if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.role !== undefined) updateData.role = data.role as any;
+  if (data.commissionRate !== undefined) updateData.commissionRate = data.commissionRate;
+  if (data.active !== undefined) updateData.active = data.active;
+  
+  if (Object.keys(updateData).length === 0) return;
+  
+  await db.update(users)
+    .set(updateData)
+    .where(and(
+      eq(users.id, userId),
+      eq(users.tenantId, tenantId)
+    ));
+}
+
+export async function deleteUser(tenantId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { eq, and } = await import("drizzle-orm");
+  
+  await db.delete(users)
+    .where(and(
+      eq(users.id, userId),
+      eq(users.tenantId, tenantId)
+    ));
+}
+
+export async function getUserByIdAndTenant(tenantId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const { eq, and } = await import("drizzle-orm");
+  const result = await db.select().from(users)
+    .where(and(
+      eq(users.id, userId),
+      eq(users.tenantId, tenantId)
+    ))
+    .limit(1);
+  
+  return result[0] || null;
+}
