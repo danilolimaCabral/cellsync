@@ -1,19 +1,19 @@
 import { useAuth } from "@/hooks/useAuth";
 import { DatabaseQueryPanel } from "@/components/DatabaseQueryPanel";
 import { AlertCircle } from "lucide-react";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { useEffect } from "react";
 
 export default function DatabaseAdmin() {
   const { user } = useAuth();
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     // Only allow master admins
     if (user?.role !== "master_admin" && user?.email !== "cellsync.hub@gmail.com") {
-      navigate("/");
+      setLocation("/");
     }
-  }, [user, navigate]);
+  }, [user, setLocation]);
 
   if (user?.role !== "master_admin" && user?.email !== "cellsync.hub@gmail.com") {
     return (
