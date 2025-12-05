@@ -2042,3 +2042,65 @@ export async function getSupportTicketStats() {
     resolvidos: resolvidos[0]?.count || 0,
   };
 }
+
+// ============= ORDENS DE SERVIÇO =============
+export async function createServiceOrder(data: {
+  customerId: number;
+  deviceType: string;
+  brand?: string;
+  model?: string;
+  imei?: string;
+  serialNumber?: string;
+  defect: string;
+  priority: "baixa" | "media" | "alta" | "urgente";
+  notes?: string;
+  tenantId: number;
+  technicianId: number;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { serviceOrders } = await import("../drizzle/schema");
+  const [result] = await database.insert(serviceOrders).values({
+    ...data,
+    status: "aberta",
+  });
+  return Number(result.insertId);
+}
+
+export async function updateServiceOrderStatus(orderId: number, data: {
+  status: "aberta" | "em_diagnostico" | "aguardando_aprovacao" | "em_reparo" | "concluida" | "cancelada" | "aguardando_retirada";
+  diagnosis?: string;
+  solution?: string;
+  estimatedCost?: number;
+  finalCost?: number;
+}) {
+  const database = await getDb();
+  if (!database) throw new Error("Database not available");
+
+  const { serviceOrders } = await import("../drizzle/schema");
+  await database
+    .update(serviceOrders)
+    .set({
+      status: data.status,
+      diagnosis: data.diagnosis,
+      solution: data.solution,
+      estimatedCost: data.estimatedCost,
+      finalCost: data.finalCost,
+      completedAt: data.status === "concluida" ? new Date() : undefined,
+    })
+    .where(eq(serviceOrders.id, orderId));
+}
+
+export async function getServiceOrderById(orderId: number) {
+  const database = await getDb();
+  if (!database) return null;
+
+  const { serviceOrders } = await import("../drizzle/schema");
+  const [os] = await database
+    .select()
+    .from(serviceOrders)
+    .where(eq(serviceOrders.id, orderId));
+  
+  return os || null;
+}

@@ -1110,9 +1110,13 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         priority: z.enum(["baixa", "media", "alta", "urgente"]).default("media"),
         notes: z.string().optional(),
       }))
-      .mutation(async () => {
-        // TODO: Implementar criação de OS
-        return { success: true, orderId: 0 };
+      .mutation(async ({ input, ctx }) => {
+        const orderId = await db.createServiceOrder({
+          ...input,
+          tenantId: ctx.user.tenantId,
+          technicianId: ctx.user.id, // Inicialmente atribuído a quem criou
+        });
+        return { success: true, orderId };
       }),
 
     updateStatus: protectedProcedure
@@ -1122,9 +1126,34 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         diagnosis: z.string().optional(),
         solution: z.string().optional(),
         estimatedCost: z.number().optional(),
+        finalCost: z.number().optional(),
       }))
-      .mutation(async () => {
-        // TODO: Implementar atualização de status da OS
+      .mutation(async ({ input, ctx }) => {
+        await db.updateServiceOrderStatus(input.orderId, {
+          status: input.status,
+          diagnosis: input.diagnosis,
+          solution: input.solution,
+          estimatedCost: input.estimatedCost,
+          finalCost: input.finalCost,
+        });
+
+        // Se a OS for concluída e tiver valor, gerar conta a receber
+        if (input.status === "concluida" && input.finalCost && input.finalCost > 0) {
+          const os = await db.getServiceOrderById(input.orderId);
+          if (os) {
+            await db.createAccountReceivable({
+              description: `Serviço OS #${input.orderId} - ${os.deviceType} ${os.model || ""}`,
+              customerId: os.customerId,
+              amount: input.finalCost,
+              dueDate: new Date(), // Vencimento imediato ao concluir
+              status: "pendente", // Aguardando pagamento
+              referenceType: "service_order",
+              referenceId: input.orderId,
+              createdBy: ctx.user.id,
+            });
+          }
+        }
+
         return { success: true };
       }),
   }),
