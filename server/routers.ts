@@ -23,6 +23,7 @@ import { tenantManagementRouter } from "./routers/tenantManagement";
 import { aiAssistantRouter } from "./routers/aiAssistant";
 import { adminMigrationRouter } from "./routers/admin-migration";
 import { databaseQueryRouter } from "./routers/database-query";
+import { databaseImportRouter } from "./routers/database-import";
 import { notifyOwner } from "./_core/notification";
 
 // Helper para criar procedimentos protegidos
@@ -52,6 +53,7 @@ export const appRouter = router({
   aiAssistant: aiAssistantRouter,
   adminMigration: adminMigrationRouter,
   databaseQuery: databaseQueryRouter,
+  databaseImport: databaseImportRouter,
   fiscal: fiscalRouter,
 
   // Endpoint temporário para diagnóstico de tenants
