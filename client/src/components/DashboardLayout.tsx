@@ -142,6 +142,7 @@ const menuGroups = [
           { label: "Importar XML (NF-e)", path: "/importar-xml" },
           { label: "Importar Planilha (CSV)", path: "/importar-planilha" },
           { label: "Assistente IA", path: "/assistente-importacao" },
+          { label: "Relatórios Avançados", path: "/relatorio-avancado-estoque" },
         ],
         gradient: "from-violet-500 to-purple-500",
         bgGradient: "from-violet-50 to-purple-50",
@@ -264,14 +265,7 @@ const menuGroups = [
         iconColor: "text-red-700",
         masterAdminOnly: true
       },
-      { 
-        icon: FileSpreadsheet, 
-        label: "Relatórios", 
-        path: "/relatorio-avancado-estoque",
-        gradient: "from-indigo-500 to-purple-500",
-        bgGradient: "from-indigo-50 to-purple-50",
-        iconColor: "text-indigo-600"
-      },
+
     ]
   }
 ];

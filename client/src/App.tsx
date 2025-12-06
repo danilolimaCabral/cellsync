@@ -51,6 +51,7 @@ import AccountingReports from "./pages/accounting/AccountingReports";
 import AccountantArea from "./pages/accounting/AccountantArea";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
+import { ChatWidget } from "@/components/ChatWidget";
 
 // Componente para proteger rotas autenticadas
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
@@ -574,6 +575,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <ChatWidget />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

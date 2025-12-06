@@ -80,12 +80,11 @@ export const backupRouter = router({
 
       // Record in database
       await db.insert(backups).values({
-        tenantId: 1, // Default tenant for now
+        tenantId: ctx.user.tenantId,
         filename: filename,
         size: stats.size,
         status: "completed",
-        s3Url: null, // Local file
-        createdAt: new Date()
+        s3Url: `/backups/${filename}`,
       });
 
       return { success: true, message: "Backup realizado com sucesso" };
@@ -96,11 +95,10 @@ export const backupRouter = router({
       const db = await getDb();
       if (db) {
         await db.insert(backups).values({
-          tenantId: 1,
+          tenantId: ctx.user.tenantId,
           filename: `failed-backup-${Date.now()}`,
           size: 0,
           status: "failed",
-          createdAt: new Date()
         });
       }
 
