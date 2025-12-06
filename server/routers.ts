@@ -3199,6 +3199,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         environment: z.enum(["homologacao", "producao"]).optional(),
         cscToken: z.string().optional(),
         cscId: z.string().optional(),
+        receiptFooter: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const db = await getDb();

@@ -73,6 +73,9 @@ export default function Vendas() {
   const { data: customers = [] } = trpc.customers.list.useQuery(undefined, {
     enabled: !!user,
   });
+  const fiscalSettingsQuery = trpc.fiscal.getSettings.useQuery(undefined, {
+    enabled: !!user,
+  });
 
   // Mutations
   const createSaleMutation = trpc.sales.create.useMutation({
@@ -984,6 +987,8 @@ export default function Vendas() {
               customerPhone={customer?.phone}
               customerEmail={customer?.email}
               sellerName={user?.name || undefined}
+              footerMessage={fiscalSettingsQuery.data?.receiptFooter || undefined}
+              fiscalNumber={receiptData ? `${receiptData.number}` : undefined}
             />
           </div>
         );

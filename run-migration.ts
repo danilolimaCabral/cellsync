@@ -162,6 +162,23 @@ async function runMigration() {
     console.error("Error updating fiscal_settings:", error.message);
   }
 
+  // Adicionar receipt_footer em fiscal_settings se não existir
+  try {
+    await connection.execute(`
+      ALTER TABLE fiscal_settings 
+      ADD COLUMN receipt_footer TEXT;
+    `);
+    console.log("Added receipt_footer to fiscal_settings");
+  } catch (e: any) {
+    if (e.code === 'ER_DUP_FIELDNAME') {
+      console.log("receipt_footer already exists in fiscal_settings");
+    } else if (e.code === 'ER_NO_SUCH_TABLE') {
+      console.log("Table fiscal_settings does not exist, skipping alter");
+    } else {
+      console.error("Error altering fiscal_settings:", e.message);
+    }
+  }
+
   // Adicionar tenantId em invoices se não existir
   try {
     await connection.execute(`

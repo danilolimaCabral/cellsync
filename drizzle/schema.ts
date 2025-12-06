@@ -780,6 +780,7 @@ export const fiscalSettings = mysqlTable("fiscal_settings", {
   defaultCfopState: varchar("default_cfop_state", { length: 4 }).default("5102"), // Dentro do estado
   defaultCfopInterstate: varchar("default_cfop_interstate", { length: 4 }).default("6102"), // Fora do estado
   certificateId: int("certificate_id"), // Certificado ativo
+  receiptFooter: text("receipt_footer"), // Mensagem de rodapé do cupom
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });

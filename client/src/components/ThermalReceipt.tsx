@@ -28,6 +28,8 @@ interface ThermalReceiptProps {
   customerPhone?: string;
   customerEmail?: string;
   sellerName?: string;
+  footerMessage?: string;
+  fiscalNumber?: string;
 }
 
 /**
@@ -54,6 +56,8 @@ export const ThermalReceipt = ({
   customerPhone,
   customerEmail,
   sellerName,
+  footerMessage,
+  fiscalNumber,
 }: ThermalReceiptProps) => {
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("pt-BR", {
@@ -198,10 +202,20 @@ export const ThermalReceipt = ({
         <div>Obrigado pela compra!</div>
         {sellerName && <div style={{ marginTop: "4px", fontSize: "9px" }}>Vendedor: {sellerName}</div>}
         <div style={{ marginTop: "4px" }}>Volte sempre!</div>
+        {footerMessage && (
+          <div style={{ marginTop: "8px", fontWeight: "bold", borderTop: "1px dashed #000", paddingTop: "4px", whiteSpace: "pre-wrap" }}>
+            {footerMessage}
+          </div>
+        )}
       </div>
 
       {/* Código de Barras (simulado) */}
       <div style={{ textAlign: "center", marginTop: "8px", fontSize: "9px" }}>
+        {fiscalNumber && (
+          <div style={{ marginBottom: "4px", fontWeight: "bold" }}>
+            Nº Fiscal: {fiscalNumber}
+          </div>
+        )}
         <div style={{ fontFamily: "Arial, sans-serif", letterSpacing: "2px" }}>
           ||||| ||| |||| ||| |||||
         </div>
