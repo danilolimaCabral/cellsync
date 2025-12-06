@@ -51,7 +51,7 @@ export async function createCheckoutSession({
   // Criar sessão de checkout
   const sessionData: Stripe.Checkout.SessionCreateParams = {
     mode: 'subscription',
-    payment_method_types: ['boleto'], // Boleto para recorrência (envia por email)
+    payment_method_types: ['card', 'link', 'boleto'], // Cartão e Link liberados enquanto Boleto é ativado
     line_items: [
       {
         price: stripePriceId,
