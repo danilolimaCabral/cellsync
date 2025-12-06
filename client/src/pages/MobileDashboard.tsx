@@ -135,7 +135,7 @@ export default function MobileDashboard() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               className="bg-[#F59E0B] p-4 rounded-2xl text-white shadow-md flex flex-col items-center justify-center h-24"
-              onClick={() => setLocation("/ordem-servico/nova")}
+              onClick={() => setLocation("/ordem-servico")}
             >
               <Wrench className="h-6 w-6 mb-2" />
               <span className="text-sm font-bold">Nova OS</span>

@@ -103,7 +103,7 @@ export function DatabaseQueryPanel() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="select" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="w-full flex overflow-x-auto md:grid md:grid-cols-3">
               <TabsTrigger value="select">SELECT</TabsTrigger>
               <TabsTrigger value="mutation">Mutation</TabsTrigger>
               <TabsTrigger value="info">Database Info</TabsTrigger>

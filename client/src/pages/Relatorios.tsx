@@ -264,12 +264,12 @@ export default function Relatorios() {
 
       {/* Tabs de Relatórios */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="sales">Vendas</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="financial">Financeiro</TabsTrigger>
-          <TabsTrigger value="fiscal">Fiscal</TabsTrigger>
+        <TabsList className="w-full flex overflow-x-auto md:grid md:grid-cols-5">
+          <TabsTrigger value="overview" className="flex-1 min-w-[100px]">Visão Geral</TabsTrigger>
+          <TabsTrigger value="sales" className="flex-1 min-w-[80px]">Vendas</TabsTrigger>
+          <TabsTrigger value="performance" className="flex-1 min-w-[100px]">Performance</TabsTrigger>
+          <TabsTrigger value="financial" className="flex-1 min-w-[100px]">Financeiro</TabsTrigger>
+          <TabsTrigger value="fiscal" className="flex-1 min-w-[80px]">Fiscal</TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
