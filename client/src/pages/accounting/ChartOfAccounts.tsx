@@ -185,7 +185,7 @@ export default function ChartOfAccounts() {
                         <TableRow key={suggestion.code}>
                           <TableCell>{suggestion.code}</TableCell>
                           <TableCell>{suggestion.name}</TableCell>
-                          <TableCell>{suggestion.type}</TableCell>
+                          <TableCell>{getTypeLabel(suggestion.type)}</TableCell>
                           <TableCell>
                             <Button size="sm" variant="ghost" onClick={() => handleImportSuggestion(suggestion)}>
                               <Check className="h-4 w-4 text-green-600" /> Importar

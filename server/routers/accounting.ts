@@ -89,12 +89,13 @@ export const accountingRouter = router({
       if (!db) throw new Error("Database not available");
 
       // Verificar duplicidade de código
-      const existing = await db.query.chart_of_accounts.findFirst({
-        where: and(
+      const [existing] = await db.select()
+        .from(chart_of_accounts)
+        .where(and(
           eq(chart_of_accounts.tenant_id, ctx.user.tenantId),
           eq(chart_of_accounts.account_code, input.account_code)
-        ),
-      });
+        ))
+        .limit(1);
 
       if (existing) {
         throw new TRPCError({ code: "CONFLICT", message: "Código de conta já existe" });
