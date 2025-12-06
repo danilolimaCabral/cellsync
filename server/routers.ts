@@ -908,7 +908,7 @@ export const appRouter = router({
             productName: products.name,
             quantity: saleItems.quantity,
             unitPrice: saleItems.unitPrice,
-            subtotal: saleItems.subtotal,
+            subtotal: saleItems.totalPrice,
           })
           .from(saleItems)
           .leftJoin(products, eq(saleItems.productId, products.id))
