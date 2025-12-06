@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 import PageHeader from "@/components/PageHeader";
 import { motion } from "framer-motion";
 import { VersionInfo } from "@/components/VersionInfo";
+import MobileDashboard from "./MobileDashboard";
 import { 
   DollarSign, 
   Package, 
@@ -136,14 +137,21 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="p-4 md:p-8 space-y-6 md:space-y-8">
-      <PageHeader 
-        title="Dashboard" 
-        description="Visão geral do seu negócio"
-        backTo="/"
-      />
+    <>
+      {/* Mobile Dashboard */}
+      <div className="md:hidden">
+        <MobileDashboard />
+      </div>
 
-      {/* Estatísticas Principais - Grid Responsivo com Animações */}
+      {/* Desktop Dashboard */}
+      <div className="hidden md:block p-4 md:p-8 space-y-6 md:space-y-8">
+        <PageHeader 
+          title="Dashboard" 
+          description="Visão geral do seu negócio"
+          backTo="/"
+        />
+
+        {/* Estatísticas Principais - Grid Responsivo com Animações */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
@@ -262,15 +270,16 @@ export default function Dashboard() {
         </Card>
       </motion.div>
 
-      {/* Version Info Footer */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-        className="mt-8 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800"
-      >
-        <VersionInfo />
-      </motion.div>
-    </div>
+        {/* Version Info Footer */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+          className="mt-8 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800"
+        >
+          <VersionInfo />
+        </motion.div>
+      </div>
+    </>
   );
 }

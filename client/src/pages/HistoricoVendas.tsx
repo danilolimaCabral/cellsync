@@ -54,10 +54,11 @@ export default function HistoricoVendas() {
         } catch (e) {
           console.error("Erro ao imprimir:", e);
           toast.error("Erro ao abrir janela de impressão");
-        } finally {
-          setSelectedSaleId(null); // Limpar seleção após imprimir (ou falhar)
         }
-      }, 1000);
+        // Não limpamos o selectedSaleId automaticamente aqui para evitar que o componente
+        // suma do DOM antes da impressão ser processada pelo navegador.
+        // O usuário pode clicar em outro botão para imprimir outra venda.
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [selectedSale, selectedSaleId, isLoadingSale, printThermalReceipt]);

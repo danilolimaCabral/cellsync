@@ -1,0 +1,21 @@
+{
+  "name": "CellSync - Sistema de Gestão",
+  "short_name": "CellSync",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/cellsync-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/cellsync-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
