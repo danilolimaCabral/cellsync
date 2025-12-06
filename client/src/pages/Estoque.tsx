@@ -225,7 +225,7 @@ export default function Estoque() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <EditProductDialog 
         product={editingProduct}
         open={showEditDialog}
@@ -521,7 +521,7 @@ export default function Estoque() {
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -589,9 +589,9 @@ export default function Estoque() {
         onOpenChange={setShowEditDialog}
         onSuccess={() => refetch()}
       />
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <CardTitle>Lista de Produtos</CardTitle>
-            <div className="relative w-64">
+            <div className="relative w-full md:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Buscar produto..."

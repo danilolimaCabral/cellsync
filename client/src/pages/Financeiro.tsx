@@ -298,7 +298,7 @@ export default function Financeiro() {
         <TabsContent value="pagar" className="space-y-6">
           {/* Cartões de Status */}
           {metrics && (
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               <Card 
                 className="cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-red-500"
                 onClick={() => setStatusFilter("overdue")}
