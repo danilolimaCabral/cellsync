@@ -2929,7 +2929,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         }
 
         // Criar tenant
-        const subdomain = tenantData.nomeFantasia
+        let subdomain = tenantData.nomeFantasia
           .toLowerCase()
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
@@ -2938,27 +2938,59 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           .replace(/^-|-$/g, "")
           .substring(0, 63);
 
+        // Verificar se subdomain já existe e adicionar sufixo se necessário
+        const existingSubdomain = await db.select().from(tenants).where(eq(tenants.subdomain, subdomain)).limit(1);
+        if (existingSubdomain.length > 0) {
+          const suffix = Math.floor(Math.random() * 10000);
+          subdomain = `${subdomain}-${suffix}`.substring(0, 63);
+        }
+
         const trialEndsAt = new Date();
         trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14 dias de trial
 
-        const [newTenant] = await db.insert(tenants).values({
-          name: tenantData.nomeFantasia,
-          subdomain,
-          cnpj: cleanCnpj,
-          planId: plan.id,
-          status: "trial",
-          trialEndsAt,
-        });
+        let newTenant;
+        let newUser;
 
-        // Criar usuário
-        const hashedPassword = await bcrypt.hash(userData.password, 10);
-        const [newUser] = await db.insert(users).values({
-          name: userData.name,
-          email: userData.email,
-          password: hashedPassword,
-          tenantId: newTenant.insertId,
-          role: "admin", // Primeiro usuário é admin
-        });
+        try {
+          const [tenantResult] = await db.insert(tenants).values({
+            name: tenantData.nomeFantasia,
+            subdomain,
+            cnpj: cleanCnpj,
+            planId: plan.id,
+            status: "trial",
+            trialEndsAt,
+          });
+          newTenant = tenantResult;
+
+          // Criar usuário
+          const hashedPassword = await bcrypt.hash(userData.password, 10);
+          const [userResult] = await db.insert(users).values({
+            name: userData.name,
+            email: userData.email,
+            password: hashedPassword,
+            tenantId: newTenant.insertId,
+            role: "admin", // Primeiro usuário é admin
+          });
+          newUser = userResult;
+        } catch (error: any) {
+          console.error("[Tenant] Erro ao criar tenant/usuário:", error);
+          // Tentar identificar o erro
+          if (error.message?.includes("Duplicate entry")) {
+             if (error.message?.includes("subdomain")) {
+                throw new TRPCError({ code: "CONFLICT", message: "Este nome de subdomínio já está em uso. Tente outro nome fantasia." });
+             }
+             if (error.message?.includes("cnpj")) {
+                throw new TRPCError({ code: "CONFLICT", message: "Este CNPJ já está cadastrado." });
+             }
+             if (error.message?.includes("email")) {
+                throw new TRPCError({ code: "CONFLICT", message: "Este email já está cadastrado." });
+             }
+          }
+          throw new TRPCError({ 
+            code: "INTERNAL_SERVER_ERROR", 
+            message: `Erro ao criar conta: ${error.message || "Erro desconhecido"}` 
+          });
+        }
 
         console.log("[Tenant] Criado:", {
           tenantId: newTenant.insertId,
