@@ -1,533 +1,314 @@
-import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 import PageHeader from "@/components/PageHeader";
-import { Search, ShoppingCart, Trash2, Plus, Minus, UserPlus, Receipt, X, FileText, Printer, History } from "lucide-react";
-import NFeIssuanceDialog from "@/components/NFeIssuanceDialog";
-import { ThermalReceipt, useThermalPrinter } from "@/components/ThermalReceipt";
-
-interface CartItem {
-  productId: number;
-  name: string;
-  imei: string;
-  quantity: number;
-  unitPrice: number;
-  stock: number;
-}
-
-// Helper para formatação de moeda brasileira
-const formatCurrency = (cents: number) => {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
-};
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/useAuth";
+import { useState, useMemo } from "react";
+import { toast } from "sonner";
+import {
+  ShoppingCart,
+  Plus,
+  Search,
+  Trash2,
+  CreditCard,
+  User,
+  Package,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+} from "lucide-react";
 
 export default function Vendas() {
-  const { user, loading } = useAuth();
-  const tenantQuery = trpc.tenants.getById.useQuery(user?.tenantId, {
-    enabled: !!user?.tenantId,
-  });
-  const tenant = tenantQuery.data;
+  const [showNewSale, setShowNewSale] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<string>("");
+  const [cart, setCart] = useState<any[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState("pix");
+  const [discount, setDiscount] = useState("0");
   const [searchTerm, setSearchTerm] = useState("");
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState("dinheiro");
-  const [discount, setDiscount] = useState(0);
-  const [showNewCustomer, setShowNewCustomer] = useState(false);
-  const [showReceipt, setShowReceipt] = useState(false);
-  const [lastSaleId, setLastSaleId] = useState<number | null>(null);
-  const [emitirNFe, setEmitirNFe] = useState(false);
-  const [emitirCupom, setEmitirCupom] = useState(false);
-  const [cpfNota, setCpfNota] = useState("");
-  const [emitindoNFe, setEmitindoNFe] = useState(false);
-  const [saleType, setSaleType] = useState<"retail" | "wholesale">("retail");
-  const [showNFeDialog, setShowNFeDialog] = useState(false);
-  const [showPrintReceipt, setShowPrintReceipt] = useState(false);
-  const [receiptData, setReceiptData] = useState<{ number: number, series: number } | null>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const { printThermalReceipt } = useThermalPrinter();
+  const [productSearch, setProductSearch] = useState("");
 
-  // Verificar autenticação
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    window.location.href = "/";
-    return null;
-  }
+  const { user } = useAuth();
 
   // Queries
-  const { data: products = [] } = trpc.products.list.useQuery(undefined, {
+  const { data: sales, refetch: refetchSales } = trpc.sales.list.useQuery({}, {
     enabled: !!user,
   });
-  const { data: customers = [] } = trpc.customers.list.useQuery(undefined, {
+  const { data: clients } = trpc.clients.list.useQuery({}, {
     enabled: !!user,
   });
-  const fiscalSettingsQuery = trpc.fiscal.getSettings.useQuery(undefined, {
+  const { data: products } = trpc.products.list.useQuery({}, {
+    enabled: !!user,
+  });
+  const { data: metrics } = trpc.sales.metrics.useQuery({}, {
     enabled: !!user,
   });
 
-  // Mutations
+  // Mutation
   const createSaleMutation = trpc.sales.create.useMutation({
-    onSuccess: async (result) => {
-      toast.success("Venda realizada com sucesso!");
-      setLastSaleId(result.saleId);
-      
-      // Emitir NF-e se solicitado
-      if (emitirNFe && selectedCustomerId) {
-        setShowNFeDialog(true);
-      } else if (emitirCupom) {
-        // Emitir cupom fiscal (NFC-e simulada)
-        emitReceiptMutation.mutate({
-          saleId: result.saleId,
-          type: "nfce",
-        }, {
-          onSuccess: (data) => {
-            setReceiptData({ number: data.receiptNumber, series: data.series });
-            setShowReceipt(true);
-            setShowPrintReceipt(true);
-          }
-        });
-      } else {
-        // Se não for fiscal, mostrar recibo simples e abrir automaticamente
-        setReceiptData(null); // Limpar dados de cupom anterior
-        setShowReceipt(true);
-        setShowPrintReceipt(true);
-      }
-      // NÃO limpar o carrinho aqui - será feito após fechar o cupom
-      // setCart([]);
-      // setSelectedCustomerId(null);
-      // setDiscount(0);
-      // setPaymentMethod("dinheiro");
-      // setEmitirNFe(false);
-      // searchInputRef.current?.focus();
-    },
-    onError: (error) => {
-      toast.error(`Erro ao realizar venda: ${error.message}`);
-    },
-  });
-
-  const createCustomerMutation = trpc.customers.create.useMutation({
-    onSuccess: (data) => {
-      toast.success("Cliente cadastrado com sucesso!");
-      // Recarregar lista de clientes e selecionar o novo cliente
-      setShowNewCustomer(false);
-      if (data.customer && data.customer.id) {
-        // Pequeno delay para garantir que a lista de clientes foi atualizada
-        setTimeout(() => {
-          setSelectedCustomerId(data.customer.id);
-        }, 100);
-      }
-    },
-    onError: (error) => {
-      toast.error(`Erro ao cadastrar cliente: ${error.message}`);
-    },
-  });
-
-  const issueNFeMutation = trpc.nfe.create.useMutation({
     onSuccess: () => {
-      toast.success("NF-e emitida com sucesso!");
-      setEmitindoNFe(false);
+      toast.success("Venda realizada com sucesso!");
+      setShowNewSale(false);
+      setCart([]);
+      setSelectedClient("");
+      setPaymentMethod("pix");
+      setDiscount("0");
+      refetchSales();
     },
     onError: (error) => {
-      toast.error(`Erro ao emitir NF-e: ${error.message}`);
-      setEmitindoNFe(false);
+      toast.error(error.message || "Erro ao realizar venda");
     },
   });
 
-  const emitReceiptMutation = trpc.fiscal.emitReceipt.useMutation({
-    onSuccess: (data) => {
-      toast.success(`Cupom ${data.receiptNumber} emitido com sucesso!`);
-    },
-    onError: (error) => {
-      toast.error(`Erro ao emitir cupom: ${error.message}`);
-    },
-  });
-
-  // Filtrar produtos pela busca
-  const filteredProducts = products.filter(
-    (p) =>
-      p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p as any).imei?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Calcular preço baseado em tipo de venda e quantidade
-  const calculatePrice = (product: typeof products[0], quantity: number) => {
-    const retailPrice = product.salePrice || 0;
-    const wholesalePrice = (product as any).wholesalePrice || 0;
-    const minWholesaleQty = (product as any).minWholesaleQty || 5;
-
-    // Debug: Log para verificar preços
-    console.log('Calculating price for:', product.name, 'Retail:', retailPrice, 'Wholesale:', wholesalePrice, 'SaleType:', saleType);
-
-    // Se não tem preço de atacado ou tipo é varejo, usa preço de varejo
-    if (!wholesalePrice || saleType === "retail") {
-      return retailPrice;
-    }
-
-    // Atacado - verifica quantidade mínima
-    if (quantity >= minWholesaleQty) {
-      return wholesalePrice;
-    }
-
-    // Quantidade insuficiente para atacado
-    return retailPrice;
-  };
-
-  // Adicionar produto ao carrinho
-  const addToCart = (product: typeof products[0]) => {
+  const addToCart = (product: any) => {
     const existingItem = cart.find((item) => item.productId === product.id);
     
     if (existingItem) {
-      if (existingItem.quantity >= (product.currentStock || 0)) {
-        toast.error("Estoque insuficiente!");
+      if (existingItem.quantity >= product.currentStock) {
+        toast.error("Estoque insuficiente");
         return;
       }
-      const newQuantity = existingItem.quantity + 1;
-      const newPrice = calculatePrice(product, newQuantity);
       setCart(
         cart.map((item) =>
           item.productId === product.id
-            ? { ...item, quantity: newQuantity, unitPrice: newPrice }
+            ? { ...item, quantity: item.quantity + 1 }
             : item
         )
       );
     } else {
-      if ((product.currentStock || 0) < 1) {
-        toast.error("Produto sem estoque!");
-        return;
-      }
-      const unitPrice = calculatePrice(product, 1);
       setCart([
         ...cart,
         {
-          productId: product.id || 0,
-          name: product.name || "",
-          imei: product.sku || "",
+          productId: product.id,
+          name: product.name,
+          price: product.salePrice,
           quantity: 1,
-          unitPrice,
-          stock: product.currentStock || 0,
+          maxStock: product.currentStock,
         },
       ]);
     }
-    setSearchTerm("");
-    searchInputRef.current?.focus();
   };
 
-  // Atualizar quantidade
-  const updateQuantity = (productId: number, delta: number) => {
-    setCart(
-      cart
-        .map((item) => {
-          if (item.productId === productId) {
-            const newQuantity = item.quantity + delta;
-            if (newQuantity > item.stock) {
-              toast.error("Estoque insuficiente!");
-              return item;
-            }
-            // Buscar produto para recalcular preço
-            const product = products.find(p => p.id === productId);
-            if (product) {
-              const newPrice = calculatePrice(product, newQuantity);
-              return { ...item, quantity: newQuantity, unitPrice: newPrice };
-            }
-            return { ...item, quantity: newQuantity };
-          }
-          return item;
-        })
-        .filter((item) => item.quantity > 0)
-    );
-  };
-
-  // Remover item
-  const removeItem = (productId: number) => {
+  const removeFromCart = (productId: number) => {
     setCart(cart.filter((item) => item.productId !== productId));
   };
 
-  // Cálculos
-  const subtotal = cart.reduce((sum, item) => {
-    const itemTotal = item.unitPrice * item.quantity;
-    console.log('Cart item:', item.name, 'unitPrice:', item.unitPrice, 'quantity:', item.quantity, 'itemTotal:', itemTotal);
-    return sum + itemTotal;
-  }, 0);
-  const total = Math.max(0, subtotal - discount);
-  console.log('Subtotal:', subtotal, 'Discount:', discount, 'Total:', total);
-
-  // Calcular economia de atacado
-  const savedAmount = cart.reduce((sum, item) => {
-    const product = products.find(p => p.id === item.productId);
-    if (!product) return sum;
-    
-    const retailPrice = product.salePrice || 0;
-    const wholesalePrice = (product as any).wholesalePrice;
-    const minWholesaleQty = (product as any).minWholesaleQty || 5;
-    
-    // Se está usando preço de atacado
-    if (wholesalePrice && saleType === "wholesale" && item.quantity >= minWholesaleQty) {
-      const savings = (retailPrice - wholesalePrice) * item.quantity;
-      return sum + savings;
-    }
-    
-    return sum;
-  }, 0);
-
-  // Verificar produtos próximos do limite de atacado
-  const productsNearWholesale = cart.filter(item => {
-    const product = products.find(p => p.id === item.productId);
-    if (!product) return false;
-    
-    const wholesalePrice = (product as any).wholesalePrice;
-    const minWholesaleQty = (product as any).minWholesaleQty || 5;
-    
-    // Tem preço de atacado mas não atingiu quantidade mínima
-    return wholesalePrice && item.quantity < minWholesaleQty && item.quantity >= minWholesaleQty - 2;
-  });
-
-  // Emitir NF-e para venda
-  const emitirNFeParaVenda = async (saleId: number, customerId: number) => {
-    setEmitindoNFe(true);
-    try {
-      const customer = customers.find(c => c.id === customerId);
-      if (!customer) {
-        toast.error("Cliente não encontrado!");
-        return;
-      }
-
-      // Validar documento do cliente
-      if (!customer.cpf && !customer.cnpj) {
-        toast.error("Cliente sem CPF/CNPJ cadastrado! NF-e não emitida.");
-        return;
-      }
-
-      // Preparar itens da NF-e
-      const items = cart.map(item => ({
-        productId: item.productId,
-        description: item.name,
-        ncm: "61091000", // NCM genérico para celulares
-        cfop: "5102", // Venda de mercadoria adquirida
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        totalPrice: item.quantity * item.unitPrice,
-      }));
-
-      // Emitir NF-e
-      issueNFeMutation.mutate({
-        saleId,
-        emitterCnpj: "00000000000000", // TODO: Pegar do sistema
-        emitterName: "CellSync",
-        recipientDocument: customer.cpf || customer.cnpj || "",
-        recipientName: customer.name,
-        recipientAddress: customer.address || undefined,
-        recipientCity: customer.city || undefined,
-        recipientState: customer.state || undefined,
-        recipientZipCode: customer.zipCode || undefined,
-        recipientPhone: customer.phone || undefined,
-        recipientEmail: customer.email || undefined,
-        cfop: "5102",
-        natureOperation: "Venda de mercadoria",
-        paymentMethod: paymentMethod as any,
-        paymentIndicator: "a_vista" as const,
-        totalProducts: subtotal,
-        totalDiscount: discount,
-        totalInvoice: total,
-        items,
-      });
-    } catch (error: any) {
-      toast.error(`Erro ao emitir NF-e: ${error.message}`);
-      setEmitindoNFe(false);
-    }
+  const updateQuantity = (productId: number, delta: number) => {
+    setCart(
+      cart.map((item) => {
+        if (item.productId === productId) {
+          const newQuantity = item.quantity + delta;
+          if (newQuantity > item.maxStock) {
+            toast.error("Estoque insuficiente");
+            return item;
+          }
+          if (newQuantity < 1) return item;
+          return { ...item, quantity: newQuantity };
+        }
+        return item;
+      })
+    );
   };
 
-  // Finalizar venda
-  const finalizeSale = () => {
+  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const discountValue = parseFloat(discount) || 0;
+  const total = subtotal - discountValue;
+
+  const handleFinishSale = () => {
+    if (!selectedClient) {
+      toast.error("Selecione um cliente");
+      return;
+    }
     if (cart.length === 0) {
-      toast.error("Adicione produtos ao carrinho!");
-      return;
-    }
-    if (!selectedCustomerId) {
-      toast.error("Selecione um cliente!");
-      return;
-    }
-    if (!user) {
-      toast.error("Usuário não autenticado!");
+      toast.error("Adicione produtos ao carrinho");
       return;
     }
 
     createSaleMutation.mutate({
-      customerId: selectedCustomerId,
-      totalAmount: subtotal,
-      discount,
-      paymentMethod,
-      saleType,
-      appliedDiscount: savedAmount,
-      emitirNfce: emitirCupom,
-      cpfNota: cpfNota.replace(/\D/g, ""),
+      clientId: parseInt(selectedClient),
       items: cart.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
-        unitPrice: item.unitPrice,
+        unitPrice: item.price,
       })),
+      paymentMethod,
+      discount: Math.round(discountValue * 100),
+      totalAmount: Math.round(total * 100),
     });
   };
 
-  // Atalhos de teclado
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      // F2 - Focar busca
-      if (e.key === "F2") {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-      // F3 - Finalizar venda
-      if (e.key === "F3" && cart.length > 0 && selectedCustomerId) {
-        e.preventDefault();
-        finalizeSale();
-      }
-      // F4 - Novo cliente
-      if (e.key === "F4") {
-        e.preventDefault();
-        setShowNewCustomer(true);
-      }
-      // ESC - Limpar carrinho
-      if (e.key === "Escape" && cart.length > 0) {
-        e.preventDefault();
-        if (confirm("Deseja limpar o carrinho?")) {
-          setCart([]);
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [cart, selectedCustomerId]);
-
-  // Mutation para gerar recibo
-  const generateReceiptMutation = trpc.sales.generateReceipt.useMutation({
-    onSuccess: (result) => {
-      // Converter base64 para blob
-      const byteCharacters = atob(result.pdf);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: "application/pdf" });
-      
-      // Criar URL e abrir em nova aba
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
-      
-      toast.success("Recibo gerado com sucesso!");
-    },
-    onError: (error) => {
-      toast.error("Erro ao gerar recibo: " + error.message);
-    },
-  });
-
-  // Imprimir comprovante
-  const printReceipt = () => {
-    if (!lastSaleId) {
-      toast.error("Nenhuma venda selecionada");
-      return;
-    }
-    
-    generateReceiptMutation.mutate({ saleId: lastSaleId });
+  const formatCurrency = (cents: number) => {
+    return (cents / 100).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
   };
 
+  const formatDate = (date: Date | string) => {
+    return new Date(date).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const filteredProducts = useMemo(() => {
+    if (!products) return [];
+    return products.filter((p) =>
+      p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+      p.sku?.toLowerCase().includes(productSearch.toLowerCase())
+    );
+  }, [products, productSearch]);
+
+  const filteredSales = useMemo(() => {
+    if (!sales) return [];
+    return sales.filter((s) =>
+      s.client?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.id.toString().includes(searchTerm)
+    );
+  }, [sales, searchTerm]);
+
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      {/* Header com título */}
-      <div className="mb-6">
-        <PageHeader 
-          title="Ponto de Venda (PDV)" 
-          description="Sistema integrado de vendas"
-          backTo="/dashboard"
-        />
-      </div>
+    <div className="space-y-6">
+      <PageHeader 
+        title="Vendas (PDV)" 
+        description="Realize vendas e gerencie o histórico"
+        backTo="/dashboard"
+      />
 
-      {/* Barra de controles (Varejo/Atacado + Atalhos) */}
-      <div className="mb-6 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
-        {/* Toggle Varejo/Atacado */}
-        <div className="flex items-center gap-2 bg-white p-2 rounded-lg shadow-sm border border-slate-200">
-          <button
-            onClick={() => setSaleType("retail")}
-            className={`px-4 py-2 rounded-md font-medium transition-all ${
-              saleType === "retail"
-                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"
-                : "bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-            }`}
-          >
-            🛍️ Varejo
-          </button>
-          <button
-            onClick={() => setSaleType("wholesale")}
-            className={`px-4 py-2 rounded-md font-medium transition-all ${
-              saleType === "wholesale"
-                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"
-                : "bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-            }`}
-          >
-            📦 Atacado
-          </button>
-        </div>
-        
-        {/* Atalhos de teclado */}
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-slate-600 font-medium">Atalhos:</span>
-          <span className="px-2 py-1 bg-white rounded border border-slate-300 text-slate-700 font-mono text-xs">F2</span>
-          <span className="text-slate-500">Busca</span>
-          <span className="text-slate-300">|</span>
-          <span className="px-2 py-1 bg-white rounded border border-slate-300 text-slate-700 font-mono text-xs">F3</span>
-          <span className="text-slate-500">Finalizar</span>
-          <span className="text-slate-300">|</span>
-          <span className="px-2 py-1 bg-white rounded border border-slate-300 text-slate-700 font-mono text-xs">F4</span>
-          <span className="text-slate-500">Cliente</span>
-          <span className="text-slate-300">|</span>
-          <span className="px-2 py-1 bg-white rounded border border-slate-300 text-slate-700 font-mono text-xs">ESC</span>
-          <span className="text-slate-500">Limpar</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Coluna da Esquerda - Busca e Produtos */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Busca de Produtos */}
+      {/* Métricas */}
+      {metrics && (
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="h-5 w-5" />
-                Buscar Produtos
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Vendas Hoje
               </CardTitle>
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <Input
-                ref={searchInputRef}
-                placeholder="Digite o nome ou IMEI do iPhone"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="text-lg"
-                autoFocus
-              />
+              <div className="text-2xl font-bold">{metrics.todayCount}</div>
+              <p className="text-xs text-muted-foreground">
+                {formatCurrency(metrics.todayAmount)} em vendas
+              </p>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Ticket Médio
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatCurrency(metrics.averageTicket)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Últimos 30 dias
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Mês
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatCurrency(metrics.monthAmount)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {metrics.monthCount} vendas realizadas
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Produtos
+              </CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{metrics.productsSold}</div>
+              <p className="text-xs text-muted-foreground">
+                Itens vendidos hoje
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-          {/* Lista de Produtos Filtrados */}
-          {searchTerm && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Resultados ({filteredProducts.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
+      {/* Ações e Filtros */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar vendas..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+        <Dialog open={showNewSale} onOpenChange={setShowNewSale}>
+          <DialogTrigger asChild>
+            <Button className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Venda
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Nova Venda</DialogTitle>
+            </DialogHeader>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Coluna da Esquerda: Seleção de Produtos */}
+              <div className="space-y-4">
+                <div>
+                  <Label>Buscar Produto</Label>
+                  <div className="relative mt-1.5">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Nome ou IMEI..."
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      className="pl-8"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {filteredProducts.length === 0 ? (
                     <p className="text-center text-muted-foreground py-8">
@@ -537,7 +318,8 @@ export default function Vendas() {
                     filteredProducts.map((product) => (
                       <div
                         key={product.id}
-                     <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg hover:bg-accent cursor-pointer transition-colors gap-2"                       onClick={() => addToCart(product)}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg hover:bg-accent cursor-pointer transition-colors gap-2"
+                        onClick={() => addToCart(product)}
                       >
                         <div className="flex-1">
                           <p className="font-medium">{product.name}</p>
@@ -554,502 +336,184 @@ export default function Vendas() {
                     ))
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Carrinho */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 justify-between">
-                <div className="flex items-center gap-2">
-                  <ShoppingCart className="h-5 w-5" />
-                  Carrinho ({cart.length} {cart.length === 1 ? "item" : "itens"})
-                </div>
-                {saleType === "wholesale" && savedAmount > 0 && (
-                  <div className="flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium">
-                    <span className="text-green-600">✓</span>
-                    Economia: {formatCurrency(savedAmount)}
-                  </div>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {cart.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-20" />
-                  <p>Carrinho vazio</p>
-                  <p className="text-sm">Busque e adicione produtos para iniciar a venda</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {/* Alerta de produtos próximos do atacado */}
-                  {productsNearWholesale.length > 0 && (
-                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                      <p className="text-sm font-medium text-amber-800 mb-2">
-                        💡 Dica: Adicione mais unidades para ativar preço de atacado!
-                      </p>
-                      {productsNearWholesale.map(item => {
-                        const product = products.find(p => p.id === item.productId);
-                        const minWholesaleQty = (product as any)?.minWholesaleQty || 5;
-                        const remaining = minWholesaleQty - item.quantity;
-                        return (
-                          <p key={item.productId} className="text-xs text-amber-700">
-                            • {item.name}: adicione mais {remaining} {remaining === 1 ? 'unidade' : 'unidades'}
-                          </p>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {cart.map((item) => (
-                    <div
-                      key={item.productId}
-                      className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 border rounded-lg"
-                    >
-                      <div className="flex-1 w-full">
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatCurrency(item.unitPrice)} x {item.quantity}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between w-full sm:w-auto sm:justify-start gap-4">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() => updateQuantity(item.productId, -1)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="w-12 text-center font-medium">
-                            {item.quantity}
-                          </span>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() => updateQuantity(item.productId, 1)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="destructive"
-                            onClick={() => removeItem(item.productId)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="text-right min-w-24">
-                          <p className="font-bold text-lg">
-                            {formatCurrency(item.unitPrice * item.quantity)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Coluna da Direita - Resumo e Finalização */}
-        <div className="space-y-4">
-          {/* Cliente */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Cliente</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Select
-                value={selectedCustomerId?.toString() || ""}
-                onValueChange={(value) => setSelectedCustomerId(Number(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {customers.map((customer) => (
-                    <SelectItem key={customer.id} value={customer.id.toString()}>
-                      {customer.name} - {customer.phone}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Dialog open={showNewCustomer} onOpenChange={setShowNewCustomer}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full">
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Novo Cliente (F4)
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Cadastro Rápido de Cliente</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const formData = new FormData(e.currentTarget);
-                      createCustomerMutation.mutate({
-                        name: formData.get("name") as string,
-                        phone: formData.get("phone") as string,
-                        email: formData.get("email") as string,
-                        cpf: formData.get("cpf") as string,
-                      });
-                    }}
-                    className="space-y-4"
-                  >
-                    <div>
-                      <Label htmlFor="name">Nome *</Label>
-                      <Input id="name" name="name" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Telefone *</Label>
-                      <Input id="phone" name="phone" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" name="email" type="email" />
-                    </div>
-                    <div>
-                      <Label htmlFor="cpf">CPF</Label>
-                      <Input id="cpf" name="cpf" />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button type="submit" className="flex-1">
-                        Cadastrar
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setShowNewCustomer(false)}
-                      >
-                        Cancelar
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </CardContent>
-          </Card>
-
-          {/* Pagamento */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Pagamento</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <Label>Forma de Pagamento</Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                    <SelectItem value="pix">PIX</SelectItem>
-                    <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
-                    <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
 
-              <div>
-                <Label>Desconto (R$)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max={subtotal / 100}
-                  value={discount / 100}
-                  onChange={(e) => setDiscount(Math.floor(Number(e.target.value) * 100))}
-                />
-              </div>
-
-              {/* Opções Fiscais */}
-              <div className="space-y-3 pt-2 border-t">
-                {/* NF-e */}
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="emitir-nfe"
-                    checked={emitirNFe}
-                    onChange={(e) => {
-                      setEmitirNFe(e.target.checked);
-                      if (e.target.checked) setEmitirCupom(false);
-                    }}
-                    className="h-4 w-4 rounded border-gray-300"
-                    disabled={!selectedCustomerId}
-                  />
-                  <Label htmlFor="emitir-nfe" className="cursor-pointer">
-                    Emitir NF-e (Nota Grande)
-                    {!selectedCustomerId && " (selecione um cliente)"}
-                  </Label>
+              {/* Coluna da Direita: Carrinho e Checkout */}
+              <div className="space-y-6 border-l pl-6">
+                <div>
+                  <Label>Cliente</Label>
+                  <Select value={selectedClient} onValueChange={setSelectedClient}>
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder="Selecione o cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients?.map((client) => (
+                        <SelectItem key={client.id} value={client.id.toString()}>
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                {/* NFC-e (Cupom) */}
-                <div className="bg-blue-50 p-3 rounded-lg space-y-3 border border-blue-100">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="emitir-cupom" className="text-base font-medium text-blue-900 cursor-pointer">
-                        Emitir Cupom Fiscal (NFC-e)
-                      </Label>
-                      <p className="text-xs text-blue-700">
-                        Gera o documento fiscal simplificado
+                <div className="space-y-4">
+                  <Label>Carrinho ({cart.length} itens)</Label>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {cart.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-4 border rounded-lg border-dashed">
+                        Carrinho vazio
                       </p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      id="emitir-cupom"
-                      checked={emitirCupom}
-                      onChange={(e) => {
-                        setEmitirCupom(e.target.checked);
-                        if (e.target.checked) setEmitirNFe(false);
-                      }}
-                      className="h-5 w-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
-                    />
+                    ) : (
+                      cart.map((item) => (
+                        <div key={item.productId} className="flex items-center justify-between p-2 border rounded bg-background">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{item.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatCurrency(item.price)} x {item.quantity}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center border rounded">
+                              <button
+                                className="px-2 py-1 hover:bg-accent"
+                                onClick={() => updateQuantity(item.productId, -1)}
+                              >
+                                -
+                              </button>
+                              <span className="px-2 text-sm">{item.quantity}</span>
+                              <button
+                                className="px-2 py-1 hover:bg-accent"
+                                onClick={() => updateQuantity(item.productId, 1)}
+                              >
+                                +
+                              </button>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-red-500"
+                              onClick={() => removeFromCart(item.productId)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
+                </div>
 
-                  {emitirCupom && (
-                    <div className="pt-2 animate-in slide-in-from-top-2">
-                      <Label htmlFor="cpf-nota" className="text-sm font-medium mb-1.5 block text-blue-900">
-                        CPF na Nota (Opcional)
-                      </Label>
+                <div className="space-y-4 pt-4 border-t">
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal</span>
+                    <span>{formatCurrency(subtotal)}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <Label>Desconto (R$)</Label>
                       <Input
-                        id="cpf-nota"
-                        placeholder="000.000.000-00"
-                        value={cpfNota}
-                        onChange={(e) => {
-                          const v = e.target.value.replace(/\D/g, "");
-                          if (v.length <= 11) {
-                            setCpfNota(v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"));
-                          }
-                        }}
-                        className="bg-white border-blue-200 focus-visible:ring-blue-500"
+                        type="number"
+                        value={discount}
+                        onChange={(e) => setDiscount(e.target.value)}
+                        className="mt-1.5"
                       />
                     </div>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Resumo */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Resumo</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between text-lg">
-                <span>Subtotal:</span>
-                <span>{formatCurrency(subtotal)}</span>
-              </div>
-              {discount > 0 && (
-                <div className="flex justify-between text-lg text-destructive">
-                  <span>Desconto:</span>
-                  <span>- {formatCurrency(discount)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-2xl font-bold pt-2 border-t">
-                <span>Total:</span>
-                <span className="text-primary">{formatCurrency(total)}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Botão Finalizar */}
-          <Button
-            size="lg"
-            className="w-full text-lg h-14"
-            onClick={finalizeSale}
-            disabled={cart.length === 0 || !selectedCustomerId || createSaleMutation.isPending}
-          >
-            <Receipt className="h-5 w-5 mr-2" />
-            {createSaleMutation.isPending ? "Processando..." : "Finalizar Venda (F3)"}
-          </Button>
-
-          {/* Botões de Impressão */}
-          {lastSaleId && (
-            <Card className="bg-blue-50 border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-base">Impressão</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {/* Cupom Não Fiscal */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium">Cupom Não Fiscal:</label>
-                    <select 
-                      defaultValue="1"
-                      className="text-sm border rounded px-2 py-1"
-                      id="cupom-copies"
-                    >
-                      <option value="1">1 via</option>
-                      <option value="2">2 vias</option>
-                    </select>
+                    <div className="flex-1">
+                      <Label>Pagamento</Label>
+                      <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                        <SelectTrigger className="mt-1.5">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pix">PIX</SelectItem>
+                          <SelectItem value="credit_card">Cartão Crédito</SelectItem>
+                          <SelectItem value="debit_card">Cartão Débito</SelectItem>
+                          <SelectItem value="cash">Dinheiro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => {
-                      const copies = parseInt((document.getElementById('cupom-copies') as HTMLSelectElement)?.value || '1');
-                      for (let i = 0; i < copies; i++) {
-                        printThermalReceipt();
-                      }
-                    }}
+
+                  <div className="flex justify-between text-lg font-bold pt-2">
+                    <span>Total</span>
+                    <span className="text-primary">{formatCurrency(total)}</span>
+                  </div>
+
+                  <Button 
+                    className="w-full" 
+                    size="lg"
+                    onClick={handleFinishSale}
+                    disabled={createSaleMutation.isPending}
                   >
-                    <Printer className="h-4 w-4 mr-2" />
-                    Imprimir Cupom Não Fiscal
+                    {createSaleMutation.isPending ? "Processando..." : "Finalizar Venda"}
                   </Button>
                 </div>
-                
-                {/* NF-e Fiscal */}
-                {emitirNFe && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium">NF-e Fiscal:</label>
-                      <select 
-                        defaultValue="1"
-                        className="text-sm border rounded px-2 py-1"
-                        id="nfe-copies"
-                      >
-                        <option value="1">1 via</option>
-                        <option value="2">2 vias</option>
-                      </select>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => {
-                        toast.info("NF-e será impressa quando emitida");
-                      }}
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Imprimir NF-e Fiscal
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {cart.length > 0 && (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                if (confirm("Deseja limpar o carrinho?")) {
-                  setCart([]);
-                }
-              }}
-            >
-              <X className="h-4 w-4 mr-2" />
-              Limpar Carrinho (ESC)
-            </Button>
-          )}
-        </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Recibo Térmico Oculto - Sempre renderizado para permitir impressão */}
-      {(() => {
-        const customer = selectedCustomerId ? customers.find((c) => c.id === selectedCustomerId) : null;
-        // Só renderiza se tiver itens no carrinho ou uma venda finalizada
-        if (cart.length === 0 && !lastSaleId) return null;
-        
-        return (
-          <div style={{ display: "none" }}>
-            <ThermalReceipt
-              saleId={receiptData ? receiptData.number : (lastSaleId || 0)}
-              customerName={customer?.name || "Consumidor"}
-              items={cart.map((item) => ({
-                name: item.name,
-                quantity: item.quantity,
-                unitPrice: item.unitPrice,
-                subtotal: item.unitPrice * item.quantity,
-              }))}
-              subtotal={subtotal}
-              discount={discount}
-              total={total}
-              paymentMethod={paymentMethod}
-              cpf={cpfNota || undefined}
-              timestamp={new Date()}
-              companyName={tenant?.name || "LOJA PADRÃO"}
-              companyDocument={tenant?.cnpj || "00.000.000/0000-00"}
-              companyAddress={tenant?.address || ""}
-              companyPhone={tenant?.phone || ""}
-              customerCpf={customer?.cpf}
-              customerCnpj={customer?.cnpj}
-              customerAddress={customer?.address}
-              customerPhone={customer?.phone}
-              customerEmail={customer?.email}
-              sellerName={user?.name || undefined}
-              footerMessage={fiscalSettingsQuery.data?.receiptFooter || undefined}
-              fiscalNumber={receiptData ? `${receiptData.number}` : undefined}
-            />
+      {/* Lista de Vendas */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Histórico de Vendas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Itens</TableHead>
+                  <TableHead>Pagamento</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredSales.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      Nenhuma venda encontrada
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredSales.map((sale) => (
+                    <TableRow key={sale.id}>
+                      <TableCell className="font-medium">#{sale.id}</TableCell>
+                      <TableCell>{formatDate(sale.createdAt)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          {sale.client?.name}
+                        </div>
+                      </TableCell>
+                      <TableCell>{sale.items?.length || 0} itens</TableCell>
+                      <TableCell className="capitalize">
+                        {sale.paymentMethod === "credit_card" ? "Crédito" :
+                         sale.paymentMethod === "debit_card" ? "Débito" :
+                         sale.paymentMethod}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(sale.totalAmount)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                          Concluído
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
-        );
-      })()}
-
-      {/* Diálogo de Emissão de NF-e */}
-      <NFeIssuanceDialog 
-        open={showNFeDialog} 
-        onOpenChange={setShowNFeDialog}
-        saleId={lastSaleId}
-      />
-
-      {/* Dialog de Comprovante */}
-      <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Venda Realizada com Sucesso!</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="text-center py-6">
-              <div className="text-6xl mb-4">✓</div>
-              <p className="text-xl font-bold">Venda #{lastSaleId}</p>
-              <p className="text-3xl font-bold text-primary mt-2">
-                {formatCurrency(total)}</p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={() => {
-                printThermalReceipt();
-                setShowReceipt(false);
-                setLastSaleId(null);
-                setCart([]);
-                setSelectedCustomerId(null);
-                setDiscount(0);
-                setPaymentMethod("dinheiro");
-                setEmitirNFe(false);
-                searchInputRef.current?.focus();
-              }} className="flex-1">
-                <Printer className="h-4 w-4 mr-2" />
-                Imprimir Cupom
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowReceipt(false);
-                  setLastSaleId(null);
-                  setCart([]);
-                  setSelectedCustomerId(null);
-                  setDiscount(0);
-                  setPaymentMethod("dinheiro");
-                  setEmitirNFe(false);
-                  searchInputRef.current?.focus();
-                }}
-                className="flex-1"
-              >
-                Fechar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
     </div>
   );
 }
