@@ -252,6 +252,18 @@ function Router() {
         )}
       </Route>
 
+      <Route path="/ordem-servico">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <OrdemServico />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
       <Route path="/financeiro">
         {() => (
           <ProtectedRoute
