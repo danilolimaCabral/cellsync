@@ -240,7 +240,7 @@ export default function Clientes() {
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -311,8 +311,9 @@ export default function Clientes() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
+        <CardContent className="p-0 md:p-6">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[800px] md:min-w-full">
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
@@ -381,6 +382,7 @@ export default function Clientes() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -456,7 +456,7 @@ export default function Vendas() {
       </div>
 
       {/* Barra de controles (Varejo/Atacado + Atalhos) */}
-      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+      <div className="mb-6 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
         {/* Toggle Varejo/Atacado */}
         <div className="flex items-center gap-2 bg-white p-2 rounded-lg shadow-sm border border-slate-200">
           <button

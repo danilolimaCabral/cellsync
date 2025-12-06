@@ -298,7 +298,7 @@ export default function Financeiro() {
         <TabsContent value="pagar" className="space-y-6">
           {/* Cartões de Status */}
           {metrics && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card 
                 className="cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-red-500"
                 onClick={() => setStatusFilter("overdue")}
@@ -570,8 +570,9 @@ export default function Financeiro() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <Table>
+            <CardContent className="p-0 md:p-6">
+              <div className="overflow-x-auto">
+                <Table className="min-w-[800px] md:min-w-full">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">
@@ -637,6 +638,7 @@ export default function Financeiro() {
                   )}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -719,8 +721,9 @@ export default function Financeiro() {
                 </Dialog>
               </div>
             </CardHeader>
-            <CardContent>
-              <Table>
+            <CardContent className="p-0 md:p-6">
+              <div className="overflow-x-auto">
+                <Table className="min-w-[800px] md:min-w-full">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Descrição</TableHead>
@@ -760,6 +763,7 @@ export default function Financeiro() {
                   )}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

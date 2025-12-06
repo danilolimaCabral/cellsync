@@ -522,7 +522,7 @@ export default function OrdemServico() {
       </div>
 
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm text-gray-600 mb-1">Total de OS</div>
@@ -569,9 +569,9 @@ export default function OrdemServico() {
         <CardHeader>
           <CardTitle>Ordens de Serviço</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 md:p-6">
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="min-w-[800px] md:min-w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead>OS #</TableHead>
