@@ -117,7 +117,7 @@ export default function Dashboard() {
       iconBg: "bg-gradient-to-br from-red-500 to-rose-500",
       textColor: "text-red-700",
       linkColor: "text-red-600 hover:text-red-700",
-      onClick: () => setLocation("/ordem-servico"),
+      onClick: () => setLocation("/os"),
       delay: 0.5,
     },
     {

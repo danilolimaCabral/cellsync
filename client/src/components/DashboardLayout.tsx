@@ -539,7 +539,7 @@ function DashboardLayoutContent({
                 <span className="text-xs font-medium text-muted-foreground">Tema</span>
                 <ThemeToggle />
               </div>
-              <DropdownMenuItem className="cursor-pointer rounded-lg focus:bg-accent/50" onClick={handleLogout}>
+              <DropdownMenuItem className="cursor-pointer rounded-lg focus:bg-accent/50" onSelect={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4 text-red-500" />
                 <span className="text-red-500 font-medium">Sair do Sistema</span>
               </DropdownMenuItem>
