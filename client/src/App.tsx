@@ -48,6 +48,7 @@ import DatabaseAdmin from "./pages/DatabaseAdmin";
 import ChartOfAccounts from "./pages/accounting/ChartOfAccounts";
 import JournalEntries from "./pages/accounting/JournalEntries";
 import AccountingReports from "./pages/accounting/AccountingReports";
+import AccountantArea from "./pages/accounting/AccountantArea";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -291,6 +292,18 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <AccountingReports />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/contabilidade/area-contador">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <AccountantArea />
               </DashboardLayout>
             )}
           />
