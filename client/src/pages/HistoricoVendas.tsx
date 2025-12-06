@@ -25,9 +25,17 @@ export default function HistoricoVendas() {
   const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
   const { printThermalReceipt } = useThermalPrinter();
 
-  const { data: selectedSale, isLoading: isLoadingSale } = trpc.sales.getById.useQuery(selectedSaleId!, {
+  const { data: selectedSale, isLoading: isLoadingSale, error: saleError } = trpc.sales.getById.useQuery(selectedSaleId!, {
     enabled: !!selectedSaleId,
+    retry: false,
   });
+
+  useEffect(() => {
+    if (saleError) {
+      toast.error("Erro ao carregar dados da venda: " + saleError.message);
+      setSelectedSaleId(null);
+    }
+  }, [saleError]);
 
   const { data: tenant } = trpc.tenants.getById.useQuery(undefined, {
     staleTime: Infinity,
@@ -41,8 +49,14 @@ export default function HistoricoVendas() {
     if (selectedSale && selectedSaleId && !isLoadingSale) {
       // Pequeno delay para garantir renderização
       const timer = setTimeout(() => {
-        printThermalReceipt();
-        setSelectedSaleId(null); // Limpar seleção após imprimir
+        try {
+          printThermalReceipt();
+        } catch (e) {
+          console.error("Erro ao imprimir:", e);
+          toast.error("Erro ao abrir janela de impressão");
+        } finally {
+          setSelectedSaleId(null); // Limpar seleção após imprimir (ou falhar)
+        }
       }, 1000);
       return () => clearTimeout(timer);
     }
