@@ -18,8 +18,34 @@ import { useState } from "react";
 import { Search, Filter, FileSpreadsheet, FileText, Calendar, Printer } from "lucide-react";
 import { exportSalesReport } from "@/lib/exportUtils";
 import { toast } from "sonner";
+import { ThermalReceipt, useThermalPrinter } from "@/components/ThermalReceipt";
+import { useEffect } from "react";
 
 export default function HistoricoVendas() {
+  const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
+  const { printThermalReceipt } = useThermalPrinter();
+
+  const { data: selectedSale } = trpc.sales.getById.useQuery(selectedSaleId!, {
+    enabled: !!selectedSaleId,
+  });
+
+  const { data: tenant } = trpc.tenants.getById.useQuery(undefined, {
+    staleTime: Infinity,
+  });
+
+  const { data: fiscalSettings } = trpc.fiscal.getSettings.useQuery(undefined, {
+    staleTime: Infinity,
+  });
+
+  useEffect(() => {
+    if (selectedSale && selectedSaleId) {
+      // Pequeno delay para garantir renderização
+      setTimeout(() => {
+        printThermalReceipt();
+        setSelectedSaleId(null); // Limpar seleção após imprimir
+      }, 500);
+    }
+  }, [selectedSale, selectedSaleId, printThermalReceipt]);
   const [filters, setFilters] = useState({
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
@@ -309,14 +335,14 @@ export default function HistoricoVendas() {
 	                        <Button
 	                          variant="ghost"
 	                          size="sm"
-	                          onClick={() => {
-	                            if (sale.nfeIssued) {
-	                              // TODO: Implementar reimpressão de NF-e
-	                              toast.info("Reimpressão de NF-e em breve");
+                          onClick={() => {
+                            if (sale.nfeIssued) {
+                              // TODO: Implementar reimpressão de NF-e
+                              toast.info("Reimpressão de NF-e em breve");
                             } else {
-                              generateReceiptMutation.mutate({ saleId: sale.id, isSecondCopy: true });
+                              setSelectedSaleId(sale.id);
                             }
-	                          }}
+                          }}
 	                        >
 	                          <Printer className="h-4 w-4" />
 	                        </Button>
@@ -370,6 +396,39 @@ export default function HistoricoVendas() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Recibo Térmico Oculto para Reimpressão */}
+      {selectedSale && (
+        <div style={{ display: "none" }}>
+          <ThermalReceipt
+            saleId={selectedSale.id}
+            customerName={selectedSale.customer?.name || "Consumidor"}
+            items={selectedSale.items.map((item: any) => ({
+              name: item.productName || "Produto",
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              subtotal: item.subtotal || (item.quantity * item.unitPrice),
+            }))}
+            subtotal={selectedSale.totalAmount}
+            discount={selectedSale.discount || 0}
+            total={selectedSale.totalAmount - (selectedSale.discount || 0)}
+            paymentMethod={selectedSale.paymentMethod || "dinheiro"}
+            timestamp={new Date(selectedSale.createdAt)}
+            companyName={tenant?.name || "LOJA PADRÃO"}
+            companyDocument={tenant?.cnpj || "00.000.000/0000-00"}
+            companyAddress={tenant?.address || ""}
+            companyPhone={tenant?.phone || ""}
+            customerCpf={selectedSale.customer?.cpf}
+            customerCnpj={selectedSale.customer?.cnpj}
+            customerAddress={selectedSale.customer?.address}
+            customerPhone={selectedSale.customer?.phone}
+            customerEmail={selectedSale.customer?.email}
+            sellerName={selectedSale.seller?.name}
+            footerMessage={fiscalSettings?.receiptFooter || undefined}
+            isReprint={true}
+          />
+        </div>
       )}
     </div>
   );

@@ -879,6 +879,49 @@ export const appRouter = router({
         return [];
       }),
 
+    getById: protectedProcedure
+      .input(z.number())
+      .query(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        const [sale] = await db.select().from(sales).where(and(
+          eq(sales.id, input),
+          eq(sales.tenantId, ctx.user.tenantId)
+        ));
+
+        if (!sale) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Venda não encontrada" });
+        }
+
+        let customer = null;
+        if (sale.customerId) {
+          const [c] = await db.select().from(customers).where(eq(customers.id, sale.customerId));
+          customer = c;
+        }
+
+        const [seller] = await db.select().from(users).where(eq(users.id, sale.sellerId));
+
+        const items = await db.select({
+            id: saleItems.id,
+            productId: saleItems.productId,
+            productName: products.name,
+            quantity: saleItems.quantity,
+            unitPrice: saleItems.unitPrice,
+            subtotal: saleItems.subtotal,
+          })
+          .from(saleItems)
+          .leftJoin(products, eq(saleItems.productId, products.id))
+          .where(eq(saleItems.saleId, input));
+
+        return {
+          ...sale,
+          customer,
+          seller,
+          items,
+        };
+      }),
+
     create: protectedProcedure
       .input(z.object({
         customerId: z.number(),

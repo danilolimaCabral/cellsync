@@ -30,6 +30,7 @@ interface ThermalReceiptProps {
   sellerName?: string;
   footerMessage?: string;
   fiscalNumber?: string;
+  isReprint?: boolean;
 }
 
 /**
@@ -58,6 +59,7 @@ export const ThermalReceipt = ({
   sellerName,
   footerMessage,
   fiscalNumber,
+  isReprint = false,
 }: ThermalReceiptProps) => {
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("pt-BR", {
@@ -96,7 +98,7 @@ export const ThermalReceipt = ({
     >
       {/* Título */}
       <div style={{ textAlign: "center", marginBottom: "8px", fontWeight: "bold", fontSize: "13px" }}>
-        CUPOM FISCAL
+        {isReprint ? "CUPOM NÃO FISCAL - 2ª VIA" : "CUPOM FISCAL"}
       </div>
 
       {/* Separador */}
