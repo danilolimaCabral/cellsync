@@ -14,12 +14,12 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Filter, FileSpreadsheet, FileText, Calendar, Printer } from "lucide-react";
 import { exportSalesReport } from "@/lib/exportUtils";
 import { toast } from "sonner";
 import { ThermalReceipt, useThermalPrinter } from "@/components/ThermalReceipt";
-import { useEffect } from "react";
+
 
 export default function HistoricoVendas() {
   const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
@@ -45,19 +45,33 @@ export default function HistoricoVendas() {
     staleTime: Infinity,
   });
 
+  // Ref para controlar se a venda atual já foi impressa e evitar loops
+  const printedSaleIdRef = useRef<number | null>(null);
+
   useEffect(() => {
     if (selectedSale && selectedSaleId && !isLoadingSale) {
+      // Se já imprimimos esta venda, não faz nada
+      if (printedSaleIdRef.current === selectedSaleId) {
+        return;
+      }
+
       // Pequeno delay para garantir renderização
       const timer = setTimeout(() => {
         try {
           printThermalReceipt();
+          // Marca como impressa para não abrir de novo
+          printedSaleIdRef.current = selectedSaleId;
         } catch (e) {
           console.error("Erro ao imprimir:", e);
           toast.error("Erro ao abrir janela de impressão");
+        } finally {
+           // Limpa o estado após um tempo seguro (ex: 2s) para permitir imprimir outra depois
+           // e para remover o componente do DOM
+           setTimeout(() => {
+             setSelectedSaleId(null);
+             printedSaleIdRef.current = null; // Reseta para permitir imprimir a mesma venda novamente no futuro se clicar de novo
+           }, 2000);
         }
-        // Não limpamos o selectedSaleId automaticamente aqui para evitar que o componente
-        // suma do DOM antes da impressão ser processada pelo navegador.
-        // O usuário pode clicar em outro botão para imprimir outra venda.
       }, 500);
       return () => clearTimeout(timer);
     }
