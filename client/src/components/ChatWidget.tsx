@@ -79,7 +79,7 @@ export function ChatWidget() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-24 md:bottom-6 right-6 z-50 flex flex-col items-end">
       {/* Chat Window */}
       {isOpen && (
         <Card className="w-[350px] h-[500px] mb-4 shadow-2xl border-primary/20 animate-in slide-in-from-bottom-10 fade-in duration-300 flex flex-col">
