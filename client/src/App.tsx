@@ -78,6 +78,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/planos" component={Planos} />
+      <Route path="/pricing" component={Planos} />
       <Route path="/sobre" component={Sobre} />
       <Route path="/assinatura/sucesso" component={AssinaturaSucesso} />
       <Route path="/assinatura">

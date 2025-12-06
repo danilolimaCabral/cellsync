@@ -228,7 +228,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     try {
       return await invokeGoogleNative(params);
     } catch (error) {
-      console.warn("Falha ao invocar Google Gemini, tentando fallback para OpenAI...", error);
+      console.error("Falha ao invocar Google Gemini, tentando fallback para OpenAI...", error);
       // Se falhar, continua para o fallback da OpenAI
     }
   }

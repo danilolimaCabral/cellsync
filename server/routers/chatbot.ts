@@ -95,7 +95,7 @@ export const chatbotRouter = router({
         // Retorna mensagem amigável em caso de erro, mas com success: false para o frontend saber
         return {
           success: false,
-          message: "Desculpe, estou com muitas conversas agora! 🤯 Pode tentar novamente em alguns segundos?",
+          message: "Desculpe, tive um problema técnico ao processar sua mensagem. Por favor, tente novamente em alguns instantes.",
         };
       }
     }),
