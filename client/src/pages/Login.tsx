@@ -15,15 +15,15 @@ export default function Login() {
   const trialPlan = searchParams.get('trial');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [name, setName] = useState("");
+  // const [isRegistering, setIsRegistering] = useState(false); // Registration disabled on login page
+  // const [name, setName] = useState("");
 
-  // Se vier com parâmetro trial, ativar modo de cadastro automaticamente
+  // Se vier com parâmetro trial, redirecionar para planos
   useEffect(() => {
     if (trialPlan) {
-      setIsRegistering(true);
+      setLocation("/planos");
     }
-  }, [trialPlan]);
+  }, [trialPlan, setLocation]);
 
   const utils = trpc.useUtils();
 
@@ -47,34 +47,16 @@ export default function Login() {
     },
   });
 
-  const registerMutation = trpc.auth.register.useMutation({
-    onSuccess: async () => {
-      toast.success("Cadastro realizado com sucesso! Agora faça login para continuar.");
-      setIsRegistering(false);
-      setName("");
-      setPassword("");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Erro ao fazer cadastro");
-    },
-  });
+  // Register mutation removed - registration only via Plans page
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isRegistering) {
-      if (!name || !email || !password) {
-        toast.error("Preencha todos os campos");
-        return;
-      }
-      registerMutation.mutate({ email, password, name });
-    } else {
-      if (!email || !password) {
-        toast.error("Preencha todos os campos");
-        return;
-      }
-      loginMutation.mutate({ email, password });
+    if (!email || !password) {
+      toast.error("Preencha todos os campos");
+      return;
     }
+    loginMutation.mutate({ email, password });
   };
 
   return (
@@ -119,9 +101,7 @@ export default function Login() {
                 CellSync
               </CardTitle>
               <CardDescription className="text-center mt-2 text-base">
-                {isRegistering 
-                  ? "Crie sua conta para começar" 
-                  : "Sistema de Gestão para Lojas de Celular"}
+                "Sistema de Gestão para Lojas de Celular"
               </CardDescription>
             </motion.div>
           </CardHeader>
@@ -134,25 +114,7 @@ export default function Login() {
               onSubmit={handleSubmit}
               className="space-y-4"
             >
-              {isRegistering && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="name">Nome completo</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Seu nome"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required={isRegistering}
-                    className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                  />
-                </motion.div>
-              )}
+              
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -183,24 +145,18 @@ export default function Login() {
               <Button 
                 type="submit" 
                 className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white font-semibold py-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
-                disabled={loginMutation.isPending || registerMutation.isPending}
+                disabled={loginMutation.isPending}
               >
-                {(loginMutation.isPending || registerMutation.isPending) 
-                  ? "Processando..." 
-                  : isRegistering 
-                    ? "Criar conta" 
-                    : "Entrar"}
+                {loginMutation.isPending ? "Processando..." : "Entrar"}
               </Button>
 
               <div className="text-center text-sm pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsRegistering(!isRegistering)}
+                  onClick={() => setLocation("/planos")}
                   className="text-purple-600 hover:text-purple-700 font-medium hover:underline transition-colors"
                 >
-                  {isRegistering 
-                    ? "Já tem uma conta? Faça login" 
-                    : "Não tem uma conta? Cadastre-se"}
+                  Não tem uma conta? Cadastre-se
                 </button>
               </div>
             </motion.form>
