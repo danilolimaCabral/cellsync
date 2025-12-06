@@ -223,30 +223,26 @@ const invokeGoogleNative = async (params: InvokeParams): Promise<InvokeResult> =
 // --- MAIN INVOKE FUNCTION ---
 
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  // Se tiver chave do Google (ou fallback hardcoded), usa a implementação nativa
-  // Forçando o uso do Google Native já que o usuário forneceu a chave
-  return invokeGoogleNative(params);
-
-  /* 
-  // Código antigo desativado para garantir que use o Google
+  // 1. Tentar Google Gemini se a chave estiver configurada
   if (ENV.googleApiKey) {
-    return invokeGoogleNative(params);
+    try {
+      return await invokeGoogleNative(params);
+    } catch (error) {
+      console.warn("Falha ao invocar Google Gemini, tentando fallback para OpenAI...", error);
+      // Se falhar, continua para o fallback da OpenAI
+    }
   }
-  
+
+  // 2. Fallback para OpenAI (via Forge)
   if (!ENV.forgeApiKey) {
-    throw new Error("Nenhuma chave de API configurada (OPENAI_API_KEY ou GOOGLE_API_KEY)");
+    throw new Error("Nenhuma chave de API configurada. Configure GOOGLE_API_KEY ou use a chave embutida do Forge.");
   }
-  */
 
   const payload: Record<string, unknown> = {
-    model: "gpt-4o-mini", // Default fallback
+    model: "gpt-4o-mini", // Modelo padrão eficiente
     messages: params.messages.map(normalizeMessage),
   };
 
-  // ... (restante da implementação original simplificada para o contexto) ...
-  // Para economizar tokens e evitar complexidade, vou manter apenas o path do Google funcional
-  // já que é o objetivo da task.
-  
   const response = await fetch("https://forge.manus.im/v1/chat/completions", {
     method: "POST",
     headers: {
