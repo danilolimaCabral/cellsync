@@ -143,7 +143,7 @@ export default function Customers() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data?.items.length === 0 ? (
+                    {!data?.items || data.items.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                           Nenhum cliente encontrado.
@@ -197,12 +197,14 @@ export default function Customers() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                <Link href={`/customers/${customer.id}`}>
-                                  <DropdownMenuItem>
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                </Link>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/customers/${customer.id}`}>
+                                    <div className="flex items-center cursor-pointer w-full">
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      Editar
+                                    </div>
+                                  </Link>
+                                </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem 
                                   className="text-destructive focus:text-destructive"
