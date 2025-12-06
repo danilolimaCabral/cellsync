@@ -34,16 +34,16 @@ export const accountingRouter = router({
     if (!db) throw new Error("Database not available");
 
     // Coletar dados do tenant
-    const tenant = await db.query.tenants.findFirst({
-      where: eq(tenants.id, ctx.user.tenantId)
-    });
+    const [tenant] = await db.select().from(tenants).where(eq(tenants.id, ctx.user.tenantId)).limit(1);
 
     // Coletar amostra de produtos
-    const tenantProducts = await db.query.products.findMany({
-      where: eq(products.tenantId, ctx.user.tenantId),
-      limit: 10,
-      columns: { name: true, category: true }
-    });
+    const tenantProducts = await db.select({
+      name: products.name,
+      category: products.category
+    })
+    .from(products)
+    .where(eq(products.tenantId, ctx.user.tenantId))
+    .limit(10);
 
     const businessType = "Comércio Varejista"; // Poderia vir do tenant se tivesse campo
     const productNames = tenantProducts.map(p => `${p.name} (${p.category})`);
@@ -89,7 +89,7 @@ export const accountingRouter = router({
       if (!db) throw new Error("Database not available");
 
       // Verificar duplicidade de código
-      const [existing] = await db.select()
+      const [existing] = await db.select({ id: chart_of_accounts.id })
         .from(chart_of_accounts)
         .where(and(
           eq(chart_of_accounts.tenant_id, ctx.user.tenantId),
