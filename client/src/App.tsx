@@ -45,6 +45,9 @@ import Onboarding from "./pages/Onboarding";
 import CriarConta from "./pages/CriarConta";
 import Sobre from "./pages/Sobre";
 import DatabaseAdmin from "./pages/DatabaseAdmin";
+import ChartOfAccounts from "./pages/accounting/ChartOfAccounts";
+import JournalEntries from "./pages/accounting/JournalEntries";
+import AccountingReports from "./pages/accounting/AccountingReports";
 import DashboardLayout from "./components/DashboardLayout";
 import { useAuth } from "./hooks/useAuth";
 
@@ -252,6 +255,42 @@ function Router() {
             component={() => (
               <DashboardLayout>
                 <Financeiro />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/contabilidade/plano-contas">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <ChartOfAccounts />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/contabilidade/lancamentos">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <JournalEntries />
+              </DashboardLayout>
+            )}
+          />
+        )}
+      </Route>
+
+      <Route path="/contabilidade/relatorios">
+        {() => (
+          <ProtectedRoute
+            component={() => (
+              <DashboardLayout>
+                <AccountingReports />
               </DashboardLayout>
             )}
           />

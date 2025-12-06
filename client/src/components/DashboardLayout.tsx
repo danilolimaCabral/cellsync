@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag, Headphones, FileInput, Table, Wallet, Shield, Database, Bell, FileText, UserCog, Lock } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag, Headphones, FileInput, Table, Wallet, Shield, Database, Bell, FileText, UserCog, Lock, FolderTree, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { TenantSwitcher } from "./TenantSwitcher";
@@ -152,6 +152,33 @@ const menuItems = [
     gradient: "from-yellow-500 to-orange-400",
     bgGradient: "from-yellow-50 to-orange-50",
     iconColor: "text-yellow-600"
+  },
+  { 
+    icon: FolderTree, 
+    label: "Plano de Contas", 
+    path: "/contabilidade/plano-contas",
+    gradient: "from-cyan-600 to-blue-600",
+    bgGradient: "from-cyan-50 to-blue-50",
+    iconColor: "text-cyan-700",
+    roles: ["gerente", "admin", "master_admin"]
+  },
+  { 
+    icon: FileText, 
+    label: "Lançamentos Contábeis", 
+    path: "/contabilidade/lancamentos",
+    gradient: "from-cyan-600 to-blue-600",
+    bgGradient: "from-cyan-50 to-blue-50",
+    iconColor: "text-cyan-700",
+    roles: ["gerente", "admin", "master_admin"]
+  },
+  { 
+    icon: BarChart3, 
+    label: "Relatórios Contábeis", 
+    path: "/contabilidade/relatorios",
+    gradient: "from-cyan-600 to-blue-600",
+    bgGradient: "from-cyan-50 to-blue-50",
+    iconColor: "text-cyan-700",
+    roles: ["gerente", "admin", "master_admin"]
   },
   { 
     icon: Wallet, 
