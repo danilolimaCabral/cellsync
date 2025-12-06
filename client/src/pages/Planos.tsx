@@ -188,7 +188,7 @@ export default function Planos() {
                           </>
                         ) : (
                           <>
-                            🎉 Iniciar Trial Grátis (14 dias)
+                            🎉 Iniciar Trial Grátis (7 dias)
                           </>
                         )}
                       </Button>
@@ -245,7 +245,7 @@ export default function Planos() {
         {/* Garantia */}
         <div className="text-center mt-12">
           <p className="text-gray-600 dark:text-gray-400">
-            ✅ Teste grátis por 14 dias • 🔒 Pagamento seguro via Stripe • 💳 Cancele quando quiser
+            ✅ Teste grátis por 7 dias • 🔒 Pagamento seguro via Stripe • 💳 Cancele quando quiser
           </p>
         </div>
       </div>

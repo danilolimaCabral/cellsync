@@ -2964,7 +2964,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         }
 
         const trialEndsAt = new Date();
-        trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14 dias de trial
+        trialEndsAt.setDate(trialEndsAt.getDate() + 7); // 7 dias de trial
 
         let newTenant;
         let newUser;
@@ -3181,7 +3181,7 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
           cnpj: input.cnpj,
           planId: 1, // Plano básico por padrão
           status: "trial",
-          trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 dias
+          trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias
         });
         
         const tenantId = newTenant.insertId;
