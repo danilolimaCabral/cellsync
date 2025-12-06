@@ -313,9 +313,9 @@ export default function HistoricoVendas() {
 	                            if (sale.nfeIssued) {
 	                              // TODO: Implementar reimpressão de NF-e
 	                              toast.info("Reimpressão de NF-e em breve");
-	                            } else {
-	                              generateReceiptMutation.mutate({ saleId: sale.id });
-	                            }
+                            } else {
+                              generateReceiptMutation.mutate({ saleId: sale.id, isSecondCopy: true });
+                            }
 	                          }}
 	                        >
 	                          <Printer className="h-4 w-4" />

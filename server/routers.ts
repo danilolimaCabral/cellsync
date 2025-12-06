@@ -913,6 +913,7 @@ export const appRouter = router({
     generateReceipt: protectedProcedure
       .input(z.object({
         saleId: z.number(),
+        isSecondCopy: z.boolean().optional().default(false),
       }))
       .mutation(async ({ input, ctx }) => {
         const { generateReceipt } = await import("./receipt-generator");
@@ -990,6 +991,7 @@ export const appRouter = router({
           commission: undefined,
           saleType: sale.saleType,
           savedAmount: sale.appliedDiscount || 0,
+          isSecondCopy: input.isSecondCopy,
         };
         
         // Gerar PDF

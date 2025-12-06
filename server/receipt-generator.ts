@@ -37,6 +37,7 @@ interface ReceiptData {
   commission?: number;
   saleType?: 'retail' | 'wholesale';
   savedAmount?: number;
+  isSecondCopy?: boolean;
 }
 
 /**
@@ -135,7 +136,9 @@ export async function generateReceipt(data: ReceiptData): Promise<Buffer> {
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(37, 99, 235);
-  doc.text("RECIBO DE VENDA", pageWidth / 2, yPos, { align: "center" });
+  
+  const title = data.isSecondCopy ? "CUPOM NÃO FISCAL - 2ª VIA" : "RECIBO DE VENDA";
+  doc.text(title, pageWidth / 2, yPos, { align: "center" });
 
   yPos += 8;
 
