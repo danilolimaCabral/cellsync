@@ -7,6 +7,7 @@ interface PageHeaderProps {
   description?: string;
   backTo?: string; // Rota específica para voltar, ou usa history.back()
   showBackButton?: boolean; // Padrão: true
+  actions?: React.ReactNode;
 }
 
 export default function PageHeader({ 
@@ -26,8 +27,8 @@ export default function PageHeader({
   };
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center gap-3 mb-2">
+    <div className="mb-6 relative">
+      <div className="flex items-center gap-3 mb-2 pr-0 md:pr-32">
         {showBackButton && (
           <Button
             variant="ghost"
@@ -45,6 +46,11 @@ export default function PageHeader({
         <p className={`text-sm md:text-base text-gray-500 ${showBackButton ? 'ml-12' : ''}`}>
           {description}
         </p>
+      )}
+      {actions && (
+        <div className="mt-4 md:mt-0 md:absolute md:right-0 md:top-0 flex items-center gap-2">
+          {actions}
+        </div>
       )}
     </div>
   );

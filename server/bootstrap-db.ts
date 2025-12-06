@@ -31,7 +31,55 @@ export async function bootstrapDatabase() {
     
     console.log("[Bootstrap] Table 'tenant_modules' verified/created.");
 
-    // Adicionar outras tabelas críticas aqui se necessário no futuro
+    // Tabela chart_of_accounts
+    console.log("[Bootstrap] Checking table 'chart_of_accounts'...");
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS chart_of_accounts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        tenant_id INT NOT NULL,
+        account_code VARCHAR(50) NOT NULL,
+        account_name VARCHAR(255) NOT NULL,
+        account_type ENUM('asset', 'liability', 'equity', 'revenue', 'expense') NOT NULL,
+        parent_account_id INT,
+        is_analytical BOOLEAN NOT NULL DEFAULT TRUE,
+        description TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // Tabela accounting_postings
+    console.log("[Bootstrap] Checking table 'accounting_postings'...");
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS accounting_postings (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        tenant_id INT NOT NULL,
+        posting_date DATE NOT NULL,
+        posting_number VARCHAR(50) NOT NULL,
+        reference_type ENUM('sale', 'purchase', 'payment', 'receipt', 'adjustment') NOT NULL,
+        reference_id INT,
+        reference_document VARCHAR(100),
+        description TEXT,
+        status ENUM('draft', 'posted', 'cancelled') NOT NULL DEFAULT 'draft',
+        posted_by INT,
+        posted_at TIMESTAMP NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // Tabela accounting_posting_lines
+    console.log("[Bootstrap] Checking table 'accounting_posting_lines'...");
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS accounting_posting_lines (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        posting_id INT NOT NULL,
+        account_id INT NOT NULL,
+        debit_amount INT NOT NULL DEFAULT 0,
+        credit_amount INT NOT NULL DEFAULT 0,
+        description VARCHAR(255)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
 
   } catch (error) {
     console.error("[Bootstrap] Database bootstrap failed:", error);
