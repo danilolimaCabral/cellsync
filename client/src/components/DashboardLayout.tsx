@@ -351,9 +351,16 @@ function DashboardLayoutContent({
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
-  const handleLogout = async () => {
-    await logout();
-    window.location.href = "/login";
+  const handleLogout = async (e?: Event) => {
+    e?.preventDefault();
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // Force navigation even if logout fails
+      window.location.href = "/login";
+    }
   };
 
   // Função para verificar permissões
