@@ -945,3 +945,22 @@ export const emissionLogsRelations = relations(emission_logs, ({ one }) => ({
     references: [sales.id],
   }),
 }));
+
+export const tenantsRelations = relations(tenants, ({ one, many }) => ({
+  plan: one(plans, {
+    fields: [tenants.planId],
+    references: [plans.id],
+  }),
+  users: many(users),
+}));
+
+export const usersRelations = relations(users, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [users.tenantId],
+    references: [tenants.id],
+  }),
+}));
+
+export const plansRelations = relations(plans, ({ many }) => ({
+  tenants: many(tenants),
+}));
