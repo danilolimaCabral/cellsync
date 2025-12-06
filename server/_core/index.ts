@@ -33,7 +33,7 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 
 async function startServer() {
   // Executar migrações e bootstrap antes de iniciar o servidor
-  await runMigrations();
+  // await runMigrations(); // Desativado temporariamente para evitar conflitos
   await bootstrapDatabase();
 
   const app = express();

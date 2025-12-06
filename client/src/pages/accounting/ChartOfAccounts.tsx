@@ -327,7 +327,7 @@ export default function ChartOfAccounts() {
                   <TableRow key={account.id}>
                     <TableCell className="font-mono">{account.account_code}</TableCell>
                     <TableCell>
-                      <span style={{ paddingLeft: `${(account.account_code.split('.').length - 1) * 12}px` }}>
+                      <span style={{ paddingLeft: `${((account.account_code || "").split('.').length - 1) * 12}px` }}>
                         {account.account_name}
                       </span>
                     </TableCell>

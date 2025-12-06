@@ -14,7 +14,8 @@ export default function PageHeader({
   title, 
   description, 
   backTo,
-  showBackButton = true 
+  showBackButton = true,
+  actions
 }: PageHeaderProps) {
   const [, setLocation] = useLocation();
 
