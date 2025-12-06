@@ -606,44 +606,46 @@ export default function Vendas() {
                   {cart.map((item) => (
                     <div
                       key={item.productId}
-                      className="flex items-center gap-3 p-3 border rounded-lg"
+                      className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 border rounded-lg"
                     >
-                      <div className="flex-1">
+                      <div className="flex-1 w-full">
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-muted-foreground">
                           {formatCurrency(item.unitPrice)} x {item.quantity}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          onClick={() => updateQuantity(item.productId, -1)}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <span className="w-12 text-center font-medium">
-                          {item.quantity}
-                        </span>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          onClick={() => updateQuantity(item.productId, 1)}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="destructive"
-                          onClick={() => removeItem(item.productId)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <div className="text-right min-w-24">
-                        <p className="font-bold text-lg">
-                          {formatCurrency(item.unitPrice * item.quantity)}
-                        </p>
+                      <div className="flex items-center justify-between w-full sm:w-auto sm:justify-start gap-4">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() => updateQuantity(item.productId, -1)}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-12 text-center font-medium">
+                            {item.quantity}
+                          </span>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() => updateQuantity(item.productId, 1)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            onClick={() => removeItem(item.productId)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="text-right min-w-24">
+                          <p className="font-bold text-lg">
+                            {formatCurrency(item.unitPrice * item.quantity)}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -750,8 +752,8 @@ export default function Vendas() {
                   <SelectContent>
                     <SelectItem value="dinheiro">Dinheiro</SelectItem>
                     <SelectItem value="pix">PIX</SelectItem>
-                    <SelectItem value="credito">Cartão de Crédito</SelectItem>
-                    <SelectItem value="debito">Cartão de Débito</SelectItem>
+                    <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
+                    <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
