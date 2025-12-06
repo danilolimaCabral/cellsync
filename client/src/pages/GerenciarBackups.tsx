@@ -253,7 +253,7 @@ export default function GerenciarBackups() {
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <div className="flex items-center space-x-4">
-                    {backup.status === "success" ? (
+                    {backup.status === "completed" ? (
                       <CheckCircle2 className="h-8 w-8 text-green-500" />
                     ) : (
                       <XCircle className="h-8 w-8 text-red-500" />
@@ -270,15 +270,15 @@ export default function GerenciarBackups() {
                   </div>
                   <div className="flex items-center space-x-3">
                     <Badge
-                      variant={backup.status === "success" ? "default" : "destructive"}
+                      variant={backup.status === "completed" ? "default" : "destructive"}
                     >
-                      {backup.status === "success" ? "Sucesso" : "Erro"}
+                      {b{backup.status === "completed" ? "Sucesso" : "Erro"}
                     </Badge>
-                    {backup.s3Url && (
+                    {(backup.s3Url || (backup as any).downloadUrl) && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(backup.s3Url, "_blank")}
+                        onClick={() => window.open(backup.s3Url || (backup as any).downloadUrl, "_blank")}
                       >
                         <Download className="h-4 w-4 mr-2" />
                         Download

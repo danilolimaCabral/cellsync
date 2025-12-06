@@ -964,3 +964,17 @@ export const usersRelations = relations(users, ({ one }) => ({
 export const plansRelations = relations(plans, ({ many }) => ({
   tenants: many(tenants),
 }));
+
+// ============= BACKUPS =============
+export const backups = mysqlTable("backups", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: int("tenantId").notNull().default(1),
+  filename: varchar("filename", { length: 255 }).notNull(),
+  size: int("size").notNull(), // Tamanho em bytes
+  status: mysqlEnum("status", ["pending", "completed", "failed"]).default("pending").notNull(),
+  s3Url: text("s3Url"), // URL para download (pode ser local ou S3)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Backup = typeof backups.$inferSelect;
+export type InsertBackup = typeof backups.$inferInsert;

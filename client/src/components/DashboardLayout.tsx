@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -15,289 +16,268 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, FileSpreadsheet, Sparkles, Moon, Sun, Upload, Package, ShoppingCart, Wrench, DollarSign, TrendingUp, Settings, Tag, Headphones, FileInput, Table, Wallet, Shield, Database, Bell, FileText, UserCog, Lock, FolderTree, BarChart3, Briefcase } from "lucide-react";
+import { 
+  LayoutDashboard, LogOut, PanelLeft, Users, History, ArrowLeftRight, 
+  FileSpreadsheet, Sparkles, Moon, Sun, Upload, Package, ShoppingCart, 
+  Wrench, DollarSign, TrendingUp, Settings, Tag, Headphones, FileInput, 
+  Table, Wallet, Shield, Database, Bell, FileText, UserCog, Lock, 
+  FolderTree, BarChart3, Briefcase, ChevronRight, Calculator, Truck, 
+  CreditCard, Receipt, UserPlus, MessageSquare
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { NotificationBell } from "./NotificationBell";
 import { TenantSwitcher } from "./TenantSwitcher";
 import { CSSProperties, useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
-const menuItems = [
-  { 
-    icon: LayoutDashboard, 
-    label: "Dashboard", 
-    path: "/dashboard",
-    gradient: "from-blue-500 to-cyan-500",
-    bgGradient: "from-blue-50 to-cyan-50",
-    iconColor: "text-blue-600"
+// Definição de tipos para o menu
+type MenuItem = {
+  icon: any;
+  label: string;
+  path?: string;
+  gradient?: string;
+  bgGradient?: string;
+  iconColor?: string;
+  roles?: string[];
+  masterAdminOnly?: boolean;
+  items?: SubMenuItem[]; // Submenus
+};
+
+type SubMenuItem = {
+  label: string;
+  path: string;
+  roles?: string[];
+  masterAdminOnly?: boolean;
+};
+
+const menuGroups = [
+  {
+    title: "Principal",
+    items: [
+      { 
+        icon: LayoutDashboard, 
+        label: "Dashboard", 
+        path: "/dashboard",
+        gradient: "from-blue-500 to-cyan-500",
+        bgGradient: "from-blue-50 to-cyan-50",
+        iconColor: "text-blue-600"
+      },
+      { 
+        icon: TrendingUp, 
+        label: "Dashboard BI", 
+        path: "/dashboard-bi",
+        gradient: "from-orange-500 to-amber-500",
+        bgGradient: "from-orange-50 to-amber-50",
+        iconColor: "text-orange-600"
+      },
+    ]
   },
-  { 
-    icon: ShoppingCart, 
-    label: "Vendas (PDV)", 
-    path: "/vendas",
-    gradient: "from-green-500 to-emerald-500",
-    bgGradient: "from-green-50 to-emerald-50",
-    iconColor: "text-green-600"
+  {
+    title: "Vendas",
+    items: [
+      { 
+        icon: ShoppingCart, 
+        label: "Vendas (PDV)", 
+        path: "/vendas",
+        gradient: "from-green-500 to-emerald-500",
+        bgGradient: "from-green-50 to-emerald-50",
+        iconColor: "text-green-600"
+      },
+      { 
+        icon: History, 
+        label: "Histórico de Vendas", 
+        path: "/historico-vendas",
+        gradient: "from-teal-500 to-cyan-500",
+        bgGradient: "from-teal-50 to-cyan-50",
+        iconColor: "text-teal-600"
+      },
+      { 
+        icon: Wallet, 
+        label: "Comissões", 
+        path: "/controle-comissoes",
+        gradient: "from-purple-500 to-pink-500",
+        bgGradient: "from-purple-50 to-pink-50",
+        iconColor: "text-purple-600",
+        roles: ["gerente", "admin", "master_admin"]
+      },
+    ]
   },
-  { 
-    icon: History, 
-    label: "Histórico de Vendas", 
-    path: "/historico-vendas",
-    gradient: "from-teal-500 to-cyan-500",
-    bgGradient: "from-teal-50 to-cyan-50",
-    iconColor: "text-teal-600"
+  {
+    title: "Estoque",
+    items: [
+      { 
+        icon: Package, 
+        label: "Gerenciar Estoque", 
+        items: [
+          { label: "Produtos", path: "/estoque" },
+          { label: "Movimentações", path: "/movimentacoes" },
+          { label: "Gerar Etiquetas", path: "/gerar-etiquetas" },
+        ],
+        gradient: "from-purple-500 to-pink-500",
+        bgGradient: "from-purple-50 to-pink-50",
+        iconColor: "text-purple-600"
+      },
+      { 
+        icon: Upload, 
+        label: "Importação", 
+        items: [
+          { label: "Importar Produtos", path: "/importar-produtos" },
+          { label: "Importar XML (NF-e)", path: "/importar-xml" },
+          { label: "Importar Planilha (CSV)", path: "/importar-planilha" },
+          { label: "Assistente IA", path: "/assistente-importacao" },
+        ],
+        gradient: "from-violet-500 to-purple-500",
+        bgGradient: "from-violet-50 to-purple-50",
+        iconColor: "text-violet-600"
+      },
+    ]
   },
-  { 
-    icon: Package, 
-    label: "Estoque", 
-    path: "/estoque",
-    gradient: "from-purple-500 to-pink-500",
-    bgGradient: "from-purple-50 to-pink-50",
-    iconColor: "text-purple-600"
+  {
+    title: "Serviços",
+    items: [
+      { 
+        icon: Wrench, 
+        label: "Ordens de Serviço", 
+        path: "/os",
+        gradient: "from-red-500 to-rose-500",
+        bgGradient: "from-red-50 to-rose-50",
+        iconColor: "text-red-600"
+      },
+      { 
+        icon: Headphones, 
+        label: "Chamados", 
+        items: [
+          { label: "Meus Chamados", path: "/meus-chamados" },
+          { label: "Gerenciar Chamados", path: "/gerenciar-chamados", masterAdminOnly: true },
+        ],
+        gradient: "from-teal-500 to-cyan-500",
+        bgGradient: "from-teal-50 to-cyan-50",
+        iconColor: "text-teal-600"
+      },
+    ]
   },
-  { 
-    icon: Upload, 
-    label: "Importar Produtos", 
-    path: "/importar-produtos",
-    gradient: "from-violet-500 to-purple-500",
-    bgGradient: "from-violet-50 to-purple-50",
-    iconColor: "text-violet-600"
+  {
+    title: "Financeiro & Fiscal",
+    items: [
+      { 
+        icon: DollarSign, 
+        label: "Financeiro", 
+        path: "/financeiro",
+        gradient: "from-yellow-500 to-orange-400",
+        bgGradient: "from-yellow-50 to-orange-50",
+        iconColor: "text-yellow-600"
+      },
+      { 
+        icon: FileText, 
+        label: "Notas Fiscais", 
+        path: "/notas-fiscais",
+        gradient: "from-sky-500 to-blue-500",
+        bgGradient: "from-sky-50 to-blue-50",
+        iconColor: "text-sky-600"
+      },
+      { 
+        icon: Calculator, 
+        label: "Contabilidade", 
+        items: [
+          { label: "Plano de Contas", path: "/contabilidade/plano-contas" },
+          { label: "Lançamentos", path: "/contabilidade/lancamentos" },
+          { label: "Relatórios", path: "/contabilidade/relatorios" },
+          { label: "Área do Contador", path: "/contabilidade/area-contador" },
+        ],
+        gradient: "from-cyan-600 to-blue-600",
+        bgGradient: "from-cyan-50 to-blue-50",
+        iconColor: "text-cyan-700",
+        roles: ["gerente", "admin", "master_admin"]
+      },
+    ]
   },
-  { 
-    icon: Tag, 
-    label: "Gerar Etiquetas", 
-    path: "/gerar-etiquetas",
-    gradient: "from-amber-500 to-yellow-500",
-    bgGradient: "from-amber-50 to-yellow-50",
-    iconColor: "text-amber-600"
+  {
+    title: "Cadastros",
+    items: [
+      { 
+        icon: Users, 
+        label: "Clientes (CRM)", 
+        path: "/clientes",
+        gradient: "from-pink-500 to-rose-500",
+        bgGradient: "from-pink-50 to-rose-50",
+        iconColor: "text-pink-600"
+      },
+      { 
+        icon: UserCog, 
+        label: "Vendedores", 
+        path: "/vendedores",
+        gradient: "from-blue-500 to-indigo-500",
+        bgGradient: "from-blue-50 to-indigo-50",
+        iconColor: "text-blue-600",
+        roles: ["gerente", "admin", "master_admin"]
+      },
+    ]
   },
-  { 
-    icon: FileInput, 
-    label: "Importar XML (NF-e)", 
-    path: "/importar-xml",
-    gradient: "from-orange-500 to-red-500",
-    bgGradient: "from-orange-50 to-red-50",
-    iconColor: "text-orange-600"
-  },
-  { 
-    icon: Table, 
-    label: "Importar Planilha (CSV)", 
-    path: "/importar-planilha",
-    gradient: "from-emerald-500 to-teal-500",
-    bgGradient: "from-emerald-50 to-teal-50",
-    iconColor: "text-emerald-600"
-  },
-  { 
-    icon: Sparkles, 
-    label: "Assistente de Importação IA", 
-    path: "/assistente-importacao",
-    gradient: "from-purple-500 to-pink-500",
-    bgGradient: "from-purple-50 to-pink-50",
-    iconColor: "text-purple-600"
-  },
-  { 
-    icon: FileSpreadsheet, 
-    label: "Relatório Avançado", 
-    path: "/relatorio-avancado-estoque",
-    gradient: "from-indigo-500 to-purple-500",
-    bgGradient: "from-indigo-50 to-purple-50",
-    iconColor: "text-indigo-600"
-  },
-  { 
-    icon: ArrowLeftRight, 
-    label: "Movimentações", 
-    path: "/movimentacoes",
-    gradient: "from-cyan-500 to-blue-500",
-    bgGradient: "from-cyan-50 to-blue-50",
-    iconColor: "text-cyan-600"
-  },
-  { 
-    icon: Wrench, 
-    label: "Ordem de Serviço", 
-    path: "/os",
-    gradient: "from-red-500 to-rose-500",
-    bgGradient: "from-red-50 to-rose-50",
-    iconColor: "text-red-600"
-  },
-  { 
-    icon: Users, 
-    label: "Clientes (CRM)", 
-    path: "/clientes",
-    gradient: "from-pink-500 to-rose-500",
-    bgGradient: "from-pink-50 to-rose-50",
-    iconColor: "text-pink-600"
-  },
-  { 
-    icon: UserCog, 
-    label: "Vendedores", 
-    path: "/vendedores",
-    gradient: "from-blue-500 to-indigo-500",
-    bgGradient: "from-blue-50 to-indigo-50",
-    iconColor: "text-blue-600",
-    roles: ["gerente", "admin", "master_admin"]
-  },
-  { 
-    icon: DollarSign, 
-    label: "Financeiro", 
-    path: "/financeiro",
-    gradient: "from-yellow-500 to-orange-400",
-    bgGradient: "from-yellow-50 to-orange-50",
-    iconColor: "text-yellow-600"
-  },
-  { 
-    icon: FolderTree, 
-    label: "Plano de Contas", 
-    path: "/contabilidade/plano-contas",
-    gradient: "from-cyan-600 to-blue-600",
-    bgGradient: "from-cyan-50 to-blue-50",
-    iconColor: "text-cyan-700",
-    roles: ["gerente", "admin", "master_admin"]
-  },
-  { 
-    icon: FileText, 
-    label: "Lançamentos Contábeis", 
-    path: "/contabilidade/lancamentos",
-    gradient: "from-cyan-600 to-blue-600",
-    bgGradient: "from-cyan-50 to-blue-50",
-    iconColor: "text-cyan-700",
-    roles: ["gerente", "admin", "master_admin"]
-  },
-  { 
-    icon: BarChart3, 
-    label: "Relatórios Contábeis", 
-    path: "/contabilidade/relatorios",
-    gradient: "from-cyan-600 to-blue-600",
-    bgGradient: "from-cyan-50 to-blue-50",
-    iconColor: "text-cyan-700",
-    roles: ["gerente", "admin", "master_admin"]
-  },
-  { 
-    icon: Briefcase, 
-    label: "Área do Contador", 
-    path: "/contabilidade/area-contador",
-    gradient: "from-cyan-600 to-blue-600",
-    bgGradient: "from-cyan-50 to-blue-50",
-    iconColor: "text-cyan-700",
-    roles: ["gerente", "admin", "master_admin"]
-  },
-  { 
-    icon: Wallet, 
-    label: "Controle de Comissões", 
-    path: "/controle-comissoes",
-    gradient: "from-purple-500 to-pink-500",
-    bgGradient: "from-purple-50 to-pink-50",
-    iconColor: "text-purple-600",
-    roles: ["gerente", "admin", "master_admin"]
-  },
-  { 
-    icon: FileText, 
-    label: "Notas Fiscais", 
-    path: "/notas-fiscais",
-    gradient: "from-sky-500 to-blue-500",
-    bgGradient: "from-sky-50 to-blue-50",
-    iconColor: "text-sky-600"
-  },
-  { 
-    icon: TrendingUp, 
-    label: "Dashboard BI", 
-    path: "/dashboard-bi",
-    gradient: "from-orange-500 to-amber-500",
-    bgGradient: "from-orange-50 to-amber-50",
-    iconColor: "text-orange-600"
-  },
-  { 
-    icon: Bell, 
-    label: "Notificações", 
-    path: "/notificacoes",
-    gradient: "from-rose-500 to-pink-500",
-    bgGradient: "from-rose-50 to-pink-50",
-    iconColor: "text-rose-600"
-  },
-  { 
-    icon: Settings, 
-    label: "Configurações", 
-    path: "/configuracoes",
-    gradient: "from-slate-500 to-gray-500",
-    bgGradient: "from-slate-50 to-gray-50",
-    iconColor: "text-slate-600"
-  },
-  { 
-    icon: Lock, 
-    label: "Liberação de Módulos", 
-    path: "/liberacao-modulos",
-    gradient: "from-violet-600 to-purple-600",
-    bgGradient: "from-violet-50 to-purple-50",
-    iconColor: "text-violet-700",
-    masterAdminOnly: true
-  },
-  { 
-    icon: Headphones, 
-    label: "Suporte ao Cliente", 
-    path: "/suporte-clientes",
-    gradient: "from-emerald-500 to-teal-500",
-    bgGradient: "from-emerald-50 to-teal-50",
-    iconColor: "text-emerald-600",
-    masterAdminOnly: true
-  },
-  { 
-    icon: Shield, 
-    label: "Admin Master", 
-    path: "/admin-master",
-    gradient: "from-red-600 to-pink-600",
-    bgGradient: "from-red-50 to-pink-50",
-    iconColor: "text-red-700",
-    masterAdminOnly: true
-  },
-  { 
-    icon: Database, 
-    label: "Gerenciar Backups", 
-    path: "/gerenciar-backups",
-    gradient: "from-indigo-600 to-blue-600",
-    bgGradient: "from-indigo-50 to-blue-50",
-    iconColor: "text-indigo-700",
-    masterAdminOnly: true
-  },
-  { 
-    icon: Sparkles, 
-    label: "Analytics do Chatbot", 
-    path: "/chatbot-analytics",
-    gradient: "from-purple-600 to-pink-600",
-    bgGradient: "from-purple-50 to-pink-50",
-    iconColor: "text-purple-700",
-    masterAdminOnly: true
-  },
-  { 
-    icon: Headphones, 
-    label: "Meus Chamados", 
-    path: "/meus-chamados",
-    gradient: "from-teal-500 to-cyan-500",
-    bgGradient: "from-teal-50 to-cyan-50",
-    iconColor: "text-teal-600"
-  },
-  { 
-    icon: UserCog, 
-    label: "Gerenciar Chamados", 
-    path: "/gerenciar-chamados",
-    gradient: "from-rose-600 to-pink-600",
-    bgGradient: "from-rose-50 to-pink-50",
-    iconColor: "text-rose-700",
-    masterAdminOnly: true
-  },
+  {
+    title: "Sistema",
+    items: [
+      { 
+        icon: Settings, 
+        label: "Configurações", 
+        path: "/configuracoes",
+        gradient: "from-slate-500 to-gray-500",
+        bgGradient: "from-slate-50 to-gray-50",
+        iconColor: "text-slate-600"
+      },
+      { 
+        icon: Bell, 
+        label: "Notificações", 
+        path: "/notificacoes",
+        gradient: "from-rose-500 to-pink-500",
+        bgGradient: "from-rose-50 to-pink-50",
+        iconColor: "text-rose-600"
+      },
+      { 
+        icon: Shield, 
+        label: "Administração", 
+        items: [
+          { label: "Liberação de Módulos", path: "/liberacao-modulos" },
+          { label: "Suporte ao Cliente", path: "/suporte-clientes" },
+          { label: "Admin Master", path: "/admin-master" },
+          { label: "Gerenciar Backups", path: "/gerenciar-backups" },
+          { label: "Analytics Chatbot", path: "/chatbot-analytics" },
+        ],
+        gradient: "from-red-600 to-pink-600",
+        bgGradient: "from-red-50 to-pink-50",
+        iconColor: "text-red-700",
+        masterAdminOnly: true
+      },
+      { 
+        icon: FileSpreadsheet, 
+        label: "Relatórios", 
+        path: "/relatorio-avancado-estoque",
+        gradient: "from-indigo-500 to-purple-500",
+        bgGradient: "from-indigo-50 to-purple-50",
+        iconColor: "text-indigo-600"
+      },
+    ]
+  }
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 280;
-const MIN_WIDTH = 200;
-const MAX_WIDTH = 480;
 
 export default function DashboardLayout({
   children,
@@ -352,267 +332,248 @@ function ThemeToggle() {
     >
       <motion.div
         initial={false}
-        animate={{ rotate: theme === "dark" ? 180 : 0 }}
+        animate={{ rotate: theme === 'dark' ? 180 : 0 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        {theme === "light" ? (
-          <Sun className="h-4 w-4 text-amber-500" />
+        {theme === 'dark' ? (
+          <Moon className="h-5 w-5 text-blue-400" />
         ) : (
-          <Moon className="h-4 w-4 text-blue-500" />
+          <Sun className="h-5 w-5 text-amber-500" />
         )}
       </motion.div>
     </Button>
   );
 }
 
-type DashboardLayoutContentProps = {
-  children: React.ReactNode;
-  setSidebarWidth: (width: number) => void;
-};
-
 function DashboardLayoutContent({
   children,
   setSidebarWidth,
-}: DashboardLayoutContentProps) {
-  const { user } = useAuth();
-  const logoutMutation = trpc.auth.logout.useMutation({
-    onSuccess: () => {
-      window.location.href = "/login";
-    },
-  });
-  const logout = () => logoutMutation.mutate();
-  const [location, setLocation] = useLocation();
-  const { state, toggleSidebar } = useSidebar();
+}: {
+  children: React.ReactNode;
+  setSidebarWidth: (width: number) => void;
+}) {
+  const { user, logout } = useAuth();
+  const [location] = useLocation();
+  const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const [isResizing, setIsResizing] = useState(false);
-  const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
-  const isMobile = useIsMobile();
 
-  useEffect(() => {
-    if (isCollapsed) {
-      setIsResizing(false);
-    }
-  }, [isCollapsed]);
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = "/login";
+  };
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return;
-
-      const sidebarLeft = sidebarRef.current?.getBoundingClientRect().left ?? 0;
-      const newWidth = e.clientX - sidebarLeft;
-      if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
-        setSidebarWidth(newWidth);
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-    };
-
-    if (isResizing) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-    }
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-  }, [isResizing, setSidebarWidth]);
+  // Função para verificar permissões
+  const hasPermission = (item: MenuItem | SubMenuItem) => {
+    if (item.masterAdminOnly && user?.role !== "master_admin") return false;
+    if (item.roles && !item.roles.includes(user?.role || "")) return false;
+    return true;
+  };
 
   return (
     <>
-      <div className="relative" ref={sidebarRef}>
-        <Sidebar
-          collapsible="icon"
-          className="border-r-0"
-          disableTransition={isResizing}
-        >
-          <SidebarHeader className="h-16 justify-center">
-            <div className="flex items-center gap-3 px-2 transition-all w-full">
-              <button
-                onClick={toggleSidebar}
-                className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
-                aria-label="Toggle navigation"
-              >
-                <PanelLeft className="h-4 w-4 text-muted-foreground" />
-              </button>
-              {!isCollapsed ? (
-                <div className="flex flex-col min-w-0">
-                  <span className="font-bold tracking-tight truncate text-sm">
-                    {(user as any).tenant?.name || "CellSync"}
-                  </span>
-                  {(user as any).tenant?.cnpj && (
-                    <span className="text-[10px] text-muted-foreground truncate">
-                      CNPJ: {(user as any).tenant.cnpj}
-                    </span>
-                  )}
-                </div>
-              ) : null}
-            </div>
-          </SidebarHeader>
-
-          <SidebarContent className="gap-0">
-            <SidebarMenu className="px-2 py-1 space-y-1">
-              {menuItems
-                .filter(item => {
-                  // Filtro para masterAdminOnly
-                  if (item.masterAdminOnly && user?.role !== "master_admin") return false;
-                  // Filtro para roles específicos
-                  if (item.roles && !item.roles.includes(user?.role || "")) return false;
-                  return true;
-                })
-                .map((item, index) => {
-                const isActive = location === item.path;
-                const Icon = item.icon;
-                return (
-                  <motion.div
-                    key={item.path}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                  >
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        isActive={isActive}
-                        onClick={() => setLocation(item.path)}
-                        tooltip={item.label}
-                        className={`h-11 transition-all duration-300 font-medium group relative overflow-hidden ${
-                          isActive 
-                            ? `bg-gradient-to-r ${item.bgGradient} border-l-4 border-l-transparent shadow-sm` 
-                            : "hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100"
-                        }`}
-                      >
-                        {/* Gradiente de fundo no hover */}
-                        {!isActive && (
-                          <div className={`absolute inset-0 bg-gradient-to-r ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
-                        )}
-                        
-                        {/* Ícone com background colorido */}
-                        <motion.div
-                          className={`relative z-10 p-2 rounded-lg ${
-                            isActive 
-                              ? `bg-gradient-to-br ${item.gradient} shadow-md` 
-                              : `bg-gradient-to-br ${item.bgGradient} group-hover:shadow-sm`
-                          } transition-all duration-300`}
-                          whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Icon className={`h-4 w-4 ${
-                            isActive ? "text-white" : item.iconColor
-                          } transition-colors duration-300`} />
-                        </motion.div>
-                        
-                        {/* Label */}
-                        <span className={`relative z-10 ${
-                          isActive 
-                            ? "font-semibold text-slate-800" 
-                            : "text-slate-600 group-hover:text-slate-800"
-                        } transition-colors duration-300`}>
-                          {item.label}
-                        </span>
-                        
-                        {/* Indicador de ativo */}
-                        {isActive && (
-                          <motion.div
-                            layoutId="activeIndicator"
-                            className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${item.gradient} rounded-r-full`}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                          />
-                        )}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  </motion.div>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarContent>
-
-          <SidebarFooter className="p-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <Avatar className="h-9 w-9 border shrink-0">
-                    <AvatarFallback className="text-xs font-medium">
-                      {user?.name?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-sm font-medium truncate leading-none">
-                      {user?.name || "-"}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate mt-1.5">
-                      {user?.email || "-"}
-                    </p>
-                  </div>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem
-                  onClick={logout}
-                  className="cursor-pointer text-destructive focus:text-destructive"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarFooter>
-        </Sidebar>
-        <div
-          className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 transition-colors ${isCollapsed ? "hidden" : ""}`}
-          onMouseDown={() => {
-            if (isCollapsed) return;
-            setIsResizing(true);
-          }}
-          style={{ zIndex: 50 }}
-        />
-      </div>
-
-      <SidebarInset>
-        {/* Header Mobile */}
-        {isMobile && (
-          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col gap-1">
-                  <span className="tracking-tight text-foreground">
-                    {activeMenuItem?.label ?? "Menu"}
-                  </span>
-                </div>
+      <Sidebar collapsible="icon" className="border-r border-border/40 bg-card/50 backdrop-blur-xl supports-[backdrop-filter]:bg-card/50">
+        <SidebarHeader className="h-16 border-b border-border/40 px-4 flex items-center justify-between bg-card/50">
+          <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center w-full' : ''}`}>
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-lg shadow-indigo-500/20">
+              <Sparkles className="h-6 w-6 text-white" />
+              <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-background p-0.5">
+                <div className="h-full w-full rounded-full bg-green-500 animate-pulse" />
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <TenantSwitcher />
-              <NotificationBell />
-              <ThemeToggle />
-            </div>
+            {!isCollapsed && (
+              <div className="flex flex-col overflow-hidden transition-all duration-300">
+                <span className="truncate font-bold text-lg tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+                  CellSync
+                </span>
+                <span className="truncate text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Business OS
+                </span>
+              </div>
+            )}
           </div>
-        )}
-        
-        {/* Header Desktop */}
-        {!isMobile && (
-          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-muted-foreground">
-                {activeMenuItem?.label ?? "Dashboard"}
+        </SidebarHeader>
+
+        <SidebarContent className="px-2 py-4 gap-6">
+          {/* Tenant Switcher */}
+          {!isCollapsed && (
+            <div className="px-2 mb-2">
+              <TenantSwitcher />
+            </div>
+          )}
+
+          {menuGroups.map((group, groupIndex) => (
+            <div key={groupIndex} className="space-y-1">
+              {!isCollapsed && (
+                <h4 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-2">
+                  {group.title}
+                </h4>
+              )}
+              
+              <SidebarMenu>
+                {group.items.map((item, index) => {
+                  if (!hasPermission(item)) return null;
+
+                  const isActive = item.path === location || (item.items && item.items.some(sub => sub.path === location));
+                  const Icon = item.icon;
+
+                  // Renderizar item com submenu
+                  if (item.items) {
+                    return (
+                      <Collapsible
+                        key={index}
+                        asChild
+                        defaultOpen={isActive}
+                        className="group/collapsible"
+                      >
+                        <SidebarMenuItem>
+                          <CollapsibleTrigger asChild>
+                            <SidebarMenuButton 
+                              tooltip={item.label}
+                              className={`
+                                w-full justify-between group transition-all duration-200 ease-in-out rounded-xl my-0.5
+                                ${isActive 
+                                  ? `bg-gradient-to-r ${item.bgGradient} border-r-2 border-indigo-500` 
+                                  : 'hover:bg-accent/50 hover:translate-x-1'
+                                }
+                              `}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`
+                                  p-2 rounded-lg transition-all duration-300
+                                  ${isActive 
+                                    ? `bg-gradient-to-br ${item.gradient} text-white shadow-md` 
+                                    : `${item.iconColor} bg-background/80 group-hover:scale-110`
+                                  }
+                                `}>
+                                  <Icon className="h-4 w-4" />
+                                </div>
+                                <span className={`font-medium transition-colors ${isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                                  {item.label}
+                                </span>
+                              </div>
+                              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                            </SidebarMenuButton>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <SidebarMenuSub>
+                              {item.items.map((subItem, subIndex) => {
+                                if (!hasPermission(subItem)) return null;
+                                const isSubActive = subItem.path === location;
+                                
+                                return (
+                                  <SidebarMenuSubItem key={subIndex}>
+                                    <SidebarMenuSubButton 
+                                      asChild 
+                                      isActive={isSubActive}
+                                      className={`
+                                        transition-all duration-200 rounded-lg
+                                        ${isSubActive ? 'font-medium text-indigo-600 bg-indigo-50 dark:bg-indigo-950/30' : 'text-muted-foreground hover:text-foreground'}
+                                      `}
+                                    >
+                                      <Link href={subItem.path}>
+                                        <span>{subItem.label}</span>
+                                      </Link>
+                                    </SidebarMenuSubButton>
+                                  </SidebarMenuSubItem>
+                                );
+                              })}
+                            </SidebarMenuSub>
+                          </CollapsibleContent>
+                        </SidebarMenuItem>
+                      </Collapsible>
+                    );
+                  }
+
+                  // Renderizar item simples
+                  return (
+                    <SidebarMenuItem key={index}>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={item.label}
+                        className={`
+                          w-full group transition-all duration-200 ease-in-out rounded-xl my-0.5
+                          ${isActive 
+                            ? `bg-gradient-to-r ${item.bgGradient} border-r-2 border-indigo-500` 
+                            : 'hover:bg-accent/50 hover:translate-x-1'
+                          }
+                        `}
+                      >
+                        <Link href={item.path!}>
+                          <div className={`
+                            p-2 rounded-lg transition-all duration-300
+                            ${isActive 
+                              ? `bg-gradient-to-br ${item.gradient} text-white shadow-md` 
+                              : `${item.iconColor} bg-background/80 group-hover:scale-110`
+                            }
+                          `}>
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <span className={`font-medium transition-colors ${isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                            {item.label}
+                          </span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </div>
+          ))}
+        </SidebarContent>
+
+        <SidebarFooter className="border-t border-border/40 p-4 bg-card/50">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="w-full justify-start gap-3 px-2 h-14 hover:bg-accent/50 rounded-xl group transition-all duration-200">
+                <Avatar className="h-10 w-10 border-2 border-background shadow-sm group-hover:border-indigo-500 transition-colors">
+                  <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-violet-500 text-white font-bold">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col items-start text-left overflow-hidden transition-all duration-300 group-hover:translate-x-1">
+                  <span className="text-sm font-semibold truncate w-full text-foreground">
+                    {user?.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground truncate w-full capitalize">
+                    {user?.role?.replace('_', ' ')}
+                  </span>
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl border-border/50 backdrop-blur-xl bg-card/95">
+              <div className="flex items-center justify-between px-2 py-1.5">
+                <span className="text-xs font-medium text-muted-foreground">Tema</span>
+                <ThemeToggle />
+              </div>
+              <DropdownMenuItem className="cursor-pointer rounded-lg focus:bg-accent/50" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4 text-red-500" />
+                <span className="text-red-500 font-medium">Sair do Sistema</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarFooter>
+      </Sidebar>
+
+      <SidebarInset className="bg-background/50 backdrop-blur-3xl">
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/40 px-4 bg-card/50 backdrop-blur-xl sticky top-0 z-10 transition-all duration-200">
+          <SidebarTrigger className="-ml-1 hover:bg-accent/50 rounded-lg" />
+          <div className="mr-4 hidden md:block h-4 w-px bg-border/50" />
+          
+          <div className="flex-1 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="hidden md:inline-block font-medium text-foreground/80">
+                {menuGroups.flatMap(g => g.items).find(i => i.path === location || i.items?.some(sub => sub.path === location))?.label || "Dashboard"}
               </span>
             </div>
-            <div className="flex items-center gap-3">
-              <TenantSwitcher />
+
+            <div className="flex items-center gap-2 md:gap-4">
               <NotificationBell />
-              <ThemeToggle />
             </div>
           </div>
-        )}
-        
-        <main className="flex-1 p-4">{children}</main>
+        </header>
+        <div className="flex-1 p-4 md:p-8 max-w-[1600px] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {children}
+        </div>
       </SidebarInset>
     </>
   );

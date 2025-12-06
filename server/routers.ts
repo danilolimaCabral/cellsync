@@ -26,6 +26,7 @@ import { databaseQueryRouter } from "./routers/database-query";
 import { databaseImportRouter } from "./routers/database-import";
 import { accountingRouter } from "./routers/accounting";
 import { accountantRouter } from "./routers/accountant";
+import { backupRouter } from "./routers/backup";
 import { notifyOwner } from "./_core/notification";
 
 // Helper para criar procedimentos protegidos
@@ -58,6 +59,7 @@ export const appRouter = router({
   databaseImport: databaseImportRouter,
   accounting: accountingRouter,
   accountant: accountantRouter,
+  backup: backupRouter,
 
   // Endpoint temporário para diagnóstico de tenants
   listTenants: publicProcedure.query(async () => {

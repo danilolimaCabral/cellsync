@@ -134,6 +134,13 @@
       "when": 1764967593703,
       "tag": "0019_lazy_shocker",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1764993934384,
+      "tag": "0020_late_punisher",
+      "breakpoints": true
     }
   ]
 }
