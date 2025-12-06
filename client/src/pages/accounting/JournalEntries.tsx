@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, FileText, Calendar, Trash2 } from "lucide-react";
+import { Plus, FileText, Calendar, Trash2, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 
 export default function JournalEntries() {
@@ -36,6 +36,39 @@ export default function JournalEntries() {
   });
   
   const { data: accounts = [] } = trpc.accounting.getChartOfAccounts.useQuery();
+
+  const suggestMutation = trpc.accounting.suggestEntry.useMutation({
+    onSuccess: (data) => {
+      if (data.confidence === "low") {
+        toast.warning("IA com baixa confiança. Verifique os dados.");
+      } else {
+        toast.success("Sugestão aplicada!");
+      }
+      
+      // Encontrar IDs das contas baseados nos códigos sugeridos
+      // A IA retorna códigos (ex: 1.1.01), precisamos achar o ID interno
+      const debitAccount = accounts.find(a => a.account_code === data.debit_account_code);
+      const creditAccount = accounts.find(a => a.account_code === data.credit_account_code);
+
+      setLines([
+        { 
+          account_id: debitAccount ? String(debitAccount.id) : "", 
+          debit: "0", 
+          credit: "0", 
+          desc: data.description 
+        },
+        { 
+          account_id: creditAccount ? String(creditAccount.id) : "", 
+          debit: "0", 
+          credit: "0", 
+          desc: data.description 
+        }
+      ]);
+      
+      toast.info(`Raciocínio: ${data.reasoning}`);
+    },
+    onError: (error) => toast.error(`Erro na IA: ${error.message}`)
+  });
 
   // Mutation
   const createPostingMutation = trpc.accounting.createPosting.useMutation({
@@ -155,12 +188,30 @@ export default function JournalEntries() {
                   </div>
                   <div className="col-span-2 space-y-2">
                     <Label htmlFor="desc">Histórico Padrão</Label>
-                    <Input
-                      id="desc"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Ex: Pagamento de fornecedor ref. NF 123"
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="desc"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Ex: Pagamento de fornecedor ref. NF 123"
+                      />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={() => {
+                          if (!description) {
+                            toast.error("Preencha o histórico para a IA analisar.");
+                            return;
+                          }
+                          suggestMutation.mutate({ description });
+                        }}
+                        disabled={suggestMutation.isPending}
+                        title="Preencher com IA"
+                      >
+                        <Sparkles className="h-4 w-4 text-purple-500" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 

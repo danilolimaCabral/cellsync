@@ -4,6 +4,8 @@ import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import { chart_of_accounts, accounting_postings, accounting_posting_lines } from "../../drizzle/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { suggestChartOfAccounts, suggestEntry } from "../ai-accounting-assistant";
+import { products, tenants } from "../../drizzle/schema";
 
 // Helper para procedimentos protegidos
 const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
@@ -26,6 +28,52 @@ export const accountingRouter = router({
 
     return accounts;
   }),
+
+  analyzeAndSuggestChart: protectedProcedure.mutation(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+
+    // Coletar dados do tenant
+    const tenant = await db.query.tenants.findFirst({
+      where: eq(tenants.id, ctx.user.tenantId)
+    });
+
+    // Coletar amostra de produtos
+    const tenantProducts = await db.query.products.findMany({
+      where: eq(products.tenantId, ctx.user.tenantId),
+      limit: 10,
+      columns: { name: true, category: true }
+    });
+
+    const businessType = "Comércio Varejista"; // Poderia vir do tenant se tivesse campo
+    const productNames = tenantProducts.map(p => `${p.name} (${p.category})`);
+
+    const suggestions = await suggestChartOfAccounts(businessType, productNames);
+    return suggestions;
+  }),
+
+  suggestEntry: protectedProcedure
+    .input(z.object({ description: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Buscar contas existentes para dar contexto à IA
+      const accounts = await db.select({
+        code: chart_of_accounts.account_code,
+        name: chart_of_accounts.account_name
+      })
+      .from(chart_of_accounts)
+      .where(and(
+        eq(chart_of_accounts.tenant_id, ctx.user.tenantId),
+        eq(chart_of_accounts.is_analytical, true)
+      ));
+
+      const accountsList = accounts.map(a => `${a.code} - ${a.name}`);
+      
+      const suggestion = await suggestEntry(input.description, accountsList);
+      return suggestion;
+    }),
 
   createAccount: protectedProcedure
     .input(z.object({

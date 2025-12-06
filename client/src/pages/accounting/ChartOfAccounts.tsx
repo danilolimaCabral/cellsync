@@ -10,12 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, FolderTree, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, FolderTree, Search, Sparkles, Check } from "lucide-react";
 
 export default function ChartOfAccounts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<any>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     account_code: "",
@@ -27,6 +29,14 @@ export default function ChartOfAccounts() {
 
   const utils = trpc.useContext();
   const { data: accounts = [], isLoading } = trpc.accounting.getChartOfAccounts.useQuery();
+
+  const analyzeMutation = trpc.accounting.analyzeAndSuggestChart.useMutation({
+    onSuccess: (data) => {
+      setAiSuggestions(data);
+      setIsAiDialogOpen(true);
+    },
+    onError: (error) => toast.error(`Erro na análise IA: ${error.message}`),
+  });
 
   const createMutation = trpc.accounting.createAccount.useMutation({
     onSuccess: () => {
@@ -65,6 +75,27 @@ export default function ChartOfAccounts() {
       description: "",
     });
     setEditingAccount(null);
+  };
+
+  const handleGenerateAI = () => {
+    toast.info("Analisando dados do sistema com IA...");
+    analyzeMutation.mutate();
+  };
+
+  const handleImportSuggestion = async (suggestion: any) => {
+    try {
+      await createMutation.mutateAsync({
+        account_code: suggestion.code,
+        account_name: suggestion.name,
+        account_type: suggestion.type,
+        is_analytical: suggestion.is_analytical,
+        description: suggestion.description
+      });
+      // Remover da lista local após importar
+      setAiSuggestions(prev => prev.filter(s => s.code !== suggestion.code));
+    } catch (error) {
+      // Erro já tratado no mutation
+    }
   };
 
   const handleEdit = (account: any) => {
@@ -124,20 +155,64 @@ export default function ChartOfAccounts() {
         description="Gerencie a estrutura de contas contábeis da sua empresa."
         icon={FolderTree}
         actions={
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) resetForm();
-          }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nova Conta
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editingAccount ? "Editar Conta" : "Nova Conta Contábil"}</DialogTitle>
-              </DialogHeader>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleGenerateAI} disabled={analyzeMutation.isPending}>
+              <Sparkles className="mr-2 h-4 w-4 text-purple-500" />
+              {analyzeMutation.isPending ? "Analisando..." : "Sugerir com IA"}
+            </Button>
+
+            <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
+              <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Sugestões da IA</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    A IA analisou seus produtos e perfil de negócio e sugeriu a seguinte estrutura.
+                    Clique em importar para adicionar ao seu plano de contas.
+                  </p>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Código</TableHead>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Ação</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {aiSuggestions.map((suggestion) => (
+                        <TableRow key={suggestion.code}>
+                          <TableCell>{suggestion.code}</TableCell>
+                          <TableCell>{suggestion.name}</TableCell>
+                          <TableCell>{suggestion.type}</TableCell>
+                          <TableCell>
+                            <Button size="sm" variant="ghost" onClick={() => handleImportSuggestion(suggestion)}>
+                              <Check className="h-4 w-4 text-green-600" /> Importar
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) resetForm();
+            }}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nova Conta
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{editingAccount ? "Editar Conta" : "Nova Conta Contábil"}</DialogTitle>
+                </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -198,14 +273,15 @@ export default function ChartOfAccounts() {
                   />
                 </div>
 
-                <DialogFooter>
-                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                    {editingAccount ? "Salvar Alterações" : "Criar Conta"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+                  <DialogFooter>
+                    <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                      {editingAccount ? "Salvar Alterações" : "Criar Conta"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         }
       />
 
