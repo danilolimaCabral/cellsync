@@ -10,6 +10,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { setupStripeWebhook } from "./stripe-webhook-endpoint";
 import { runMigrations } from "../migrate";
+import { bootstrapDatabase } from "../bootstrap-db";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -31,8 +32,9 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
-  // Executar migrações antes de iniciar o servidor
+  // Executar migrações e bootstrap antes de iniciar o servidor
   await runMigrations();
+  await bootstrapDatabase();
 
   const app = express();
   const server = createServer(app);
