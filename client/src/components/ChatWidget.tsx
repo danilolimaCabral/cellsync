@@ -70,7 +70,7 @@ export function ChatWidget() {
       if (response.success && response.message) {
         setMessages((prev) => [...prev, { role: "assistant", content: response.message! }]);
       } else {
-        setMessages((prev) => [...prev, { role: "assistant", content: "Desculpe, tive um erro ao processar sua mensagem." }]);
+        setMessages((prev) => [...prev, { role: "assistant", content: response.message || "Desculpe, tive um erro ao processar sua mensagem." }]);
       }
     } catch (error) {
       console.error("Chat error:", error);
