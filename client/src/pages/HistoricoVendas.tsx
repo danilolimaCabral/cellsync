@@ -25,7 +25,7 @@ export default function HistoricoVendas() {
   const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
   const { printThermalReceipt } = useThermalPrinter();
 
-  const { data: selectedSale } = trpc.sales.getById.useQuery(selectedSaleId!, {
+  const { data: selectedSale, isLoading: isLoadingSale } = trpc.sales.getById.useQuery(selectedSaleId!, {
     enabled: !!selectedSaleId,
   });
 
@@ -38,14 +38,15 @@ export default function HistoricoVendas() {
   });
 
   useEffect(() => {
-    if (selectedSale && selectedSaleId) {
+    if (selectedSale && selectedSaleId && !isLoadingSale) {
       // Pequeno delay para garantir renderização
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         printThermalReceipt();
         setSelectedSaleId(null); // Limpar seleção após imprimir
-      }, 500);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [selectedSale, selectedSaleId, printThermalReceipt]);
+  }, [selectedSale, selectedSaleId, isLoadingSale, printThermalReceipt]);
   const [filters, setFilters] = useState({
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
@@ -332,9 +333,10 @@ export default function HistoricoVendas() {
                       </TableCell>
 	                      <TableCell>{getStatusBadge(sale.status)}</TableCell>
 	                      <TableCell>
-	                        <Button
-	                          variant="ghost"
-	                          size="sm"
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={selectedSaleId === sale.id}
                           onClick={() => {
                             if (sale.nfeIssued) {
                               // TODO: Implementar reimpressão de NF-e
@@ -343,9 +345,13 @@ export default function HistoricoVendas() {
                               setSelectedSaleId(sale.id);
                             }
                           }}
-	                        >
-	                          <Printer className="h-4 w-4" />
-	                        </Button>
+                        >
+                          {selectedSaleId === sale.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          ) : (
+                            <Printer className="h-4 w-4" />
+                          )}
+                        </Button>
 	                      </TableCell>
 	                    </TableRow>
                   ))}
