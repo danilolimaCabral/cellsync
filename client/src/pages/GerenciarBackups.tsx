@@ -272,7 +272,7 @@ export default function GerenciarBackups() {
                     <Badge
                       variant={backup.status === "completed" ? "default" : "destructive"}
                     >
-                      {b{backup.status === "completed" ? "Sucesso" : "Erro"}
+                      {backup.status === "completed" ? "Sucesso" : "Erro"}
                     </Badge>
                     {(backup.s3Url || (backup as any).downloadUrl) && (
                       <Button

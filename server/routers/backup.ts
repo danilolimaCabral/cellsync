@@ -1,7 +1,7 @@
 
-import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
-import { db } from "../../drizzle/db";
+import { getDb } from "../db";
 import { backups, sales, products, customers, users, stockItems, serviceOrders } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 import fs from "fs";
@@ -19,6 +19,8 @@ export const backupRouter = router({
     // In a real multi-tenant app, we would filter by tenantId
     // const tenantId = ctx.user.tenantId;
     
+        const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
     const backupList = await db.select().from(backups).orderBy(desc(backups.createdAt));
     
     return backupList.map(backup => ({
@@ -35,6 +37,9 @@ export const backupRouter = router({
       const filepath = path.join(BACKUP_DIR, filename);
 
       // Fetch data from main tables
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
       const [
         allSales,
         allProducts,
@@ -88,13 +93,16 @@ export const backupRouter = router({
       console.error("Backup failed:", error);
       
       // Log failure
-      await db.insert(backups).values({
-        tenantId: 1,
-        filename: `failed-backup-${Date.now()}`,
-        size: 0,
-        status: "failed",
-        createdAt: new Date()
-      });
+      const db = await getDb();
+      if (db) {
+        await db.insert(backups).values({
+          tenantId: 1,
+          filename: `failed-backup-${Date.now()}`,
+          size: 0,
+          status: "failed",
+          createdAt: new Date()
+        });
+      }
 
       throw new Error("Falha ao realizar backup: " + (error as Error).message);
     }
@@ -103,6 +111,9 @@ export const backupRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
       const backup = await db.query.backups.findFirst({
         where: eq(backups.id, input.id)
       });
