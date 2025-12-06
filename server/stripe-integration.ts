@@ -51,7 +51,7 @@ export async function createCheckoutSession({
   // Criar sessão de checkout
   const sessionData: Stripe.Checkout.SessionCreateParams = {
     mode: 'subscription',
-    payment_method_types: ['card', 'link', 'boleto'], // Cartão e Link liberados enquanto Boleto é ativado
+    payment_method_types: ['card', 'link'], // Boleto removido temporariamente para evitar erro 400
     line_items: [
       {
         price: stripePriceId,
