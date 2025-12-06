@@ -1374,9 +1374,31 @@ Sua função é ser uma especialista completa no sistema, atuando tanto como **C
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
       }))
-      .query(async () => {
-        // TODO: Implementar query de usuários
-        return [];
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        const conditions = [eq(users.tenantId, ctx.user.tenantId)];
+        
+        if (input.role) conditions.push(eq(users.role, input.role));
+        if (input.active !== undefined) conditions.push(eq(users.active, input.active));
+
+        const results = await db.select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          role: users.role,
+          active: users.active,
+          lastSignedIn: users.lastSignedIn,
+          createdAt: users.createdAt
+        })
+        .from(users)
+        .where(and(...conditions))
+        .limit(input.limit)
+        .offset(input.offset)
+        .orderBy(desc(users.createdAt));
+
+        return results;
       }),
 
 
