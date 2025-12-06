@@ -51,7 +51,7 @@ export async function createCheckoutSession({
   // Criar sessão de checkout
   const sessionData: Stripe.Checkout.SessionCreateParams = {
     mode: 'subscription',
-    payment_method_types: ['card'],
+    payment_method_types: ['boleto'], // Boleto para recorrência (envia por email)
     line_items: [
       {
         price: stripePriceId,
@@ -85,15 +85,20 @@ export async function createCheckoutSession({
     sessionData.metadata.customer_name = customerName;
   }
   
-  // Adicionar metadata na subscription
-  if (userId) {
+    // Configurar dados da assinatura (Trial + Metadata)
     sessionData.subscription_data = {
+      trial_period_days: 7, // 7 dias de teste grátis
       metadata: {
-        user_id: userId.toString(),
         plan_slug: planSlug,
       },
     };
-  }
+
+    if (userId) {
+      sessionData.subscription_data.metadata = {
+        ...sessionData.subscription_data.metadata,
+        user_id: userId.toString(),
+      };
+    }
   
   const session = await stripe.checkout.sessions.create(sessionData);
 
